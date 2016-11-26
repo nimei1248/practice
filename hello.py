@@ -289,7 +289,7 @@
 ## key是不可变的,value可以是任何类型
 ## 数据结构类似于数据库增删改查
 
-### 定义字典
+### 定义字典  字典中K,V单双引号没有区别
 #>>> d = {"name":"fuck", 'age':22}
 #
 ### 查看字典
@@ -311,3 +311,29 @@
 #{'age': 22, 'type': 'mac os', 'name': 'fuck'}
 #>>> d['type']
 #'mac os'
+
+## 判断key是否在字典中
+# 'name' in d
+
+
+#字典的取值方式[]
+
+#如果是索引查找 一律用[]无论是list还是dict
+
+## 求出这个list中，每个字符出现的次数
+#list4 = ['C','js','python','js','css','js','html','node','js','python','js','css','js','html','node','js','python','js','css','js','html','node','css','js','html','node','js','python','js','css','js','html','node','js','python','js','css','js','html','node']
+#
+#d = {}
+#for i in list4:
+#    if i in d:
+#        d[i] = d[i] + 1  # 通过key获取到value的值,如果字典中出现key,则将对应的value值+1
+#        #d[i] += 1
+#    else:
+#        d[i] = 1
+#    print d
+#print d
+
+
+## 作业
+# 求最大的两个值并打印出来
+list5 = [1,2,3,2,12,3,1,3,21,2,2,3,4111,22,3333,444,111,4,5,777,65555,45,33,45]
