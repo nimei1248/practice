@@ -62,15 +62,147 @@
 ## 流程控制
 ## 布尔值 True False
 #if 条件为True:
+#    执行这里代码
 #   ...
 #else 条件为False
+#    执行这里代码
 #   ...
 #
 #单个=号是赋值,双==号是判断
 
-name = raw_input('Please input your name: ')
-if name == 'nimei':
-    print 'Hello nimei'
-    print 'hahaha'
+#name = raw_input('Please input your name: ')
+#if name == 'nimei':
+#    print 'Hello nimei'
+#    print 'hahaha'
+#else:
+#    print 'you are not nimei'
+#
+#print 'not if in'
 
-print 'not if in'
+
+# A and B
+## A 和 B都为True,则为True,其它均为False
+#name = raw_input('Please input your name: ')
+#age = raw_input('Please input your age: ')
+#if name == 'nimei' and age == '2':
+#    print 'Hello nimei'
+#    print 'hahaha'
+#else:
+#    print 'you are not nimei'
+#
+
+## A or B
+## A 和 B有一个为True,则为True,其它均为False
+#name = raw_input('Please input your name: ')
+#age = raw_input('Please input your age: ')
+#print type(age)
+#if name == 'nimei' or age == '2':
+#    print 'Hello nimei'
+#    print 'hahaha'
+#else:
+#    print 'you are not nimei'
+
+## not A 
+## 如果A是False,则返回True,表示if 条件成立为True,开始执行if下面代码;
+## 反之亦然,即,如果A是True,则返回False,表示if条件不成立,其它elif or else条件成立
+
+
+## 循环 while,需要有退出的条件
+#i = 0
+#while i < 20:
+#    print i
+#    i = i + 1
+
+
+## 直到用户输入内容才退出,否则一直提示用户输入
+#name = ''
+#while not name:
+#    name = raw_input('Pleae input your name: ')
+#
+#print 'hello ' + name
+
+
+## 让用户一直输入数字,如果输入的是'0',终止程序,打印所有输入数字的总和
+
+#一、
+#num = 1
+#sum = 0
+#while num != 0:
+#    num = int(raw_input('Please input your number: '))
+#    sum = int(sum) + num
+#print sum
+
+
+#二、
+#num = ''
+#sum = 0
+#while num != 0:
+#    num = int(raw_input('Please input your number: '))
+#    sum = sum + num
+#print sum
+
+
+#三、
+#sum = 0
+#while True:
+#    num = int(raw_input('Please input your number: '))
+#    if num == 0:
+#        break
+#    sum = sum + num
+#print sum
+
+#四、
+#sum = 0
+#while not False:
+#    num = raw_input('Please input your number: ')
+#    if num == '0':
+#        break
+#    sum = int(sum) + int(num)
+#print sum
+
+#woniu
+
+#num = 0  ## 0是False ''表示空
+#while True:
+#    i = raw_input('input your number: ')
+#    if not i:
+#        break
+#    num = num + int(i)
+#print num
+
+
+## 让用户一直输入数字(只输入数字),如果没有输入任何值,终止程序;打印所有输入数字的平均值
+## woniu    
+#num = 0.0
+#while True:
+#    i = raw_input('input your number: ')
+#    if not i:
+#        break
+#    num = float(i) + num
+#print num
+
+
+#i == ''
+
+
+## 存10000块钱,年利率是3.25%,求多少年之后,存款能翻番
+## 本金+利息
+#money = 10000
+#year = 0
+#while money < 20000:
+#    money *= 1.0325
+#    year += 1
+#print '%s years.the moeny is %s' %(year,money)
+
+
+## for
+## 遍历一个序列并统计序列中js出现的次数
+n = 0
+p = 0
+list2 = ['C', 'js', 'python', 'js', 'css', 'js', 'html', 'node']
+for i in list2:
+    print i
+    if i == 'js':
+        n = n + 1
+        p += 1
+print '%s js count number is: %s' %(p,n)
