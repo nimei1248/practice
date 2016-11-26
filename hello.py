@@ -182,6 +182,7 @@
 #print num
 
 
+## 0 和 空值''都是False
 #i == ''
 
 
@@ -197,12 +198,116 @@
 
 ## for
 ## 遍历一个序列并统计序列中js出现的次数
-n = 0
-p = 0
-list2 = ['C', 'js', 'python', 'js', 'css', 'js', 'html', 'node']
-for i in list2:
-    print i
-    if i == 'js':
-        n = n + 1
-        p += 1
-print '%s js count number is: %s' %(p,n)
+#n = 0
+#p = 0
+#list2 = ['C', 'js', 'python', 'js', 'css', 'js', 'html', 'node']
+#for i in list2:
+#    print i
+#    if i == 'js':
+#        n = n + 1
+#        p += 1
+#print '%s js count number is: %s' %(p,n)
+
+
+## 求列表中的最大值
+## [1,2,3,2,12,3,1,3,21,2,2,3,4111,22,3333,444,111,4,5,777,65555,45,33,45]
+#max_num = 0
+#list3 = [1,2,3,2,12,3,1,3,21,2,2,3,4111,22,3333,444,111,4,5,777,65555,45,33,45]
+#for i in list3:
+#    if i > max_num:
+#        max_num = i
+#print 'max num %s' %max_num
+
+
+#max_num = 0
+#list3 = [1,2,3,2,12,3,1,3,21,2,2,3,4111,22,3333,444,111,4,5,777,65555,45,33,45]
+#for i in list3:
+#    if i < max_num:
+#        max_num = i
+#    continue
+#print 'max num %s' %max_num
+
+
+
+## break and continue
+## break语句可以跳出for while循环,跳出哪个循环,由代码缩进决定
+#i = 0
+#while i < 10:
+#    print i
+#    i = i + 1
+#    if i == 7:
+#        break
+
+
+#i = 0
+#while i < 10:
+#    print i
+#    i = i + 1
+#    if i == 7:
+#        continue
+
+## 跳过7继续执行下次循环
+#i = 0
+#while i < 10:
+#    i = i + 1
+#    if i == 7:
+#        continue
+#    print i
+
+
+## 用户输入数字,判断是不是闰年:
+#如果是100的倍数,要被400整除,是闰年
+#如果不能被100整除,可以被4整除,是闰年
+#如1900不是闰年,2000,2004是闰年
+#如果输入不是闰年,提示信息,并继续输入
+
+
+#while True:
+#    num = int(raw_input('Please input number: '))
+#    if num % 100 == 0 and num % 400 == 0:
+#        print '%s is runyear' %num
+#    elif num % 4 == 0 and num % 100 != 0:
+#        print '%s is runyear' %num
+#    else:
+#        print 'not runyear'
+
+
+#msg_temp = '%s is runyear'  ## 冗余优化
+#while True:
+#    num = int(raw_input('Please input number: '))
+#    if num % 400 == 0:  ## 满足被400整除即可
+#        print msg_temp % (num)
+#    elif num % 4 == 0 and num % 100 != 0:
+#        print msg_temp % (num)
+#    else:
+#        print 'not runyear'
+
+
+
+## dict就是key value值,索引有意义和list的区别
+## 不同场景使用不同数据结构
+## key是不可变的,value可以是任何类型
+## 数据结构类似于数据库增删改查
+
+### 定义字典
+#>>> d = {"name":"fuck", 'age':22}
+#
+### 查看字典
+#>>> d
+#{'age': 22, 'name': 'fuck'}
+#
+### 给字典增加K,V
+#>>> d['type'] = 'linux'
+#>>> d
+#{'age': 22, 'type': 'linux', 'name': 'fuck'}
+#
+### 只查看增加的K,V
+#>>> d['type']
+#'linux'
+#
+### 修改值
+#>>> d['type'] = 'mac os'
+#>>> d
+#{'age': 22, 'type': 'mac os', 'name': 'fuck'}
+#>>> d['type']
+#'mac os'
