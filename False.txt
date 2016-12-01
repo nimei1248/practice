@@ -1,0 +1,45 @@
+## 在Python中 None,  False, 空字符串"", 0, 空列表[], 空字典{}, 空元组()都相当于False ，即：
+not None == not False == not '' == not 0 == not [] == not {} == not ()
+
+
+## 不取反都是False：
+In [19]: not None
+Out[19]: True
+
+In [20]: not False
+Out[20]: True
+
+In [21]: not ''
+Out[21]: True
+
+In [23]: not []
+Out[23]: True
+
+In [22]: not ()
+Out[22]: True
+
+In [24]: not {}
+Out[24]: True
+
+In [25]: not 0
+Out[25]: True
+
+
+In [26]: not ""
+Out[26]: True
+
+In [27]: not " "
+Out[27]: False
+
+In [28]: not "  "
+Out[28]: False
+
+
+In [32]: not '' 
+Out[32]: True
+
+In [30]: not ' '
+Out[30]: False
+
+In [31]: not '  '
+Out[31]: False

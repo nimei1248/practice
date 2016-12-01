@@ -1,0 +1,42 @@
+几种字典的表示/定义方法:
+https://docs.python.org/2/library/stdtypes.html
+
+
+## dict函数,用等号赋值方式
+In [109]: a = dict(one=1, two=2, three=3)
+
+In [110]: type(a)
+Out[110]: dict
+
+
+## 默认/标准定义字典方式
+In [111]: b = {'one':1, 'two':2, 'three':3}
+
+In [112]: type(b)
+Out[112]: dict
+
+
+## dict函数中使用zip函数(包含2个相同位数的列表)
+In [113]: c = dict(zip(['one', 'two', 'three'], [1, 2, 3]))
+
+In [114]: type(c)
+Out[114]: dict
+
+
+## dict函数中包含一个列表,列表中包含元组
+In [115]: d = dict([('one', 1), ('two', 2), ('three', 3)])            
+
+In [116]: type(d)
+Out[116]: dict
+
+
+## dict函数中包含标准的字典定义方法
+In [117]: e = dict({'one':1, 'two':2, 'three':3})
+
+In [118]: type(e)
+Out[118]: dict
+
+
+## 验证几种方式是否等价
+In [119]: a == b == c == d == e
+Out[119]: True

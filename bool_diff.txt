@@ -1,0 +1,197 @@
+如何证明x = 1 是True？
+
+类似于下面这种返回值：
+In [122]: 3 != 4
+Out[122]: True
+
+
+In [120]: x = 1
+
+In [121]: x
+Out[121]: 1
+
+In [123]: x is True
+Out[123]: False
+
+## 判断x是否为True，返回为True
+In [124]: x == True
+Out[124]: True
+
+## 判断x是否为False，返回为Fasle，表明是True
+In [125]: x == False
+Out[125]: False
+
+x == False 转换
+True == False
+False
+
+In [126]: x == 1
+Out[126]: True
+
+
+
+0 比较特殊：
+In [129]: x = 0
+
+In [130]: type(x)
+Out[130]: int
+
+In [131]: x == 0
+Out[131]: True
+
+In [132]: x == True
+Out[132]: False
+
+In [133]: x == False
+Out[133]: True
+
+## 取反
+In [144]: not x
+Out[144]: True
+
+
+总结：
+核心点：比较要看类型，类型相同使用 == 比较时，才能正常显示是True or False，不同类型比较的结果均为False
+其中有2个比较特殊的是整型的0和1与布尔值比较
+这套逻辑适合整型(除0和1)、浮点数、字符串、列表、元组、字典
+如果列表非空，则可以打印对于if代码，从这个角度来看，非空列表是True
+
+
+## 1 is True
+In [166]: x = 1
+
+In [167]: x == True
+Out[167]: True
+
+#x == True
+In [168]: x == False
+Out[168]: False
+
+
+## 0 is False
+In [172]: x = 0
+
+In [173]: x == True
+Out[173]: False
+
+In [174]: x == False
+Out[174]: True
+
+下面这套逻辑适合整型(除0和1)、浮点数、字符串、列表、元组、字典、
+## 判断列表是否为空方法，列表为空，返回结果都是False
+## 列表是否为空，都不能违背上面原则，不同类型比较都是False，如果列表非空，则可以打印对于if代码，从这个角度来看，非空列表是True
+## 列表为空情况：
+In [202]: l2 = []
+
+In [203]: type(l2)
+Out[203]: list
+
+## l2既不是True，也不是False
+In [204]: l2 == True
+Out[204]: False
+
+In [205]: l2 == False
+Out[205]: False
+
+In [206]: if l2: print 'ok'
+
+In [207]: if not l2: print 'bad'
+bad
+
+In [208]: if l2: print 'list l2 is null'
+
+In [209]: if not l2: print 'list l2 is null'
+list l2 is null
+
+
+
+## 列表非空情况
+In [210]: l2 = [456]
+
+In [211]: type(l2)
+Out[211]: list
+
+In [212]: l2 == True
+Out[212]: False
+
+In [213]: l2 == False
+Out[213]: False
+
+In [214]: if l2: print 'list l2 is not null'
+list l2 is not null
+
+In [215]: if not l2: print 'list l2 is not null'
+
+
+
+
+元组：
+## 判断元组是否为空方法，元组为空，返回结果都是False
+In [175]: t = ()
+
+In [176]: t == True
+Out[176]: False
+
+In [177]: t == False
+Out[177]: False
+
+
+In [192]: t = ()
+
+## if条件语句是if后面的条件为True，才会答应其下面代码，从这个角度来看t is False
+In [193]: if t: print 'ok'
+
+In [194]: if not t: print 'bad'
+bad
+
+
+
+## 元组不为空情况，不能违背上面原则，不同类型比较都是False，如果元组非空，则可以打印对于if代码，从这个角度来看，非空元组是True：
+In [196]: t = (123,)
+
+In [197]: type(t)
+Out[197]: tuple
+
+In [198]: if t: print 'ok'    
+ok
+
+In [199]: if not t: print 'ok'
+
+
+In [200]: t == True
+Out[200]: False
+
+In [201]: t == False
+Out[201]: False
+
+
+字典：
+In [216]: dict2 = {}
+
+In [217]: type(dict2)
+Out[217]: dict
+
+In [218]: len(dict2)
+Out[218]: 0
+
+In [219]: dict2 == True
+Out[219]: False
+
+In [220]: dict2 == False
+Out[220]: False
+
+In [221]: if dict: print 'dict2 is null'
+
+In [222]: if not dict: print 'dict2 is null'
+dict is null
+
+
+In [2]: dict2 = dict(one=1, two=2, three=3)
+
+In [3]: type(dict2)
+Out[3]: dict
+
+In [4]: if dict2: print 'dict2 is not null'
+dict2 is not null
+
+In [5]: if not dict2: print 'dict2 is not null'
