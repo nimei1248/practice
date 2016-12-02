@@ -73,11 +73,11 @@ for i in list4:
     #print d2    ## 查看循环每次执行过程
 
 print '打印字典中k,v:'
-for k,v in d2.items(): print k,v
+for k,v in d2.items(): print k,v  ## 使用字典的属性items(),返回的是由元组组成的列表
 print
 
 print '对字典按照key值做排序:'
-for k,v in (sorted(d2.items(), key=lambda d2: d2[0])): print k,v
+for k,v in (sorted(d2.items(), key=lambda d2: d2[0])): print k,v  ## 使用lambda函数
 print
 
 print '对字典按照value值做排序:'
