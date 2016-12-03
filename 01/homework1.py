@@ -147,6 +147,18 @@
 #print 'bubble sort later: %s' % list5
 #print 'max two values is: %s %s' % (list5[0], list5[1])
 
+## http://python.jobbole.com/82270/
+#list5 = [1,2,3,2,12,3,1,3,21,2,2,3,4111,22,3333,444,111,4,6,777,65555,45,33,45]
+#
+#def bubble_sort(list5):
+#    count = len(list5)
+#    for i in range(0, count):
+#        for j in range(i + 1, count):
+#            if list5[i] > list5[j]:
+#                list5[i], list5[j] = list5[j], list5[i]
+#    return list5
+#print bubble_sort(list5)
+
 
 
 ## 方法五: python插入排序 insertSort
