@@ -131,3 +131,105 @@
 #
 #In [26]: sorted(list5, reverse=True)[0:2]
 #Out[26]: [65555, 4111]
+
+
+## 方法四:
+## woniu 冒泡排序 == bubble sort later
+#list5 = [1,2,3,2,12,3,1,3,21,2,2,3,4111,22,3333,444,111,4,6,777,65555,45,33,45]
+#count = len(list5)
+#
+#for i in range(0, count):
+#    for j in range(i + 1, count):
+#        if list5[i] < list5[j]:
+#            list5[i], list5[j] = list5[j], list5[i]
+#        #print list5
+#
+#print 'bubble sort later: %s' % list5
+#print 'max two values is: %s %s' % (list5[0], list5[1])
+
+
+
+## 方法五: python插入排序 insertSort
+### 列表位置互换演示
+#In [6]: list5 = [1,2,3,2,12,3,1,3,21,2,2,3,4111,22,3333,444,111,4,6,777,65555,45,33,45]
+#
+#In [7]: list5[1]
+#Out[7]: 2
+#
+#In [8]: list5[6]
+#Out[8]: 1
+#
+#In [9]: tmp = list5[1]
+#
+#In [10]: print tmp
+#2
+#
+#In [11]: list5[1] = list5[6]
+#
+#In [12]: list5[1]
+#Out[12]: 1
+#
+#In [13]: list5[6]
+#Out[13]: 1
+#
+#In [14]: list5[6] = tmp
+#
+#In [15]: list5[6]
+#Out[15]: 2
+
+
+#list5 = [1,2,3,2,12,3,1,3,21,2,2,3,4111,22,3333,444,111,4,6,777,65555,45,33,45]
+#
+#for i in range(len(list5) - 1):
+#    print list5, i, list5[i]
+#    for j in range(i + 1, len(list5)):
+#        print "before: "
+#        print list5[i], i, list5[j]
+#        if list5[i] > list5[j]:
+#            tmp = list5[i]
+#            list5[i] = list5[j]
+#            list5[j] = tmp
+#        print "after: "
+#        print list5[i], i, list5[j]
+#    print
+#
+#print i, j
+#print list5
+#print list5[i]
+#print list5[i + 1]
+
+
+
+## 方法六:
+## python冒泡排序  bubbleSort
+#list5 = [1,2,3,2,12,3,1,3,21,2,2,3,4111,22,3333,444,111,4,6,777,65555,45,33,45]
+#
+#for j in range(len(list5) - 1, 0, -1):  ## first [23-1]
+#    for i in range(j):  ## first [0-23]
+#        if list5[i] > list5[i + 1]:
+#            tmp = list5[i]
+#            list5[i] = list5[i + 1]
+#            list5[i + 1] = tmp
+#
+#print list5
+#print list5[-1]
+#print list5[-2]
+
+
+
+## 方法七:
+## python选择排序  selectionSort
+list5 = [1,2,3,2,12,3,1,3,21,2,2,3,4111,22,3333,444,111,4,6,777,65555,45,33,45]
+
+for i in range(len(list5) - 1, 0, -1):  ## first [23-1]
+    maxone = 0
+    for j in range(1, i + 1):
+        if list5[j] > list5[maxone]:
+            maxone = j
+    tmp = list5[i]
+    list5[i] = list5[maxone]
+    list5[maxone] = tmp
+
+print list5
+print list5[-1]
+print list5[-2]
