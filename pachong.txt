@@ -1,4 +1,7 @@
 http://cuiqingcai.com/1052.html
+http://python.jobbole.com/86872/
+https://ericfu.me/10-minutes-to-pandas
+
 
 首先你得认识清楚自己的水平在什么级别.
 
