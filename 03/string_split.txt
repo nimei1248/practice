@@ -1,0 +1,23 @@
+## 截取字符串或一行中的字段，可以指定分隔符，默认是空格
+## line.split()[4]
+## line.split('の')[4]
+
+split(...)
+    S.split([sep [,maxsplit]]) -> list of strings
+    
+    Return a list of the words in the string S, using sep as the
+    delimiter string.  If maxsplit is given, at most maxsplit
+    splits are done. If sep is not specified or is None, any
+    whitespace string is a separator and empty strings are removed
+    from the result.
+
+返回字符串S中的单词的列表，使用sep作为分隔符字符串
+如果给定maxsplit，最多为maxsplit分裂完成
+如果sep未指定或为无，任何whitespace string是一个分隔符，空字符串被删除从结果
+
+
+In [38]: s
+Out[38]: '61.159.140.123 - - [23/Aug/2014:00:01:42 +0800] "GET /favicon.ico HTTP/1.1" 404 \\ "-" "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.66 Safari/537.36 LBBROWSER" "-"'
+
+In [44]: s.split()[0],s.split()[8],s.split()[6]
+Out[44]: ('61.159.140.123', '404', '/favicon.ico')
