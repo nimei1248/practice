@@ -9,20 +9,20 @@ d2 = {}
 
 
 ## 直接循环打开的文件类似于f2.readlines(),一行行读
-#for s in f2:
-#    ## 如果s为true,则以IP and status为key:其对应的访问次数为values,组成键值对存放在dict d2
-#    if s:
-#        d2[s.split()[0],s.split()[8]] = d2.get((s.split()[0],s.split()[8]),0) + 1
+for s in f2:
+    ## 如果s为true,则以IP and status为key:其对应的访问次数为values,组成键值对存放在dict d2
+    if s:
+        d2[s.split()[0],s.split()[8]] = d2.get((s.split()[0],s.split()[8]),0) + 1
 
 ## close open file
-#f2.close()
+f2.close()
 
 
 ## 与上面写法差别,打开文件并保证最后f2.close(),而不需要手动close()
-with open("www_access_20140823.log") as f2:
-    for s in f2:
-        if s:
-            d2[s.split()[0],s.split()[8]] = d2.get((s.split()[0],s.split()[8]),0) + 1
+#with open("www_access_20140823.log") as f2:
+#    for s in f2:
+#        if s:
+#            d2[s.split()[0],s.split()[8]] = d2.get((s.split()[0],s.split()[8]),0) + 1
 
 
 ## html
@@ -49,23 +49,18 @@ html_end = '</table>'
 #html = html_head + html_title
 html = html_head + html_body % ('IP', 'Status', 'Count')
 
+
 ## 把dict convert list,通过sorted and lambda函数对d2的values进行排序,反转,取前10
-## cmp(...)
-##    cmp(x, y) -> integer
-##    Return negative if x<y, zero if x==y, positive if x>y.
-## sorted(...)
-##    sorted(iterable, cmp=None, key=None, reverse=False) --> new sorted list
-print d2.items()
 d2_conv_list = sorted(d2.items(), lambda x, y: cmp(x[1], y[1]), reverse=True)[0:10]
-print d2_conv_list
+
 
 ## 循环打印list,并进行html拼接
 for i in d2_conv_list:
      html = html + html_body % (i[0][0],i[0][1],i[1])
 
 html = html + html_end
-print html
+
+
 ## write html to MJ.html
-f3 = open('MJ.html','w')
-f3.write(html)
-f3.close()
+with open('MJ.html','w') as f3:
+    f3.write(html)
