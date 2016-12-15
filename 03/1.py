@@ -30,9 +30,26 @@ for s in f2:
 
 f2.close()
 
-## 将字典转换成list,然后按照字典的values进行排序,取前10
+## 将字典转换成list,d2.items(),格式为[((x, y), count)],然后按照字典的values进行排序,取前10
 d2_conv_list = sorted(d2.items(), lambda x, y: cmp(x[1], y[1]), reverse=True)[0:10]
 
-for i in d2_conv_list:
-    print "IP:%s, Status:%s, Count:%s" %(i[0][0],i[0][1],i[1])
+print "<table border='1'>",
+print '''
+             <tr>
+	         <td>IP</td>
+	         <td>Status</td>
+	         <td>Count</td>
+	     </tr>
+       '''
 
+for i in d2_conv_list:
+    #print "IP:%s, Status:%s, Count:%s" % (i[0][0],i[0][1],i[1])
+    #print "<tr><td>%s</td><td>%s</td><td>%s</td></tr>" % (i[0][0],i[0][1],i[1])
+    print '''
+              <tr>
+                  <td>%s</td>
+                  <td>%s</td>
+                  <td>%s</td>
+              </tr>
+           ''' % (i[0][0],i[0][1],i[1])
+print '</table>'
