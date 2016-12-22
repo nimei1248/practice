@@ -100,7 +100,7 @@
 
 
 
-f = open('.nimei1248/practice/03/www_access_20140823.log')
+f = open('www_access_20140823.log')
 res_dict = {}
 
 
@@ -216,25 +216,138 @@ html_f.close()
       #list冒泡10次,把出现次数最多的10个排出来
 
 res_list = res_dict.items()
+#print res_list
+#print len(res_list)
 #[(ip,status),count]
 for j in range(10):
     #for i in range(len(res_list) - 1):  ## 方法1
     for i in range(len(res_list) - 1 - j):  ## 方法2
+        #print "i is %s." % i
         if res_list[i][1] > res_list[i + 1][1]:
             res_list[i],res_list[i + 1] = res_list[i + 1],res_list[i]
+            #tmp = res_list[i]
+            #res_list[i] = res_list[i + 1]
+            #res_list[i + 1] = tmp
+            #print "res_list %s." % res_list
 
 
 
-这段有2点不明白：
-1.冒泡10次就能取结果怎么理解？
-2.方法2 减j怎么理解？
+#这段有2点不明白：
+#1.冒泡10次就能取结果怎么理解？
+#2.方法2 减j怎么理解？
+#
+#冒泡十次就是排好了十个数，题目让取前十，不就十次搞定了嘛，就不用都排完了
+#减j，你可以打印每次循环后的列表，重点看看右边的部分，你会发现其实右边排好的，以后就不用管它了不用再去比较，这个排好的数的个数就是外层循环的次数也就是j
+#
+#减去j 单纯的优化效率
+#比如已经冒泡三次了
+#下次冒泡的时候 后三个就不需要比较了
+#因为肯定是最大的三个
+#
+#1:26:37
 
-冒泡十次就是排好了十个数，题目让取前十，不就十次搞定了嘛，就不用都排完了
-减j，你可以打印每次循环后的列表，重点看看右边的部分，你会发现其实右边排好的，以后就不用管它了不用再去比较，这个排好的数的个数就是外层循环的次数也就是j
 
-减去j 单纯的优化效率
-比如已经冒泡三次了
-下次冒泡的时候 后三个就不需要比较了
-因为肯定是最大的三个
 
-1:26:37
+## with 语句
+## 自动关闭文件
+## 面向对象中的扩展，不能直接循环 __exit__ __enter__有关系
+#with open('log.log') as f:
+#    print f.readline()
+
+
+## 文件 指针
+## seek 控制文件指针的位置    写
+## seek 2个参考(移动的字符，移动的相对位置[0是文件开始，1是现在的位置，2是文件结尾])
+## tell 返回文件当前指针位置  读
+#f = open('test.txt')
+#print f.read(3) ## 读取3个字符 
+#print f.read(3) ## 再读取3个字符 
+#print f.tell()
+#
+#
+#In [51]: !vim test.txt
+#
+#In [52]: f = open('test.txt')
+#
+#In [53]: print f.read(3)
+#123
+#
+#In [54]: print f.read(3)
+#456
+#
+#In [55]: print f.tell()
+#6
+#
+#
+#
+#In [64]: f = open('test.txt')
+#
+#In [65]: print f.read(3)
+#123
+#
+#In [66]: f.seek(0)
+#
+#In [67]: print f.read(3)
+#123
+#
+#In [68]: print f.seek(1)
+#None
+#
+#In [69]: print f.read(3)
+#234
+
+
+## 基于当前位置，跳过1，再计算
+#FILE_START = 0
+#FILE_NOW = 1
+#FILE_END = 2
+#f = open('test.txt')
+#print f.read(3)
+#f.seek(-2,FILE_END)
+#print f.read(3)
+#
+#
+#f.close()
+
+
+
+## 函数
+# 函数的语法
+# 函数的参数
+# 函数的返回值
+
+# 函数可以是参数
+# 函数可以调用自己
+
+#def hello():
+#    print 'hello world'
+#    print 'fuck'
+#
+#hello()
+#hello()
+
+
+def hello():
+    print 'xxx'
+    print 3 + 2
+    #return 'hello world'
+
+print '---hello---'
+hello  ## 不会执行函数,也不会报错
+
+print '---hello()---'
+hello()  ## 返回除return的语句 执行函数
+
+print '---print hello---'
+print hello  ## 打印函数的内存地址,不会执行函数中的语句
+
+print '---print hello()---'
+print hello()  ## 执行函数内的所有语句,包括return,执行print 返回hello world
+
+## return 表示执行结果有返回,如果不加return，print hello()返回的是None
+
+
+
+## 参数
+
+3:35
