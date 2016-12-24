@@ -1,0 +1,16 @@
+//<form action='/login'>
+//       user <input type="text" name='user'>
+//       pwd <input type="text" name='pwd'>
+//       <input type="submit" name="login">
+//</form>
+
+{{ error_msg }}
+
+<table border='1'>
+{% for user in ulist %}
+<tr>
+     <td>{{ user[0] }}</td>
+     <td>{{ user[1] }}</td>
+</tr>
+{% endfor %}
+</table>

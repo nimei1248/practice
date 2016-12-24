@@ -34,8 +34,10 @@ def get_html(arr):
     with open('mem.html','w') as f:
         f.write(html_str)
 
+    return html_str
+
 def getMem():
     mem_info = operate(get_mem_info)
-    get_html(mem_info)
+    return get_html(mem_info)
 
 getMem()
