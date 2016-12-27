@@ -100,18 +100,18 @@
 
 
 
-f = open('www_access_20140823.log')
-res_dict = {}
-
-
-for line in f:
-    if line == '\n':
-       continue
-    temp = line.split()
-    #ip = temp[0]
-    #status = temp[8]
-    tup = (temp[0],temp[8])  ## 以元组为key,2个条件同时成立前提下,统计其出现的次数
-    res_dict[tup] = res_dict.get(tup,0) + 1
+#f = open('www_access_20140823.log')
+#res_dict = {}
+#
+#
+#for line in f:
+#    if line == '\n':
+#       continue
+#    temp = line.split()
+#    #ip = temp[0]
+#    #status = temp[8]
+#    tup = (temp[0],temp[8])  ## 以元组为key,2个条件同时成立前提下,统计其出现的次数
+#    res_dict[tup] = res_dict.get(tup,0) + 1
 ##print res_dict
 #print res_dict.items()
 #for (ip,status),count in res_dict.items():  ## 直接循环列表，列表中的每个元素为元组，(('113.7.255.88', '200'), 1)
@@ -157,7 +157,7 @@ for line in f:
 ##        print 'ip is %s, status is %s, count is %s' % (ip,status,res_dict[ip][status])
 
 
-f.close()
+#f.close()
 
 
 #3.打印前十
@@ -165,13 +165,13 @@ f.close()
       #1.dict ---> list
       #list冒泡10次,把出现次数最多的10个排出来
 
-res_list = res_dict.items()
-#[(ip,status),count]
-for j in range(10):
-    #for i in range(len(res_list) - 1):  ## 方法1
-    for i in range(len(res_list) - 1 - j):  ## 方法2
-        if res_list[i][1] > res_list[i + 1][1]:
-            res_list[i],res_list[i + 1] = res_list[i + 1],res_list[i]
+#res_list = res_dict.items()
+##[(ip,status),count]
+#for j in range(10):
+#    #for i in range(len(res_list) - 1):  ## 方法1
+#    for i in range(len(res_list) - 1 - j):  ## 方法2
+#        if res_list[i][1] > res_list[i + 1][1]:
+#            res_list[i],res_list[i + 1] = res_list[i + 1],res_list[i]
 
 ## 从大到小排序
 #print res_list[:-11:-1]
@@ -181,9 +181,9 @@ for j in range(10):
 ## (a,b) = (1,2)
 ## print a
 
-html_str = '<table border "1">'
-tr_tmpl = '<tr><td>%s</td><td>%s</td><td>%s</td></tr>'
-html_str += tr_tmpl % ('IP','status','count')
+#html_str = '<table border "1">'
+#tr_tmpl = '<tr><td>%s</td><td>%s</td><td>%s</td></tr>'
+#html_str += tr_tmpl % ('IP','status','count')
 
 
 
@@ -191,15 +191,15 @@ html_str += tr_tmpl % ('IP','status','count')
 #print res_list[:-11:-1]
 ## 从小到大排序
 #for (ip,status),count in res_list[-10:]:  ## 直接循环列表，列表中的每个元素为元组，(('113.7.255.88', '200'), 1)
-for (ip,status),count in res_list[:-11:-1]:  ## 直接循环列表，列表中的每个元素为元组，(('113.7.255.88', '200'), 1)
-                                            ## 直接使用for循环列表中每个元素的3个值
-    #print 'ip is %s, status is %s, count is %s' % (ip,status,count)
-    html_str += tr_tmpl % (ip,status,count)
-html_str += '</table>'
-
-html_f = open('res.html','w')
-html_f.write(html_str)
-html_f.close()
+#for (ip,status),count in res_list[:-11:-1]:  ## 直接循环列表，列表中的每个元素为元组，(('113.7.255.88', '200'), 1)
+#                                            ## 直接使用for循环列表中每个元素的3个值
+#    #print 'ip is %s, status is %s, count is %s' % (ip,status,count)
+#    html_str += tr_tmpl % (ip,status,count)
+#html_str += '</table>'
+#
+#html_f = open('res.html','w')
+#html_f.write(html_str)
+#html_f.close()
 
 
 ## 如果有key,其实可以不用reverse
@@ -215,20 +215,20 @@ html_f.close()
       #1.dict —> list
       #list冒泡10次,把出现次数最多的10个排出来
 
-res_list = res_dict.items()
-#print res_list
-#print len(res_list)
-#[(ip,status),count]
-for j in range(10):
-    #for i in range(len(res_list) - 1):  ## 方法1
-    for i in range(len(res_list) - 1 - j):  ## 方法2
-        #print "i is %s." % i
-        if res_list[i][1] > res_list[i + 1][1]:
-            res_list[i],res_list[i + 1] = res_list[i + 1],res_list[i]
-            #tmp = res_list[i]
-            #res_list[i] = res_list[i + 1]
-            #res_list[i + 1] = tmp
-            #print "res_list %s." % res_list
+#res_list = res_dict.items()
+##print res_list
+##print len(res_list)
+##[(ip,status),count]
+#for j in range(10):
+#    #for i in range(len(res_list) - 1):  ## 方法1
+#    for i in range(len(res_list) - 1 - j):  ## 方法2
+#        #print "i is %s." % i
+#        if res_list[i][1] > res_list[i + 1][1]:
+#            res_list[i],res_list[i + 1] = res_list[i + 1],res_list[i]
+#            #tmp = res_list[i]
+#            #res_list[i] = res_list[i + 1]
+#            #res_list[i + 1] = tmp
+#            #print "res_list %s." % res_list
 
 
 
@@ -312,23 +312,23 @@ for j in range(10):
 
 ## where可以为0表示从头开始计算，1表示以当前位置为原点计算。2表示以文件末尾为原点进行计算。需要注意，如果文件以a或a+的模式打开，每次进行写操作时，文件操作标记会自动返回到文件末尾
 ## 将之前读取文件位置/偏移量清除,下次从文件的开始处读取
-In [11]: f.seek(0,0)
-
-## 经过上面处理后,从文件开始处读取2个字符
-In [12]: f.read(2)
-Out[12]: '12'
-
-In [13]: f.read(2)
-Out[13]: '34'
-
-In [14]: f.read(2)
-Out[14]: '56'
-
-## 如果参数2为0,参数为2,表示从上次读取的位置,向前移动2个字符，相对于文件的开始位置
-In [15]: f.seek(2,0) 
-
-In [16]: f.read(2)  
-Out[16]: '34'
+#In [11]: f.seek(0,0)
+#
+### 经过上面处理后,从文件开始处读取2个字符
+#In [12]: f.read(2)
+#Out[12]: '12'
+#
+#In [13]: f.read(2)
+#Out[13]: '34'
+#
+#In [14]: f.read(2)
+#Out[14]: '56'
+#
+### 如果参数2为0,参数为2,表示从上次读取的位置,向前移动2个字符，相对于文件的开始位置
+#In [15]: f.seek(2,0) 
+#
+#In [16]: f.read(2)  
+#Out[16]: '34'
 
 
 ## 函数
@@ -347,28 +347,100 @@ Out[16]: '34'
 #hello()
 
 
-def hello():
-    print 'xxx'
-    print 3 + 2
-    #return 'hello world'
-
-print '---hello---'
-hello  ## 不会执行函数,也不会报错
-
-print '---hello()---'
-hello()  ## 返回除return的语句 执行函数
-
-print '---print hello---'
-print hello  ## 打印函数的内存地址,不会执行函数中的语句
-
-print '---print hello()---'
-print hello()  ## 执行函数内的所有语句,包括return,执行print 返回hello world
-
-## return 表示执行结果有返回,如果不加return，print hello()返回的是None
+#def hello():
+#    print 'xxx'
+#    print 3 + 2
+#    #return 'hello world'
+#
+#print '---hello---'
+#hello  ## 不会执行函数,也不会报错
+#
+#print '---hello()---'
+#hello()  ## 返回除return的语句 执行函数
+#
+#print '---print hello---'
+#print hello  ## 打印函数的内存地址,不会执行函数中的语句
+#
+#print '---print hello()---'
+#print hello()  ## 执行函数内的所有语句,包括return,执行print 返回hello world
+#
+### return 表示执行结果有返回,如果不加return，print hello()返回的是None
 
 
 
 ## 参数
 
-3:35
+#3:35
 
+
+#def hello(name,age):
+#    print 'hello ' + name + age
+#
+#hello('world ','12')
+#
+### 先找到hello函数的位置
+## name = 'world'
+## age = '12'
+## print 'hello ' + name + age
+## 参数实质上就是变量赋值，这个函数有2个参数，缺一不可
+#
+#
+### 参数是有默认值的
+#def hello(name,action='hehe'):
+#    print 'hello ' + name + ' ' + action
+#
+### 如果给值,就使用给定的值,否则就采用默认值
+#hello('world','xx')
+#hello('world')
+
+
+## 核心概念 函数 参数 返回值
+
+
+## 练习,写一个函数计算阶乘,递归求阶乘
+
+## 思路1
+#6! = 6 * 5 * 4 * 3 * 2 * 1
+#3! = 3 * 2 * 1
+
+def factorial(i,j=1):
+    #for i in range(1,i):  ## range(1,6)实际是1到5，会少了自己本身6,当客人输入6求6的阶乘时就不对,因此这里应该改成i + 1
+    for i in range(1,i + 1):  ## range(1,6)实际是1到5，会少了自己本身6,当客人输入6求6的阶乘时就不对,因此这里应该改成i + 1
+        j = j * i
+    #print j
+    return j  ## 用return返回值,其它地方无法抓取这个结果
+
+print factorial(6)
+
+def factorial(n):
+    res = 1
+    for i in range(1,n + 1):
+        res *= i
+    return res
+
+print factorial(6)
+
+
+## 思路2 利用函数自己调自己
+#6! = 6 * 5!  6的阶乘=6 * 5的阶乘=6 * (6 - 1)
+#3! = 3 * 2!  6的阶乘=6 * 5的阶乘=3 * (3 - 1)
+
+def factorial(n):
+    if n == 1:
+        return n
+    #return n * factorial(n - 1)  ## 此行写法等于下面2行
+    n = n * factorial(n - 1)
+    return n
+
+print factorial(6)
+
+## 递归
+#fib(3)
+#    return 3 * fib(2)
+#               return 2 * fib(1)
+#                          return 1
+#               return 2 * 1
+#    return 3 * 2
+#6
+
+#30:0
