@@ -471,18 +471,182 @@
 
 
 ## 收集剩余参数
-# * 收集剩余的位置参数, **收集关键字参数
-def hello(name, *args, **kargs):
-    print name,args,kargs
+# * 收集剩余的位置参数,保存在元组中； **收集关键字参数,保存在字典中
+#def hello(name, *args, **kargs):
+#    print name,args,kargs
+#
+### **kargs 收集没有定义的关键字参数,保存在dict中
+### *args 收集我们参数中没有定义的参数,但是使用时传递的参数,保存在元组中
+### 变量名称args和kargs可自定义名称
+#hello('xx',1,2,3,4,5,6)
+#hello('xx',a=1, b=2)
+#hello('xx',1,2,3,4,5, c=2)
+#
+#
+### 小练习: 写一个函数,求所有参数之和,循环打印元组中每个参数,然后将参数相加
+#def Sum(*args):
+#    sum = 0
+#    for i in args:  ## 循环元组
+#        #print i 
+#        sum = sum + i
+#    return sum
+#
+#print Sum(1,2,3)
 
-## **kargs 收集没有定义的关键字参数,保存在dict中
-
-## *args 收集我们参数中没有定义的参数,但是使用时传递的参数,保存在元组中
-hello('xx',1,2,3,4,5,6)
+#59:44
 
 
-## 小练习: 写一个函数,求所有参数之和
-hello('nimei', 1,2,3,4,5, c=2)
-hello('nimei2', a=1, b=2)
+#def nimei(name, *tuple2, **dict2):
+#    print name, tuple2, dict2
+#
+#nimei('tuple', 11, 22, 33)
+#nimei('dict', a=11, b=22, c=33)
+#nimei('tuple_dict', 11, 22, 33, a=11, b=22, c=33)
+##nimei('tuple_dict', a=11, b=22, c=33, 11, 22, 33)  ## 经测试发现元组的参数/位置参数要写在前面, 字典的参数/关键字参数要写在后面
+                                                    ## SyntaxError: non-keyword arg after keyword arg
 
-59:44
+## * and ** 在定义函数的时候,是收集参数
+## * ** 在使用的时候,如何动态调用数据
+#def hello(ip,status):
+#    print ip + ':' + status
+#
+#res = [['192.168.1.1','200'], ['192.168.2.1','302'], ['192.168.3.1','500']]
+#
+### * 在调用的时候,可以认为把list展开,当成位置参数，赋值给参数
+#for r in res:
+#    #hello(r[0], r[1])
+#    hello(*r)  ## 方法更优
+#
+### ** 中调用的时候,可以认为把dict展示,当成关键字参数，赋值给参数
+#
+#res = [{'ip':'192.168.1.1', 'status':'200'}, {'ip':'192.168.2.1', 'status':'302'}, {'ip':'192.168.3.1', 'status':'500'}]
+#for r in res:
+#    #hello(r['ip'], r['status'])
+#    hello(**r)  ## 方法更优
+
+
+## 总结下上面知识点
+# def 定义函数
+# return 返回值
+# 参数 变量赋值
+# 位置参数 关键字参数
+# * **
+
+
+
+
+## 函数式编程
+## 函数可以当成参数进行传递
+
+#def operator(name, fn):
+#    fn(name)  ## fn之所以可以用()是因为它本身是一个函数
+#
+#def sayHello(name):
+#    print 'hello ' + name
+#
+#def sayHehe(name):
+#    print 'hehe ' + name
+#
+#operator('xxx', sayHello)
+#operator('yyy', sayHehe)
+
+
+## 练习,写一个排序的函数
+##def my_sort(*tuple2):  ## 加上*后，就变成了元组而不是字典,下面的冒泡排序是对list而不是对tuple排序
+#def my_sort(tuple2):  ## 直接接受传递对list
+#    #pass  ## 占位符,函数无其它函数体时会报错
+#    ## 1.冒泡排序,从小到大
+#    print type(tuple2)
+#    count = len(tuple2)
+#    for i in range(0, count):
+#        for j in range(i + 1, count):
+#            if tuple2[i] > tuple2[j]:
+#                tuple2[i], tuple2[j] = tuple2[j], tuple2[i]
+#
+#    return tuple2
+#
+#    
+#
+## return [1,2,3,4]
+#print my_sort([3,2,4,1])
+
+
+## 练习2 写一个排序函数,支持两种类型的list排序
+## 相同的代码片段,要封装成函数,部分不同的地方,用参数传入
+#list2 = [['192.168.1.1',10], ['192.168.2.1',2], ['192.168.3.1',6]]
+#
+#
+#def my_sort2(tuple2):
+#    print type(tuple2)
+#    count = len(tuple2)
+#    for i in range(0, count):
+#        for j in range(i + 1, count):
+#            if tuple2[i][1] > tuple2[j][1]:
+#                tuple2[i], tuple2[j] = tuple2[j], tuple2[i]
+#
+#    #return tuple2
+#    print tuple2
+#
+##print my_sort(list2)
+#
+#
+#list2 = [['192.168.1.1',10], ['192.168.2.1',2], ['192.168.3.1',6]]
+#dict2 = [{'ip':'192.168.1.1', 'count':10}, {'ip':'192.168.2.1', 'count':2}, {'ip':'192.168.3.1', 'count':6}]
+#
+#
+#def my_sort3(tuple2):
+#    print type(tuple2)
+#    count = len(tuple2)
+#    for i in range(0, count):
+#        for j in range(i + 1, count):
+#            if tuple2[i]['count'] > tuple2[j]['count']:
+#                tuple2[i], tuple2[j] = tuple2[j], tuple2[i]
+#
+#    #return tuple2
+#    print tuple2
+#
+##print my_sort(dict2)
+#
+#
+#def operator(args, fn):
+#    fn(args)
+#
+#operator(list2, my_sort2)
+#operator(dict2, my_sort3)
+
+
+## 上面方法定义2个函数，再定义一个函数包装它们，但代码重合太多，因为它们的差异在于比较的条件if不同,其它均相同
+
+list2 = [['192.168.1.1',10], ['192.168.2.1',2], ['192.168.3.1',6]]
+dict2 = [{'ip':'192.168.1.1', 'count':10}, {'ip':'192.168.2.1', 'count':2}, {'ip':'192.168.3.1', 'count':6}]
+
+def my_sort(tuple2, fn):
+    print type(tuple2)
+    count = len(tuple2)
+    for i in range(0, count):
+        for j in range(i + 1, count):
+            #if tuple2[i][1] > tuple2[j][1]
+            #if tuple2[i]['count'] > tuple2[j]['count']
+            if fn(tuple2[i]) > fn(tuple2[j]):
+                tuple2[i], tuple2[j] = tuple2[j], tuple2[i]
+
+    return tuple2
+
+def get_key_from_list(o):  ## o == tuple2[i]
+    return o[1]
+    return tuple2[i][1]
+
+def get_key_from_dict(o):
+    return o['count']
+    return tuple2[i]['count']
+
+print my_sort(list2, get_key_from_list)
+print my_sort(dict2, get_key_from_dict)
+
+
+## lambda
+print my_sort(list2, lambda o:o[1])
+print my_sort(dict2, lambda o:o['count'])
+
+
+## 排序函数 54:00
