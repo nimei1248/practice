@@ -364,7 +364,7 @@
 #print '---print hello()---'
 #print hello()  ## 执行函数内的所有语句,包括return,执行print 返回hello world
 #
-### return 表示执行结果有返回,如果不加return，print hello()返回的是None
+### return 表示函数执行结束后，有返回结果，不论成败。,如果不加return，print hello()返回的是None
 
 
 
@@ -399,48 +399,88 @@
 
 ## 练习,写一个函数计算阶乘,递归求阶乘
 
-## 思路1
+## 思路1  迭代 xrange
 #6! = 6 * 5 * 4 * 3 * 2 * 1
 #3! = 3 * 2 * 1
 
-def factorial(i,j=1):
-    #for i in range(1,i):  ## range(1,6)实际是1到5，会少了自己本身6,当客人输入6求6的阶乘时就不对,因此这里应该改成i + 1
-    for i in range(1,i + 1):  ## range(1,6)实际是1到5，会少了自己本身6,当客人输入6求6的阶乘时就不对,因此这里应该改成i + 1
-        j = j * i
-    #print j
-    return j  ## 用return返回值,其它地方无法抓取这个结果
+#def factorial(i,j=1):
+#    #for i in range(1,i):  ## range(1,6)实际是1到5，会少了自己本身6,当客人输入6求6的阶乘时就不对,因此这里应该改成i + 1
+#    for i in range(1,i + 1):  ## range(1,6)实际是1到5，会少了自己本身6,当客人输入6求6的阶乘时就不对,因此这里应该改成i + 1
+#        j = j * i
+#    #print j
+#    return j  ## 不用return返回值,其它地方无法抓取这个结果
+#
+#print factorial(6)
+#
+#def factorial(n):
+#    res = 1
+#    for i in range(1,n + 1):
+#        res *= i
+#    return res
+#
+#print factorial(6)
+#
+#
+### 思路2 递归：利用函数自己调自己
+##6! = 6 * 5!  6的阶乘=6 * 5的阶乘=6 * (6 - 1)
+##3! = 3 * 2!  3的阶乘=3 * 2的阶乘=3 * (3 - 1)
+#
+#def factorial(n):
+#    if n == 1:
+#        #return n
+#        return 1
+#    print "before: %s" % n  ## 6 5 4 3 2 1
+#    #return n * factorial(n - 1)  ## 此行写法等于下面2行
+#    print "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s" % (n, '*', factorial(n - 1))  ## 此行写法等于下面2行
+#    #print "last: %s" % n  ## 此行语句都没有执行到,就直接返回结果了,原因可能是执行到同级别的return语句后就执行返回结果,后面不执行
+#    #n = n * factorial(n - 1)
+#    #return n
+#
+#print factorial(6)
+#
+### 递归
+##fib(3)
+##    return 3 * fib(2)
+##               return 2 * fib(1)
+##                          return 1
+##               return 2 * 1
+##    return 3 * 2
+##6
+#
+##30:0
 
-print factorial(6)
 
-def factorial(n):
-    res = 1
-    for i in range(1,n + 1):
-        res *= i
-    return res
+## 位置参数 关键字参数
+#def hello(name='fuck', job='ops'):
+#    return 'my name is %s and my job is %s' % (name,job)
+#
+#print hello()
+#
+### 位置参数
+#print hello('nimei','python')
+#print hello('python','nimei')
+#
+#print '-' * 40
+#
+### 关键字参数
+#print hello(name='nimei',job='python')
+#print hello(job='python',name='nimei')
+#print hello(job='xxx')
+#print hello('nimei2','xxx')
+#print hello('','xxx')
 
-print factorial(6)
+
+## 收集剩余参数
+# * 收集剩余的位置参数, **收集关键字参数
+def hello(name, *args, **kargs):
+    print name,args,kargs
+
+## **kargs 收集没有定义的关键字参数,保存在dict中
+
+## *args 收集我们参数中没有定义的参数,但是使用时传递的参数,保存在元组中
+hello('xx',1,2,3,4,5,6)
 
 
-## 思路2 利用函数自己调自己
-#6! = 6 * 5!  6的阶乘=6 * 5的阶乘=6 * (6 - 1)
-#3! = 3 * 2!  6的阶乘=6 * 5的阶乘=3 * (3 - 1)
-
-def factorial(n):
-    if n == 1:
-        return n
-    #return n * factorial(n - 1)  ## 此行写法等于下面2行
-    n = n * factorial(n - 1)
-    return n
-
-print factorial(6)
-
-## 递归
-#fib(3)
-#    return 3 * fib(2)
-#               return 2 * fib(1)
-#                          return 1
-#               return 2 * 1
-#    return 3 * 2
-#6
-
-#30:0
+## 小练习: 写一个函数,求所有参数之和
+hello('nimei', 1,2,3,4,5, c=2)
+hello('nimei2', a=1, b=2)
