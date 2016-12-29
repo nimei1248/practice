@@ -1,0 +1,19 @@
+In [7]: aa = '20の100の1.1.1.1, 21.2.175.112, 198.143.44.1の10.128.193.254のwww.2222k8.netの/getxmamount.htmの20161229185416のPOST の200のMozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.75 Safari/537.36のhttp://www.2222k8.net/ordinaryapplyxm.htmの0.664の883の461の105の9999の26187の14627025の11のhttpのHTTP/1.1のOKの/web/A02/webphp/WebRoot/index.phpの2016-12-29T18:54:16+08:00の12のapplication/x-www-form-urlencoded; charset=UTF-8の/index.phpのzh-CN,zh;q=0.8のhk01m11-10-128-9-11の1875の750の10の14480のUSのUSAのUnited StatesのCAの-のNAの34.0522の-118.2437'7'                 
+
+In [8]: aa.split('の')[2].split(',')[0]
+Out[8]: '1.1.1.1'
+
+In [9]: aa.split('の')[0]
+Out[9]: '20'
+
+In [10]: aa.split('の')[3]
+Out[10]: '10.128.193.254'
+
+In [11]: aa.split('の')[5]
+Out[11]: '/getxmamount.htm'
+
+In [12]: aa.split('の')[8]
+Out[12]: '200'
+
+In [13]: aa.split('の')[10]
+Out[13]: 'http://www.2222k8.net/ordinaryapplyxm.htm'
