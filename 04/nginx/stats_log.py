@@ -2,7 +2,6 @@
 # *-* coding:utf-8 *-*
 
 
-## import module
 import re
 import os
 import sys
@@ -27,7 +26,6 @@ backupdir = '/opt/domaincount/' + beforedate
 tmpfile = backupdir + '/' + 'nimei2.txt'
 
 
-## 获取需要统计的文件
 def getfile():
      #subprocess.Popen("mkdir -p " + backupdir, shell=True)
      if not os.path.exists(backupdir):
@@ -92,7 +90,38 @@ def treatfile(log_path = tmpfile):
             ## s.strip()去除首尾字符,默认是空格;语法: str.strip([chars]) chars:移除字符串头尾指定的字符
             ## 测试发现该函数的作用是去除字符串两端多余的whitespace,whitespace应该是空格,Tab和换行的统称,而不仅仅是空格
             ## 如果是空行,则为Fasle不成立
+
+                #if domain not in statistics:
+                #    statistics[domain] = 1
+                #else:
+                #    statistics[domain] += 1
+
             if line.strip():
+
+                ## product
+                try:
+                    product = line.split('の')[0]
+                except IndexError,e:
+                    continue
+
+                ## type
+                try:
+                    type = line.split('の')[1]
+                except IndexError,e:
+                    continue
+
+                ## client ip
+                try:
+                    cip = line.split('の')[2].split(',')[0]
+                except IndexError,e:
+                    continue
+
+                ## LB ip
+                try:
+                    lbip = line.split('の')[3]
+                except IndexError,e:
+                    continue
+
                 ## client access domain
                 try:
                     domain = line.split('の')[4]
@@ -100,40 +129,100 @@ def treatfile(log_path = tmpfile):
                     #print "error: domain %s" % e
                     continue
 
-                ## client ip
+                ## client access uri
                 try:
-                    cip = line.split('の')[2].split(',')[0]
+                    uri = line.split('の')[5]
                 except IndexError,e:
-                    #print "error: domain %s" % e
+                    continue
+                  
+                ## client access time
+                try:
+                    #time2 = line.split('の')[6]
+                    time2 = line.split('の')[23].split('T')[0]
+                except IndexError,e:
+                    continue
+                
+                ## http method 
+                try:
+                    method = line.split('の')[7]
+                except IndexError,e:
+                    continue
+
+                ## http status 
+                try:
+                    status = line.split('の')[8]
+                except IndexError,e:
+                    continue
+
+                ## http referer 
+                try:
+                    referer = line.split('の')[10]
+                except IndexError,e:
+                    continue
+
+                ## country 
+                try:
+                    country = line.split('の')[35]
+                except IndexError,e:
+                    continue
+
+                ## capital 
+                try:
+                    capital = line.split('の')[37]
+                except IndexError,e:
+                    continue
+
+                ## state 
+                try:
+                    state = line.split('の')[38]
+                except IndexError,e:
                     continue
 
 
+                tup = (domain,product,type,cip,lbip,status,time2,uri,method,referer,country,capital,state)
+                statistics[tup] = statistics.get(tup,0) + 1
 
-                statistics[domain] = statistics.get((domain),0) + 1
+		## html
+		html_head = "<table border='1'>"
 
-                #if domain not in statistics:
-                #    statistics[domain] = 1
-                #else:
-                #    statistics[domain] += 1
+		html_body = '''
+			       <tr>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+			       </tr>
+			   '''
+
+		html_end = '</table>'
+
+
+		html = html_head + html_body % ('domain','product','type','cip','lbip','status','time2','uri','method','referer','country','capital','state','count')
 
         ## 删除字典中key值是-的元素
         if '-' in statistics.keys():
             del statistics['-']
 
-        print sorted(statistics.items(), key=lambda x:x[1], reverse=True)[0:36]
+        list2 = sorted(statistics.items(), key=lambda x:x[1], reverse=True)[0:72]
 
-            ## 获取client acces url
-            #url = line.split('の')[5]
-            #print url
+        for i in list2:
+            html = html + html_body % (i[0][0],i[0][1],i[0][2],i[0][3],i[0][4],i[0][5],i[0][6],i[0][7],i[0][8],i[0][9],i[0][10],i[0][11],i[0][12],i[0][13],i[1])
 
-
-            #if ip not in statistics:
-            #    statistics[ip] = {url:1}
-            #else:
-            #    if url not in statistics[ip]:
-            #        statistics[ip][url] = 1
-            #    else:
-            #        statistics[ip][url] += 1
+        html = html + html_end 
+        
+        ## write html to stat.html
+        with open('stat.html','w') as f: f.write(html)
+        
 
 
     ### re.search()
