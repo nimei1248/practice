@@ -462,7 +462,7 @@
 #
 #print '-' * 40
 #
-### 关键字参数
+### 关键字参数  定义的时候是给默认值,调用的时候与位置无关
 #print hello(name='nimei',job='python')
 #print hello(job='python',name='nimei')
 #print hello(job='xxx')
@@ -617,36 +617,81 @@
 
 ## 上面方法定义2个函数，再定义一个函数包装它们，但代码重合太多，因为它们的差异在于比较的条件if不同,其它均相同
 
-list2 = [['192.168.1.1',10], ['192.168.2.1',2], ['192.168.3.1',6]]
-dict2 = [{'ip':'192.168.1.1', 'count':10}, {'ip':'192.168.2.1', 'count':2}, {'ip':'192.168.3.1', 'count':6}]
+#list2 = [['192.168.1.1',10], ['192.168.2.1',2], ['192.168.3.1',6]]
+#dict2 = [{'ip':'192.168.1.1', 'count':10}, {'ip':'192.168.2.1', 'count':2}, {'ip':'192.168.3.1', 'count':6}]
+#
+#def my_sort(tuple2, fn):
+#    print type(tuple2)
+#    count = len(tuple2)
+#    for i in range(0, count):
+#        for j in range(i + 1, count):
+#            #if tuple2[i][1] > tuple2[j][1]
+#            #if tuple2[i]['count'] > tuple2[j]['count']
+#            if fn(tuple2[i]) > fn(tuple2[j]):
+#                tuple2[i], tuple2[j] = tuple2[j], tuple2[i]
+#
+#    return tuple2
+#
+#def get_key_from_list(o):  ## o == tuple2[i]
+#    return o[1]
+#    return tuple2[i][1]
+#
+#def get_key_from_dict(o):
+#    return o['count']
+#    return tuple2[i]['count']
+#
+#print my_sort(list2, get_key_from_list)
+#print my_sort(dict2, get_key_from_dict)
+#
+#
+### lambda 匿名函数 适合简单 只有一行return的语句 自动retrun，无需写return语句
+## lambda 参数1,参数2,...: 返回值   ## 其实就是一个函数
+#print my_sort(list2, lambda o:o[1])
+#print my_sort(dict2, lambda o:o['count'])
+#
+#
+### 排序函数 54:00
+#
+#hello = lambda x:('hello ' + x)
+#print hello
+#print hello('world')
 
-def my_sort(tuple2, fn):
-    print type(tuple2)
-    count = len(tuple2)
-    for i in range(0, count):
-        for j in range(i + 1, count):
-            #if tuple2[i][1] > tuple2[j][1]
-            #if tuple2[i]['count'] > tuple2[j]['count']
-            if fn(tuple2[i]) > fn(tuple2[j]):
-                tuple2[i], tuple2[j] = tuple2[j], tuple2[i]
-
-    return tuple2
-
-def get_key_from_list(o):  ## o == tuple2[i]
-    return o[1]
-    return tuple2[i][1]
-
-def get_key_from_dict(o):
-    return o['count']
-    return tuple2[i]['count']
-
-print my_sort(list2, get_key_from_list)
-print my_sort(dict2, get_key_from_dict)
 
 
-## lambda
-print my_sort(list2, lambda o:o[1])
-print my_sort(dict2, lambda o:o['count'])
+def statistics_file(file_name):
+    res_dict = {}
+    with open(file_name) as f:
+        for line in f:
+            if line == '\n':
+               continue
+            temp = line.split()
+
+            ## 思路1
+            tup = (temp[0], temp[8])
+            res_dict[tup] = res_dict.get(tup, 0) + 1
+    return res_dict
+
+def generate_html(res_list):
+    html_str = '<table border="1">'
+    tr_tmpl = '<tr><td>%s</td><td>%s</td><td>%s</td></tr>'
+    html_str += tr_tmpl % ('IP', 'status', 'count')
+
+    for (ip, status),count in res_list[-10:]:
+        html_str += tr_tmpl % (ip,status,count)
+    html_str += '</table>'
+
+    with open('res.html','w') as html_f:
+        html_f.write(html_str)
+
+res_dict = statistics_file('log.log')
+print res_dict
+#res_list = sorted(res_dict.items(), key=lambda x:x[1])  ## 正序
+res_list = sorted(res_dict.items(), key=lambda x:x[1], reverse=True)[0:10]  ## 倒序  对dict进行排序
+generate_html(res_list)
 
 
-## 排序函数 54:00
+## 以前写脚本都是过程式,一个脚本文件完成一个特定功能
+## 讲过程式的代码拆分为可以复用的函数是一个阶段
+## 掌握oop的思想是另一个阶段
+
+39:51
