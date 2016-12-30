@@ -2,6 +2,7 @@
 # *-* coding:utf-8 *-*
 
 
+## import module
 import re
 import os
 import sys
@@ -26,6 +27,7 @@ import struct
 #tmpfile = backupdir + '/' + 'nimei2.txt'
 
 
+## 获取需要统计的文件
 def getfile():
      before = datetime.datetime.now() - datetime.timedelta(days=1)
      beforedate = before.strftime("%Y-%m-%d")
@@ -95,16 +97,11 @@ def treatfile(log_path):
     statistics_d = {}
     statistics_d_m = {}
 
-    ## 统计两个字段,Domain and Uri
-    statistics_d_u = {}
-    statistics_d_u_m = {}
-
 
     with open(log_path,'r') as f:
         for line in f:
             ## s.strip()去除首尾字符,默认是空格;语法: str.strip([chars]) chars:移除字符串头尾指定的字符
-            ## 测试发现该函数的作用是去除字符串两端多余的whitespace,
-            ## whitespace应该是空格,Tab和换行的统称,而不仅仅是空格
+            ## 测试发现该函数的作用是去除字符串两端多余的whitespace,whitespace应该是空格,Tab和换行的统称,而不仅仅是空格
             ## 如果是空行,则为Fasle不成立
 
                 #if domain not in statistics:
@@ -145,6 +142,7 @@ def treatfile(log_path):
                     #print "error: domain %s" % e
                     continue
 
+<<<<<<< HEAD
                 ## client access uri
                 try:
                     Uri = line.split('の')[5]
@@ -161,14 +159,25 @@ def treatfile(log_path):
                 ## http method 
                 try:
                     Method = line.split('の')[7]
+=======
+                ## client ip
+                try:
+                    cip = line.split('の')[2].split(',')[0]
+>>>>>>> be43a17e78a4c18742a841a7a6dd9dd46fd12cf8
                 except IndexError,e:
                     continue
 
+<<<<<<< HEAD
                 ## http status 
                 try:
                     Status = line.split('の')[8]
                 except IndexError,e:
                     continue
+=======
+
+
+                statistics[domain] = statistics.get((domain),0) + 1
+>>>>>>> be43a17e78a4c18742a841a7a6dd9dd46fd12cf8
 
                 ## http referer 
                 try:
@@ -198,80 +207,51 @@ def treatfile(log_path):
                 ## 去除域名为'-',LB设备访问探测/手工访问的URI
                 if Domain == '-' or Uri == '/version.txt' or Uri == '/time.php':
                     continue
-
                 ## 单独统计手机域名m.开始域名
                 elif Domain.split('.')[0] == 'm':
-                    ## 统计手机版多个指标
                     tup_m = (Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri)
-                    statistics_m[tup_m] = statistics_m.get(tup_m,0) + 1
+                    statistics_m[tup_m] = statistics.get(tup_m,0) + 1
 
                     ## 定义一个只有1个元素的tuple,t = (1),定义的不是tuple，是1这个数！这是因为括号()既可以表示tuple,
-                    ## 又可以表示数学公式中的小括号,这就产生了歧义;
-                    ## 因此,Python规定,这种情况下,按小括号进行计算,计算结果自然是1
+                    ## 又可以表示数学公式中的小括号,这就产生了歧义;因此,Python规定,这种情况下,按小括号进行计算,计算结果自然是1
                     ## 所以,只有1个元素的tuple定义时必须加一个逗号,来消除歧义
-
-                    ## 统计手机版单个指标Domain
                     tup_d_m = (Domain,)
-                    statistics_d_m[tup_d_m] = statistics_d_m.get(tup_d_m,0) + 1
-
-                    ## 统计手机版指标Doamin and Uri
-                    tup_d_u_m = (Domain, Time, Uri)
-                    statistics_d_u_m[tup_d_u_m] = statistics_d_u_m.get(tup_d_u_m,0) + 1
-
-
+                    statistics_d_m[tup_d_m] = statistics.get(tup_d_m,0) + 1
                 ## 统计除手机域名m.外所有域名
                 else:
                     #tup = (domain,product,type,cip,lbip,status,time2,uri,method,referer,country,capital,state)
-                    ## 统计除手机版外,目前主要是PC多个指标
                     tup = (Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri)
                     statistics[tup] = statistics.get(tup,0) + 1
 
-                    ## 统计除手机版外,目前主要是PC单个指标Domain
                     tup_d = (Domain,)
-                    statistics_d[tup_d] = statistics_d.get(tup_d,0) + 1
-
-                    ## 统计除手机版外,目前主要是PC 指标 Domain and Uri
-                    tup_d_u = (Domain, Time, Uri)
-                    statistics_d_u[tup_d_u] = statistics_d_u.get(tup_d_u,0) + 1
+                    statistics_d[tup_d] = statistics.get(tup_d,0) + 1
 
 
         ### 删除字典中key值是-的元素
         #if '-' in statistics.keys():
         #    del statistics['-']
 
-
         ## dict convert list and sorted
-        ## mutil index
         dcl = sorted(statistics.items(), key=lambda x:x[1], reverse=True)[0:1000]
         dcl_m = sorted(statistics_m.items(), key=lambda x:x[1], reverse=True)[0:1000]
 
-        ## single index domain
         dcl_d = sorted(statistics_d.items(), key=lambda x:x[1], reverse=True)[0:1000]
         dcl_d_m = sorted(statistics_d_m.items(), key=lambda x:x[1], reverse=True)[0:1000]
-
-        ## two index Domain and Uri
-        dcl_d_u = sorted(statistics_d_u.items(), key=lambda x:x[1], reverse=True)[0:1000]
-        dcl_d_u_m = sorted(statistics_d_u_m.items(), key=lambda x:x[1], reverse=True)[0:1000]
 
 
 	## html
 	html_head = "<table border='3' bgcolor='LightGreen'>"
-	html_end = '</table>'
         
-        ## multi index
 	html_body = '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'
+
+	html_end = '</table>'
+
 	html = html_head + html_body % ('Count','Domain','Product','Type','Cip','LBip','Status','Time','Method','Country','Capital','State','Uri')
 	html_m = html_head + html_body % ('Count','Domain','Product','Type','Cip','LBip','Status','Time','Method','Country','Capital','State','Uri')
 
-        ## single index Domain
 	html_body_d = '<tr><td>%s</td><td>%s</td></tr>'
         html_d = html_head + html_body_d % ('Count','Domain')
         html_d_m = html_head + html_body_d % ('Count','Domain')
-
-        ## two index Domain and Uri
-	html_body_d_u = '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'
-        html_d_u = html_head + html_body_d_u % ('Count','Domain','Time','Uri')
-        html_d_u_m = html_head + html_body_d_u % ('Count','Domain','Time','Uri')
 
 
         #for d in dcl,dcl_m:
@@ -284,41 +264,26 @@ def treatfile(log_path):
 
         ## statistics, multi
         for (Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri),Count in dcl_m:
-               html_m = html_m + html_body % (Count,Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri)
+                html_m = html_m + html_body % (Count,Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri)
 
         html_m = html_m + html_end 
 
-
         for (Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri),Count in dcl:
-               html = html + html_body % (Count,Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri)
+                html = html + html_body % (Count,Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri)
 
         html = html + html_end 
         
 
-        ## statistics Domain, single
+        ## statistics domain, single
         for (Domain,),Count in dcl_d_m:
                 html_d_m = html_d_m + html_body_d % (Count,Domain)
 
         html_d_m = html_d_m + html_end 
 
-
         for (Domain,),Count in dcl_d:
                 html_d = html_d + html_body_d % (Count,Domain)
 
         html_d = html_d + html_end 
-
-
-        ## statistics Domain and Uri
-        for (Domain,Time,Uri),Count in dcl_d_u_m:
-                html_d_u_m = html_d_u_m + html_body_d_u % (Count,Domain,Time,Uri)
-
-        html_d_u_m = html_d_u_m + html_end 
-
-
-        for (Domain,Time,Uri),Count in dcl_d_u:
-                html_d_u = html_d_u + html_body_d_u % (Count,Domain,Time,Uri)
-
-        html_d_u = html_d_u + html_end 
 
 
         ## write html to stat.html
@@ -328,20 +293,12 @@ def treatfile(log_path):
         #    else:
         #        with open('stat.html','w') as f: f.write(html)
         
-
-        ## write multi index file
         with open('stat.html','w') as f: f.write(html)
         with open('stat_m.html','w') as f_m: f_m.write(html_m)
 
 
-        ## write single index Domain file
         with open('stat_d.html','w') as f_d: f_d.write(html_d)
         with open('stat_d_m.html','w') as f_d_m: f_d_m.write(html_d_m)
-
-
-        ## write two index Domain and Uri file
-        with open('stat_d_u.html','w') as f_d_u: f_d_u.write(html_d_u)
-        with open('stat_d_u_m.html','w') as f_d_u_m: f_d_u_m.write(html_d_u_m)
 
 
     ### re.search()
