@@ -86,15 +86,8 @@ def getip(ifname):
 
 
 def treatfile(log_path):
-
-    ## 统计当多个字段/指标同时成立时存放的dict, pc and mobile分别存放, mobile = m
     statistics = {}
     statistics_m = {}
-
-    ## 统计单个字段, 如,域名字段存放的dict, pc and mobile分别存放, domain = d, mobile = m
-    statistics_d = {}
-    statistics_d_m = {}
-
 
     with open(log_path,'r') as f:
         for line in f:
@@ -190,40 +183,24 @@ def treatfile(log_path):
                     continue
 
 
-                ## 去除域名为'-',LB设备访问探测/手工访问的URI
                 if Domain == '-' or Uri == '/version.txt' or Uri == '/time.php':
                     continue
-                ## 单独统计手机域名m.开始域名
                 elif Domain.split('.')[0] == 'm':
                     tup_m = (Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri)
                     statistics_m[tup_m] = statistics.get(tup_m,0) + 1
-
-                    ## 定义一个只有1个元素的tuple,t = (1),定义的不是tuple，是1这个数！这是因为括号()既可以表示tuple,
-                    ## 又可以表示数学公式中的小括号,这就产生了歧义;因此,Python规定,这种情况下,按小括号进行计算,计算结果自然是1
-                    ## 所以,只有1个元素的tuple定义时必须加一个逗号,来消除歧义
-                    tup_d_m = (Domain,)
-                    statistics_d_m[tup_d_m] = statistics.get(tup_d_m,0) + 1
-                ## 统计除手机域名m.外所有域名
                 else:
                     #tup = (domain,product,type,cip,lbip,status,time2,uri,method,referer,country,capital,state)
                     tup = (Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri)
                     statistics[tup] = statistics.get(tup,0) + 1
-
-                    tup_d = (Domain,)
-                    statistics_d[tup_d] = statistics.get(tup_d,0) + 1
 
 
         ### 删除字典中key值是-的元素
         #if '-' in statistics.keys():
         #    del statistics['-']
 
-        ## dict convert list and sorted
+        ## dict convert list
         dcl = sorted(statistics.items(), key=lambda x:x[1], reverse=True)[0:1000]
         dcl_m = sorted(statistics_m.items(), key=lambda x:x[1], reverse=True)[0:1000]
-
-        dcl_d = sorted(statistics_d.items(), key=lambda x:x[1], reverse=True)[0:1000]
-        dcl_d_m = sorted(statistics_d_m.items(), key=lambda x:x[1], reverse=True)[0:1000]
-
 
 	## html
 	html_head = "<table border='3' bgcolor='LightGreen'>"
@@ -235,11 +212,6 @@ def treatfile(log_path):
 	html = html_head + html_body % ('Count','Domain','Product','Type','Cip','LBip','Status','Time','Method','Country','Capital','State','Uri')
 	html_m = html_head + html_body % ('Count','Domain','Product','Type','Cip','LBip','Status','Time','Method','Country','Capital','State','Uri')
 
-	html_body_d = '<tr><td>%s</td><td>%s</td></tr>'
-        html_d = html_head + html_body_d % ('Count','Domain')
-        html_d_m = html_head + html_body_d % ('Count','Domain')
-
-
         #for d in dcl,dcl_m:
         #    for (Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri),Count in d:
         #        if d == 'dcl_m':
@@ -248,7 +220,6 @@ def treatfile(log_path):
         #            html = html + html_body % (Count,Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri)
                     
 
-        ## statistics, multi
         for (Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri),Count in dcl_m:
                 html_m = html_m + html_body % (Count,Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri)
 
@@ -259,19 +230,6 @@ def treatfile(log_path):
 
         html = html + html_end 
         
-
-        ## statistics domain, single
-        for (Domain,),Count in dcl_d_m:
-                html_d_m = html_d_m + html_body_d % (Count,Domain)
-
-        html_d_m = html_d_m + html_end 
-
-        for (Domain,),Count in dcl_d:
-                html_d = html_d + html_body_d % (Count,Domain)
-
-        html_d = html_d + html_end 
-
-
         ## write html to stat.html
         #for h in html,html_m:
         #    if h == 'html_m':
@@ -281,11 +239,6 @@ def treatfile(log_path):
         
         with open('stat.html','w') as f: f.write(html)
         with open('stat_m.html','w') as f_m: f_m.write(html_m)
-
-
-        with open('stat_d.html','w') as f_d: f_d.write(html_d)
-        with open('stat_d_m.html','w') as f_d_m: f_d_m.write(html_d_m)
-
 
     ### re.search()
     #for k,v in old_result:
