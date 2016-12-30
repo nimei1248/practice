@@ -2,7 +2,6 @@
 # *-* coding:utf-8 *-*
 
 
-## import module
 import re
 import os
 import sys
@@ -19,22 +18,15 @@ import fcntl
 import struct
 
 
-### global var
-#before = datetime.datetime.now() - datetime.timedelta(days=1)
-#beforedate = before.strftime("%Y-%m-%d")
-#backupdir = '/opt/domaincount/' + beforedate
-##backupdir = '/opt/domaincount/' + (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-#tmpfile = backupdir + '/' + 'nimei2.txt'
+## global var
+before = datetime.datetime.now() - datetime.timedelta(days=1)
+beforedate = before.strftime("%Y-%m-%d")
+backupdir = '/opt/domaincount/' + beforedate
+#backupdir = '/opt/domaincount/' + (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+tmpfile = backupdir + '/' + 'nimei2.txt'
 
 
-## 获取需要统计的文件
 def getfile():
-     before = datetime.datetime.now() - datetime.timedelta(days=1)
-     beforedate = before.strftime("%Y-%m-%d")
-     backupdir = '/opt/domaincount/' + beforedate
-     tmpfile = backupdir + '/' + 'nimei2.txt'
-
-
      #subprocess.Popen("mkdir -p " + backupdir, shell=True)
      if not os.path.exists(backupdir):
          os.makedirs(backupdir)
@@ -60,7 +52,7 @@ def getfile():
 
      ## 将文件名和path拼接
      for f in log_name_multiple:
-         #print f
+         print f
          log_name = LOG_DIR + '/' + f
 
          ## 判断文件是否存在,存在后是否大于0
@@ -69,13 +61,14 @@ def getfile():
 
          if e and s:
              ## 处理源文件的备份文件
-             #print "cat " + log_name + ' >> ' + tmpfile
+             print "cat " + log_name + ' >> ' + tmpfile
              bakfile = "cat " + log_name + ' >> ' + tmpfile
              f3 = subprocess.Popen(bakfile, shell=True)
              f3.wait()
+         else:
+             #print log_name + ' file is not exists'
+             return 0
 
-         return tmpfile
-#getfile()
 
 ## 获取本机IP
 def getip(ifname):
@@ -87,16 +80,10 @@ def getip(ifname):
     )[20:24])
 
 
-def treatfile(log_path):
-
-    ## 统计当多个字段/指标同时成立时存放的dict, pc and mobile分别存放, mobile = m
+def treatfile(log_path = tmpfile):
     statistics = {}
-    statistics_m = {}
 
-    ## 统计单个字段, 如,域名字段存放的dict, pc and mobile分别存放, domain = d, mobile = m
-    statistics_d = {}
-    statistics_d_m = {}
-
+    new_statistics = {}
 
     with open(log_path,'r') as f:
         for line in f:
@@ -113,192 +100,129 @@ def treatfile(log_path):
 
                 ## product
                 try:
-                    Product = line.split('の')[0]
+                    product = line.split('の')[0]
                 except IndexError,e:
                     continue
 
                 ## type
                 try:
-                    Type = line.split('の')[1]
+                    type = line.split('の')[1]
                 except IndexError,e:
                     continue
 
                 ## client ip
                 try:
-                    Cip = line.split('の')[2].split(',')[0]
+                    cip = line.split('の')[2].split(',')[0]
                 except IndexError,e:
                     continue
 
                 ## LB ip
                 try:
-                    LBip = line.split('の')[3]
+                    lbip = line.split('の')[3]
                 except IndexError,e:
                     continue
 
                 ## client access domain
                 try:
-                    Domain = line.split('の')[4]
+                    domain = line.split('の')[4]
                 except IndexError,e:
                     #print "error: domain %s" % e
                     continue
 
-<<<<<<< HEAD
                 ## client access uri
                 try:
-                    Uri = line.split('の')[5]
+                    uri = line.split('の')[5]
                 except IndexError,e:
                     continue
                   
                 ## client access time
                 try:
-                    #Time = line.split('の')[6]
-                    Time = line.split('の')[23].split('T')[0]
+                    #time2 = line.split('の')[6]
+                    time2 = line.split('の')[23].split('T')[0]
                 except IndexError,e:
                     continue
                 
                 ## http method 
                 try:
-                    Method = line.split('の')[7]
-=======
-                ## client ip
-                try:
-                    cip = line.split('の')[2].split(',')[0]
->>>>>>> be43a17e78a4c18742a841a7a6dd9dd46fd12cf8
+                    method = line.split('の')[7]
                 except IndexError,e:
                     continue
 
-<<<<<<< HEAD
                 ## http status 
                 try:
-                    Status = line.split('の')[8]
+                    status = line.split('の')[8]
                 except IndexError,e:
                     continue
-=======
-
-
-                statistics[domain] = statistics.get((domain),0) + 1
->>>>>>> be43a17e78a4c18742a841a7a6dd9dd46fd12cf8
 
                 ## http referer 
                 try:
-                    Referer = line.split('の')[10]
+                    referer = line.split('の')[10]
                 except IndexError,e:
                     continue
 
                 ## country 
                 try:
-                    Country = line.split('の')[35]
+                    country = line.split('の')[35]
                 except IndexError,e:
                     continue
 
                 ## capital 
                 try:
-                    Capital = line.split('の')[37]
+                    capital = line.split('の')[37]
                 except IndexError,e:
                     continue
 
                 ## state 
                 try:
-                    State = line.split('の')[38]
+                    state = line.split('の')[38]
                 except IndexError,e:
                     continue
 
 
-                ## 去除域名为'-',LB设备访问探测/手工访问的URI
-                if Domain == '-' or Uri == '/version.txt' or Uri == '/time.php':
-                    continue
-                ## 单独统计手机域名m.开始域名
-                elif Domain.split('.')[0] == 'm':
-                    tup_m = (Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri)
-                    statistics_m[tup_m] = statistics.get(tup_m,0) + 1
+                tup = (domain,product,type,cip,lbip,status,time2,uri,method,referer,country,capital,state)
+                statistics[tup] = statistics.get(tup,0) + 1
 
-                    ## 定义一个只有1个元素的tuple,t = (1),定义的不是tuple，是1这个数！这是因为括号()既可以表示tuple,
-                    ## 又可以表示数学公式中的小括号,这就产生了歧义;因此,Python规定,这种情况下,按小括号进行计算,计算结果自然是1
-                    ## 所以,只有1个元素的tuple定义时必须加一个逗号,来消除歧义
-                    tup_d_m = (Domain,)
-                    statistics_d_m[tup_d_m] = statistics.get(tup_d_m,0) + 1
-                ## 统计除手机域名m.外所有域名
-                else:
-                    #tup = (domain,product,type,cip,lbip,status,time2,uri,method,referer,country,capital,state)
-                    tup = (Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri)
-                    statistics[tup] = statistics.get(tup,0) + 1
+		## html
+		html_head = "<table border='1'>"
 
-                    tup_d = (Domain,)
-                    statistics_d[tup_d] = statistics.get(tup_d,0) + 1
+		html_body = '''
+			       <tr>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+				   <td>%s</td>
+			       </tr>
+			   '''
 
-
-        ### 删除字典中key值是-的元素
-        #if '-' in statistics.keys():
-        #    del statistics['-']
-
-        ## dict convert list and sorted
-        dcl = sorted(statistics.items(), key=lambda x:x[1], reverse=True)[0:1000]
-        dcl_m = sorted(statistics_m.items(), key=lambda x:x[1], reverse=True)[0:1000]
-
-        dcl_d = sorted(statistics_d.items(), key=lambda x:x[1], reverse=True)[0:1000]
-        dcl_d_m = sorted(statistics_d_m.items(), key=lambda x:x[1], reverse=True)[0:1000]
+		html_end = '</table>'
 
 
-	## html
-	html_head = "<table border='3' bgcolor='LightGreen'>"
-        
-	html_body = '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'
+		html = html_head + html_body % ('domain','product','type','cip','lbip','status','time2','uri','method','referer','country','capital','state','count')
 
-	html_end = '</table>'
+        ## 删除字典中key值是-的元素
+        if '-' in statistics.keys():
+            del statistics['-']
 
-	html = html_head + html_body % ('Count','Domain','Product','Type','Cip','LBip','Status','Time','Method','Country','Capital','State','Uri')
-	html_m = html_head + html_body % ('Count','Domain','Product','Type','Cip','LBip','Status','Time','Method','Country','Capital','State','Uri')
+        list2 = sorted(statistics.items(), key=lambda x:x[1], reverse=True)[0:72]
 
-	html_body_d = '<tr><td>%s</td><td>%s</td></tr>'
-        html_d = html_head + html_body_d % ('Count','Domain')
-        html_d_m = html_head + html_body_d % ('Count','Domain')
-
-
-        #for d in dcl,dcl_m:
-        #    for (Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri),Count in d:
-        #        if d == 'dcl_m':
-        #            html_m = html_m + html_body % (Count,Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri)
-        #        else:
-        #            html = html + html_body % (Count,Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri)
-                    
-
-        ## statistics, multi
-        for (Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri),Count in dcl_m:
-                html_m = html_m + html_body % (Count,Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri)
-
-        html_m = html_m + html_end 
-
-        for (Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri),Count in dcl:
-                html = html + html_body % (Count,Domain,Product,Type,Cip,LBip,Status,Time,Method,Country,Capital,State,Uri)
+        for i in list2:
+            html = html + html_body % (i[0][0],i[0][1],i[0][2],i[0][3],i[0][4],i[0][5],i[0][6],i[0][7],i[0][8],i[0][9],i[0][10],i[0][11],i[0][12],i[0][13],i[1])
 
         html = html + html_end 
         
-
-        ## statistics domain, single
-        for (Domain,),Count in dcl_d_m:
-                html_d_m = html_d_m + html_body_d % (Count,Domain)
-
-        html_d_m = html_d_m + html_end 
-
-        for (Domain,),Count in dcl_d:
-                html_d = html_d + html_body_d % (Count,Domain)
-
-        html_d = html_d + html_end 
-
-
         ## write html to stat.html
-        #for h in html,html_m:
-        #    if h == 'html_m':
-        #        with open('stat_m.html','w') as f_m: f_m.write(html_m)
-        #    else:
-        #        with open('stat.html','w') as f: f.write(html)
-        
         with open('stat.html','w') as f: f.write(html)
-        with open('stat_m.html','w') as f_m: f_m.write(html_m)
-
-
-        with open('stat_d.html','w') as f_d: f_d.write(html_d)
-        with open('stat_d_m.html','w') as f_d_m: f_d_m.write(html_d_m)
+        
 
 
     ### re.search()
@@ -349,7 +273,7 @@ def treatfile(log_path):
     #f.close()
 
 
-treatfile(getfile())
+treatfile()
 
 ### sendmail
 #def SendMail():
