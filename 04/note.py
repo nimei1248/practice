@@ -696,12 +696,23 @@
 #39:51
 
 
-def operator(name, fn):
-    return fn(name)
+#def operator(name, fn):
+#    return fn(name)
+#
+#def sayHello(name):
+#    return 'hello ' + name
+#
+#print operator('nimei', sayHello)
+#print operator('nimei_lambda', lambda x:('hello ' + x))
 
-def sayHello(name):
-    return 'hello ' + name
 
-print operator('nimei', sayHello)
-print operator('nimei_lambda', lambda x:('hello ' + x))
+#import time
+#time.sleep(1)  ## 暂停1s
 
+#作业:
+#1.统计结果用函数优化
+#2.获取内存对函数, 内存数据都在/proc/meminfo文件中
+#3.实战函数tail, 完成tail -f的功能
+
+
+1:3:30
