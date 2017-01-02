@@ -4,7 +4,7 @@
 #
 #1.打开文件，读取内容
 #    open文件，read或者直接遍历处理文件
-#    f ＝ open(‘log.log’)
+#    f ＝ open('log.log')
 #    f.read()  ## 读取所有内容        字符串
 #    f.readlines() ## 读取所有行      列表
 #    它们差别是字符串和列表的差别：
@@ -690,7 +690,7 @@
 
 
 ## 以前写脚本都是过程式,一个脚本文件完成一个特定功能
-## 讲过程式的代码拆分为可以复用的函数是一个阶段
+## 将过程式的代码拆分为可以复用的函数是一个阶段
 ## 掌握oop的思想是另一个阶段
 
 #39:51
@@ -715,4 +715,28 @@
 #3.实战函数tail, 完成tail -f的功能
 
 
-1:3:30
+#1:3:30
+#
+#html = html + "<tr><td>%s</td>%s<td>%s</td></tr>\n" % (ip,status,counts)
+#
+#text = """<DOCTYPE html>
+#<html>
+#<head>
+#     <meta charset="UTF-8">
+#     <title>nginx日志分析</title>
+#</head>
+#
+#<body>
+#     <table cellspacing="0" cellpadding="2" bordercolor="#000000" border="1">
+#            <tr><td>IP</td>STATUS<td>COUNT</td></tr>"
+#            %s
+#     </table>
+#</body>
+#</html>""" % html
+
+
+## 函数注释
+## @author nimei
+## @TODOO 待优化
+## @param file_name 文件名称
+## return 处理结果的dict
