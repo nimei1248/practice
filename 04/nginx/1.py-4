@@ -356,9 +356,9 @@ treatfile(getfile())
 #    HOST = "10.252.252.112"
 #    PORT = "25"
 #    SUBJECT = u"产品域名统计 from %s" % getip('eth0')
-#    TO = ["shaw@iv66.net"]
-#    FROM = "b2@iv66.net"
-#    CC = ["oliver@iv66.net","axe@iv66.net","jerry@iv66.net"]
+#    TO = ["shaw@abc.com"]
+#    FROM = "b2@abc.com"
+#    CC = ["oliver@abc.com","axe@abc.com","jerry@abc.com"]
 #
 #
 #    tolist = ','.join(TO)
