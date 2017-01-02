@@ -446,12 +446,12 @@ def treatfile(log_path):
 
 ## sendmail
 def SendMail():
-    HOST = "10.252.252.112"
+    HOST = "10.10.10.10"
     PORT = "25"
     SUBJECT = u"产品域名统计 from %s" % getip('eth0')
-    TO = ["shaw@abc.com"]
-    FROM = "b2@abc.com"
-    CC = ["oliver@abc.com","axe@abc.com","jerry@abc.com","richard@abc.com","lucas@abc.com","walt@abc.com"]
+    TO = ["aa@abc.com"]
+    FROM = "bb@abc.com"
+    CC = ["abc@abc.com"]
 
 
     tolist = ','.join(TO)

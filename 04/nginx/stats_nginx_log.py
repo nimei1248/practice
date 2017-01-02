@@ -446,11 +446,11 @@ def treatfile(log_path):
 
 ## sendmail
 def SendMail():
-    HOST = "10.252.252.112"
+    HOST = "10.10.10.10"
     PORT = "25"
     SUBJECT = u"产品域名统计 from %s" % getip('eth0')
     TO = ["aa@abc.com"]
-    FROM = "b2@abc.com"
+    FROM = "bb@abc.com"
     CC = ["abc@abc.com"]
 
 
