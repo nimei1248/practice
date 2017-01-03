@@ -367,19 +367,201 @@ mysql> desc emp;
 注意：change 和 modify 都可以修改表的定义，不同的是 change 后面需要写两次列名，不方便
 但是 change 的优点是可以修改列名称，modify 则不能
 
-1.change可以修改表的定义,必须要写两次列名 old_column new_column new_column定义  # alter table emp change age age1 int(4);
+a.change可以修改表的定义,必须要写两次列名 old_column new_column new_column定义
+mysql> desc emp;
++----------+---------------+------+-----+---------+-------+
+| Field    | Type          | Null | Key | Default | Extra |
++----------+---------------+------+-----+---------+-------+
+| ename    | varchar(20)   | YES  |     | NULL    |       |
+| hiredate | date          | YES  |     | NULL    |       |
+| sal      | decimal(10,2) | YES  |     | NULL    |       |
+| deptno   | int(2)        | YES  |     | NULL    |       |
+| age1     | int(4)        | YES  |     | NULL    |       |
++----------+---------------+------+-----+---------+-------+
+5 rows in set (0.00 sec)
 
-2.modify可以修改表的定义,必须要写一次列名 column_name column_name定义  # alter table emp modify ename varchar(20);
-3.change可以修改列名
+mysql> alter table emp change age1 age int(3);
+Query OK, 0 rows affected (0.02 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> desc emp;
++----------+---------------+------+-----+---------+-------+
+| Field    | Type          | Null | Key | Default | Extra |
++----------+---------------+------+-----+---------+-------+
+| ename    | varchar(20)   | YES  |     | NULL    |       |
+| hiredate | date          | YES  |     | NULL    |       |
+| sal      | decimal(10,2) | YES  |     | NULL    |       |
+| deptno   | int(2)        | YES  |     | NULL    |       |
+| age      | int(3)        | YES  |     | NULL    |       |
++----------+---------------+------+-----+---------+-------+
+5 rows in set (0.00 sec)
+
+
+b.modify可以修改表的定义,必须要写一次列名 column_name column_name定义
+mysql> desc emp;
++----------+---------------+------+-----+---------+-------+
+| Field    | Type          | Null | Key | Default | Extra |
++----------+---------------+------+-----+---------+-------+
+| ename    | varchar(20)   | YES  |     | NULL    |       |
+| hiredate | date          | YES  |     | NULL    |       |
+| sal      | decimal(10,2) | YES  |     | NULL    |       |
+| deptno   | int(2)        | YES  |     | NULL    |       |
+| age      | int(3)        | YES  |     | NULL    |       |
++----------+---------------+------+-----+---------+-------+
+5 rows in set (0.00 sec)
+
+mysql> alter table emp modify age int(4);           
+Query OK, 0 rows affected (0.01 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> desc emp;
++----------+---------------+------+-----+---------+-------+
+| Field    | Type          | Null | Key | Default | Extra |
++----------+---------------+------+-----+---------+-------+
+| ename    | varchar(20)   | YES  |     | NULL    |       |
+| hiredate | date          | YES  |     | NULL    |       |
+| sal      | decimal(10,2) | YES  |     | NULL    |       |
+| deptno   | int(2)        | YES  |     | NULL    |       |
+| age      | int(4)        | YES  |     | NULL    |       |
++----------+---------------+------+-----+---------+-------+
+5 rows in set (0.00 sec)
+
+
+
+c.change可以修改列名
 mysql> alter table emp change ename2 ename varchar(20);      
 Query OK, 0 rows affected (0.02 sec)
 Records: 0  Duplicates: 0  Warnings: 0
 
-4.modify不可以修改列名
+
+d.modify不可以修改列名
 mysql> alter table emp modify ename2 ename;
 ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'ename' at line 1
 
 mysql> alter table emp modify ename2 ename varchar(20);
 ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'ename varchar(20)' at line 1
+
+
+
+5) 修改字段排列顺序
+
+
+mysql> desc emp;
++----------+---------------+------+-----+---------+-------+
+| Field    | Type          | Null | Key | Default | Extra |
++----------+---------------+------+-----+---------+-------+
+| ename    | varchar(20)   | YES  |     | NULL    |       |
+| hiredate | date          | YES  |     | NULL    |       |
+| sal      | decimal(10,2) | YES  |     | NULL    |       |
+| deptno   | int(2)        | YES  |     | NULL    |       |
+| age      | int(4)        | YES  |     | NULL    |       |
++----------+---------------+------+-----+---------+-------+
+5 rows in set (0.00 sec)
+
+使用change方式修改字段age的属性,modify修改字段的属性较优
+mysql> alter table emp change age age int(3);
+Query OK, 0 rows affected (0.01 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> desc emp;
++----------+---------------+------+-----+---------+-------+
+| Field    | Type          | Null | Key | Default | Extra |
++----------+---------------+------+-----+---------+-------+
+| ename    | varchar(20)   | YES  |     | NULL    |       |
+| hiredate | date          | YES  |     | NULL    |       |
+| sal      | decimal(10,2) | YES  |     | NULL    |       |
+| deptno   | int(2)        | YES  |     | NULL    |       |
+| age      | int(3)        | YES  |     | NULL    |       |
++----------+---------------+------+-----+---------+-------+
+5 rows in set (0.00 sec)
+
+
+添加一个字段birth放在ename字段后面
+mysql> alter table emp add birth date after ename;
+Query OK, 0 rows affected (0.04 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> desc emp;
++----------+---------------+------+-----+---------+-------+
+| Field    | Type          | Null | Key | Default | Extra |
++----------+---------------+------+-----+---------+-------+
+| ename    | varchar(20)   | YES  |     | NULL    |       |
+| birth    | date          | YES  |     | NULL    |       |
+| hiredate | date          | YES  |     | NULL    |       |
+| sal      | decimal(10,2) | YES  |     | NULL    |       |
+| deptno   | int(2)        | YES  |     | NULL    |       |
+| age      | int(3)        | YES  |     | NULL    |       |
++----------+---------------+------+-----+---------+-------+
+6 rows in set (0.00 sec)
+
+
+使用modify方式,将age字段放在最前面
+mysql> alter table emp modify age int(3) first;
+Query OK, 0 rows affected (0.04 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> desc emp;
++----------+---------------+------+-----+---------+-------+
+| Field    | Type          | Null | Key | Default | Extra |
++----------+---------------+------+-----+---------+-------+
+| age      | int(3)        | YES  |     | NULL    |       |
+| ename    | varchar(20)   | YES  |     | NULL    |       |
+| birth    | date          | YES  |     | NULL    |       |
+| hiredate | date          | YES  |     | NULL    |       |
+| sal      | decimal(10,2) | YES  |     | NULL    |       |
+| deptno   | int(2)        | YES  |     | NULL    |       |
++----------+---------------+------+-----+---------+-------+
+6 rows in set (0.00 sec)
+
+
+使用change方式,将deptno字段放在最前面
+mysql> alter table emp change deptno deptno int(2) first;              
+Query OK, 0 rows affected (0.03 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> desc emp;
++----------+---------------+------+-----+---------+-------+
+| Field    | Type          | Null | Key | Default | Extra |
++----------+---------------+------+-----+---------+-------+
+| deptno   | int(2)        | YES  |     | NULL    |       |
+| age      | int(3)        | YES  |     | NULL    |       |
+| ename    | varchar(20)   | YES  |     | NULL    |       |
+| birth    | date          | YES  |     | NULL    |       |
+| hiredate | date          | YES  |     | NULL    |       |
+| sal      | decimal(10,2) | YES  |     | NULL    |       |
++----------+---------------+------+-----+---------+-------+
+6 rows in set (0.00 sec)
+注意: change/first|after column这些关键字都属于mysql在标准sql上的扩展,在其它数据库上不一定适用
+
+
+6) 表改名
+语法:
+ALTER TABLE tablename RENAME [TO] new_tablename
+
+mysql> alter table emp rename emp1;
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> show tables;
++-----------------+
+| Tables_in_test1 |
++-----------------+
+| emp1            |
++-----------------+
+1 row in set (0.00 sec)
+
+mysql> desc emp;
+ERROR 1146 (42S02): Table 'test1.emp' doesn't exist
+mysql> desc emp1;
++----------+---------------+------+-----+---------+-------+
+| Field    | Type          | Null | Key | Default | Extra |
++----------+---------------+------+-----+---------+-------+
+| deptno   | int(2)        | YES  |     | NULL    |       |
+| age      | int(3)        | YES  |     | NULL    |       |
+| ename    | varchar(20)   | YES  |     | NULL    |       |
+| birth    | date          | YES  |     | NULL    |       |
+| hiredate | date          | YES  |     | NULL    |       |
+| sal      | decimal(10,2) | YES  |     | NULL    |       |
++----------+---------------+------+-----+---------+-------+
+6 rows in set (0.01 sec)
 
 
