@@ -1,0 +1,64 @@
+http://database.51cto.com/art/201011/234443.htm
+
+MySQL左连接查询经验总结
+2010-11-23 10:34
+
+连接查询是我们使用MySQL数据库中最常用的查询方式之一，下文对左连接查询的使用经验进行了总结，供您参考学习。
+
+MySQL左连接查询是连接查询中的一种方式，下面就为您介绍MySQL左连接查询中的一些问题谈论，如果您感兴趣的话，不妨一看。
+
+我这里所说的主表是指在连接查询里MySQL以哪个表为主进行查询。比如说在MySQL左连接查询里，一般来说左表就是主表，但这只是经验之谈，很多时候经验主义是靠不住的，为了说明问题，先来个例子，建两个演示用的表categories和posts：
+
+CREATE TABLE IF NOT EXISTS `categories` (  
+`id` int(10) unsigned NOT NULL AUTO_INCREMENT,  
+`name` varchar(15) NOT NULL,  
+`created` datetime NOT NULL,  
+PRIMARY KEY (`id`),  
+KEY `name` (`name`)  
+);  
+ 
+CREATE TABLE IF NOT EXISTS `posts` (  
+`id` int(10) unsigned NOT NULL AUTO_INCREMENT,  
+`category_id` int(10) unsigned NOT NULL,  
+`title` varchar(100) NOT NULL,  
+`content` varchar(200) NOT NULL,  
+`created` datetime NOT NULL,  
+PRIMARY KEY (`id`),  
+KEY `category_id` (`category_id`),  
+KEY `created` (`created`),  
+KEY `category_id_created` (`category_id`, `created`)  
+);  
+ 
+先注意一下每个表的索引情况，以后会用到，记得随便插入一点测试数据，不用太多，但怎么也得两行以上，然后执行以下
+
+SQL：  
+ 
+EXPLAIN SELECT *  
+FROM posts  
+LEFT JOIN categories ON posts.category_id = categories.id  
+WHERE categories.name LIKE 'foobar%'  
+ORDER BY posts.created DESC  
+ 
+结果如下所示：
+
+table      key         Extra  
+categories name        Using where; Using temporary; Using filesort  
+posts      category_id  
+ 
+在join查询的explain的结果中，第一行表示的表就是主表。所以说在此查询里categories是主表，而在我们的经验里，LEFT JOIN查询里，左表（posts表）才应该是主表，这产生一个根本的矛盾，MySQL之所以这样处理，是因为在我们的WHERE部分，查询条件是按照categories表的字段来进行筛选的，且categories表刚好存在合适的索引，所以在查询时把categories表作为主表更有利于缩小结果集。
+
+那explain结果中的Using temporary; Using filesort又是为什么呢，为什么created或category_id_created索引无效呢？这是因为主表是categories表，从表是posts表，而我们使用从表的字段去ORDER BY，这通常不是一个好选择，最好改成主表字段。不过很多时候改不了，那就没招了。
+
+再看一个比较怪异的例子：
+
+EXPLAIN SELECT *  
+FROM posts  
+LEFT JOIN categories ON posts.category_id = categories.id  
+WHERE categories.id = ‘一个已经存在的ID’  
+ORDER BY posts.created DESC  
+ 
+这个例子里posts表仍然是从表，但是按照从表排序的结果却没有出现文件排序和临时表，这是因为已经确定了categories.id，所以主表相当于一个只有一行数据的常量表了，从表根据category_id_created索引在连接的同时自然就得到排序后的结果。但换个角度看，既然categories.id都是确定的了，那类似这样的需求，我们一般就不会再使用LEFT JOIN查询了，而会分成两个独立的查询去检索categories和posts才对。
+
+主观上一旦搞错了主表，可能怎么调整索引都得不到高效的SQL，所以在写SQL时，比如说在写MySQL左连接查询时，如果希望左表是主表，那么就要保证在WHERE语句里的查询条件尽可能多的使用左表字段，进而，一旦确定了主表，也最好只通过主表字段去ORDER BY
+
+注意：大多数情况下，使用从表字段去排序都是低效的，我最初的例子误导了大家，已更正

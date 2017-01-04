@@ -1,0 +1,248 @@
+http://blog.csdn.net/wyzxg/article/details/7276979
+
+深入浅出：MySQL的左连接、右连接、等值连接
+ 
+三种连接的语法
+为便于更多的技友快速读懂、理解，我们只讨论2张表对象进行连接操作的情况，大于2张表对象进行的连接操作原理也是一样的。
+ 
+1.左连接（LEFT JOIN ）
+SELECT M.columnname……,N.* columnname…..
+FROM left_table M LEFT JOIN right_table N ON M.columnname_join=N.columnname_join AND N.columnname=XXX
+WHERE M.columnname=XXX…..
+ 
+2.右连接（RIGHT JOIN）
+SELECT M.columnname……,N.* columnname…..
+FROM left_table M RIGHT JOIN right_table N ON M. columnname_join=N. columnname_join AND M. columnname=XXX
+WHERE N.columnname=XXX…..
+ 
+3.等值连接
+SELECT M.columnname……,N.* columnname…..
+FROM left_table M [INNER] JOIN right_table N ON M. columnname_join=N. columnname_join
+WHERE M.columnname=XXX….. AND N.columnname=XXX….
+或者
+SELECT M.columnname……,N.* columnname…..
+FROM left_table M  , right_table N
+WHERE M. columnname_join=N. columnname_join AND 
+M.columnname=XXX….. AND N.columnname=XXX….
+ 
+说明：
+ 
+A.左连接（LEFT JOIN ）
+ON字句连接条件，用于把2表中等值的记录连接在一起，但是不影响记录集的数量。若是表left_table中的某记录，无法在表right_table找到对应的记录，则此记录依然显示在记录集钟，只是表 right_table需要在查询显示的列的值用NULL替代；
+ 
+ON字句连接条件中表right_table.columnname=XXX用于控制right_table表是否有符合要求的列值还是用NULL替换的方式显示在查询列中，不影响记录集的数量；
+ 
+WHERE字句控制记录是否符合查询要求，不符合则过滤掉；
+ 
+简单点说，就是 “left_table.columnname_join=right_table.columnname_join”用于统计两个表的等值连接的记录集，on子句
+连接条件就是限制right_table的记录集大小，where子句的条件是限制最终结果集的大小。最终结果集的大小是显示“left_table“表的所有记录，和“left_table“匹配的”right_table“的记录显示”right_table“列值，不匹配的话，显示对应的”right_table“显示为null（最终结果集的大小是left_table刨除where条件的记录数）
+
+B.右连接（RIGHT JOIN）
+ON子句连接条件，用于把2表中等值的记录连接在一起，若是表right_table中的某记录，无法在表left_table找到对应的记录，则表 left_table需要在查询显示的列的值用NULL替代；
+ 
+ON子句连接条件中表left_table.columnname=XXX用于控制left_table表是否有符合要求的列值，还是用NULL替换的方式显示在查询列表中；
+ 
+WHERE字句控制记录是否符合查询要求，不符合则过滤掉；
+ 
+简单点说，就是 “left_table.columnname_join=right_table.columnname_join”用于统计两个表的等值连接的记录集，on子句
+连接条件就是限制left_table的记录集大小，where子句的条件是限制最终结果集的大小。最终结果集的大小是显示“right_table”表的所有记录，和“right_table“匹配的”left_table“的记录显示”left_table“列值，不匹配的话，显示对应的”left_table“显示为null（最终结果集的大小是left_table刨除where条件的记录数）
+
+C. 等值连接
+ON子句连接条件，不再与左连接或右连接的功效一样，除了作为2表记录匹配的条件外，还会起到过滤记录的作用，若left_table中记录无法在right_table中找到对应的记录，则会被过滤掉；
+ 
+ WHERE字句，不管是涉及表left_table、表right_table上的限制条件，还是涉及2表连接的条件，都会对记录集起到过滤作用，把不符合要求的记录刷选掉；
+
+ 
+测试数据：
+ 
+创建表
+mysql> CREATE TABLE left_table(ID INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    -> Username VARCHAR(40) NOT NULL,
+    -> Birthday DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
+    -> CityID     SMALLINT NOT NULL DEFAULT 0,
+    -> CreatDate  TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
+    -> AlterDate  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    -> PRIMARY KEY(ID),
+    -> KEY idx_username(Username)
+    -> )ENGINE=InnoDB CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
+Query OK, 0 rows affected (0.11 sec)
+ 
+mysql> 
+mysql> CREATE TABLE right_table(UID INT UNSIGNED NOT NULL ,
+    -> CollectNum MEDIUMINT NOT NULL DEFAULT 0,
+    -> BuyNum     MEDIUMINT NOT NULL DEFAULT 0,
+    -> SearchNum  MEDIUMINT NOT NULL DEFAULT 0,
+    -> CreatDate  TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
+    -> AlterDate  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    -> PRIMARY KEY(UID)
+    -> )ENGINE=InnoDB CHARACTER SET 'utf8' COLLATE 'utf8_general_ci';
+Query OK, 0 rows affected (0.00 sec)
+ 
+插入测试数据
+执行如下sql十次
+ INSERT INTO left_table(Username,Birthday,CityID,CreatDate,AlterDate)
+ VALUES(CONCAT(SUBSTRING(RAND(),3,8),'@qq.com'),DATE_ADD(NOW(),INTERVAL -SUBSTRING(RAND(),3,2) YEAR),SUBSTRING(RAND(),3,2),DATE_ADD(NOW(),INTERVAL -SUBSTRING(RAND(),3,3) DAY),DATE_ADD(NOW(),INTERVAL -SUBSTRING(RAND(),3,2) DAY));
+
+执行一次如下sql
+ INSERT INTO right_table
+ SELECT ID,SUBSTRING(RAND(),3,4) AS CollectNum,SUBSTRING(RAND(),3,2) AS BuyNum,SUBSTRING(RAND(),3,3) AS       SearchNum,CreatDate,AlterDate FROM left_table WHERE ID%5=1;
+查看基础数据：
+mysql> select * from right_table;
++-----+------------+--------+-----------+---------------------+---------------------+
+| UID | CollectNum | BuyNum | SearchNum | CreatDate           | AlterDate           |
++-----+------------+--------+-----------+---------------------+---------------------+
+|   1 |       2545 |     78 |       171 | 2010-01-13 17:42:37 | 2011-12-16 17:42:37 |
+|   6 |       4951 |     96 |       325 | 2009-11-28 17:42:55 | 2011-12-10 17:42:55 |
++-----+------------+--------+-----------+---------------------+---------------------+
+2 rows in set (0.00 sec)
+ 
+mysql> select * from left_table;
++----+-----------------+---------------------+--------+---------------------+---------------------+
+| ID | Username        | Birthday            | CityID | CreatDate           | AlterDate           |
++----+-----------------+---------------------+--------+---------------------+---------------------+
+|  1 | 27311524@qq.com | 1995-02-20 17:42:37 |      5 | 2010-01-13 17:42:37 | 2011-12-16 17:42:37 |
+|  2 | 01644610@qq.com | 2004-02-20 17:42:49 |     39 | 2010-03-02 17:42:49 | 2012-01-10 17:42:49 |
+|  3 | 89103050@qq.com | 1990-02-20 17:42:52 |     44 | 2010-08-28 17:42:52 | 2012-01-14 17:42:52 |
+|  4 | 27363743@qq.com | 1989-02-20 17:42:53 |     32 | 2009-07-09 17:42:53 | 2011-12-03 17:42:53 |
+|  5 | 09483603@qq.com | 2003-02-20 17:42:54 |     19 | 2010-03-25 17:42:54 | 2011-11-23 17:42:54 |
+|  6 | 38929060@qq.com | 1987-02-20 17:42:55 |     11 | 2009-11-28 17:42:55 | 2011-12-10 17:42:55 |
+|  7 | 15852433@qq.com | 1949-02-20 17:42:56 |     68 | 2010-09-17 17:42:56 | 2011-12-27 17:42:56 |
+|  8 | 22581017@qq.com | 1967-02-20 17:42:57 |     59 | 2010-06-18 17:42:57 | 2012-01-24 17:42:57 |
+|  9 | 54863339@qq.com | 1921-02-20 17:42:59 |     91 | 2009-11-23 17:42:59 | 2012-01-15 17:42:59 |
+| 10 | 36242195@qq.com | 1940-02-20 17:43:00 |     51 | 2011-01-09 17:43:00 | 2012-01-02 17:43:00 |
++----+-----------------+---------------------+--------+---------------------+---------------------+
+10 rows in set (0.00 sec)
+ 
+mysql> select m.id,m.username from left_table m where m.id<=6;
++----+-----------------+
+| id | username        |
++----+-----------------+
+|  1 | 27311524@qq.com | 
+|  2 | 01644610@qq.com | 
+|  3 | 89103050@qq.com | 
+|  4 | 27363743@qq.com | 
+|  5 | 09483603@qq.com | 
+|  6 | 38929060@qq.com | 
++----+-----------------+
+6 rows in set (0.02 sec)
+ 
+左连接(left join)
+ 
+编号：sql_1
+mysql> select m.id,m.username,n.CollectNum,n.BuyNum from left_table m left join right_table n on m.id=n.uid where m.id <=6;
++----+-----------------+------------+--------+
+| id | username        | CollectNum | BuyNum |
++----+-----------------+------------+--------+
+|  1 | 27311524@qq.com |       2545 |     78 |
+|  2 | 01644610@qq.com |       NULL |   NULL |
+|  3 | 89103050@qq.com |       NULL |   NULL |
+|  4 | 27363743@qq.com |       NULL |   NULL |
+|  5 | 09483603@qq.com |       NULL |   NULL |
+|  6 | 38929060@qq.com |       4951 |     96 |
++----+-----------------+------------+--------+
+6 rows in set (0.02 sec)
+ 
+编号：sql_2
+mysql> select m.id,m.username,n.CollectNum,n.BuyNum from left_table m left join right_table n on m.id=n.uid and  n.SearchNum>300 where m.id <=6;
++----+-----------------+------------+--------+
+| id | username        | CollectNum | BuyNum |
++----+-----------------+------------+--------+
+|  1 | 27311524@qq.com |       NULL |   NULL |
+|  2 | 01644610@qq.com |       NULL |   NULL |
+|  3 | 89103050@qq.com |       NULL |   NULL |
+|  4 | 27363743@qq.com |       NULL |   NULL |
+|  5 | 09483603@qq.com |       NULL |   NULL |
+|  6 | 38929060@qq.com |       4951 |     96 |
++----+-----------------+------------+--------+
+6 rows in set (0.00 sec)
+ 
+sql_1和sql_2对比
+1.两个结果集的记录数是一样的，left_table显示的列值是一样的
+2.两个结果集中right_table相应列值是不一样的
+ 
+为什么会不一样呢？
+两个记录集的记录数是一样的，那是因为两个sql的where条件是一样，即最终的结果集的数量就会一样，right_table相应的列值不一样那是因为在on的条件中sql_2过滤掉了right_table的符合条件的记录。
+
+右连接也就类似了，下面说下等值连接。
+ 
+带join的等值连接
+mysql> select m.id,m.username,n.CollectNum,n.BuyNum
+    -> from left_table m inner join right_table n on m.id=n.uid
+    -> where m.id<=6;
++----+-----------------+------------+--------+
+| id | username        | CollectNum | BuyNum |
++----+-----------------+------------+--------+
+|  1 | 27311524@qq.com |       2545 |     78 |
+|  6 | 38929060@qq.com |       4951 |     96 |
++----+-----------------+------------+--------+
+2 rows in set (0.00 sec)
+
+mysql> select m.id,m.username,n.CollectNum,n.BuyNum from left_table m inner join right_table n on m.id=n.uid and n.SearchNum >300 where m.id<=6;
++----+-----------------+------------+--------+
+| id | username        | CollectNum | BuyNum |
++----+-----------------+------------+--------+
+|  6 | 38929060@qq.com |       4951 |     96 |
++----+-----------------+------------+--------+
+1 row in set (0.01 sec)
+ 
+从上面的可以看到，这里的on有了过滤最终结果集的大小的作用了
+ 
+不带join的等值连接（这种方式我用着比较舒服，因为一直用Oracle的）
+mysql> select m.id,m.username,n.CollectNum,n.BuyNum
+    -> from left_table m,right_table n
+    -> where m.id=n.uid and m.id<=6;
++----+-----------------+------------+--------+
+| id | username        | CollectNum | BuyNum |
++----+-----------------+------------+--------+
+|  1 | 27311524@qq.com |       2545 |     78 |
+|  6 | 38929060@qq.com |       4951 |     96 |
++----+-----------------+------------+--------+
+2 rows in set (0.00 sec)
+mysql>
+ 
+常见错误用法的左连接
+ 
+1.错把限制表right_table的条件，从ON子句中放到WHERE字句中，这样就会影响最终记录集大小
+mysql> select m.id,m.username,n.CollectNum,n.BuyNum from left_table m left join right_table n on m.id=n.uid and  n.SearchNum>300 where m.id <=6;
++----+-----------------+------------+--------+
+| id | username        | CollectNum | BuyNum |
++----+-----------------+------------+--------+
+|  1 | 27311524@qq.com |       NULL |   NULL |
+|  2 | 01644610@qq.com |       NULL |   NULL |
+|  3 | 89103050@qq.com |       NULL |   NULL |
+|  4 | 27363743@qq.com |       NULL |   NULL |
+|  5 | 09483603@qq.com |       NULL |   NULL |
+|  6 | 38929060@qq.com |       4951 |     96 |
++----+-----------------+------------+--------+
+6 rows in set (0.00 sec)
+ 
+select m.id,m.username,n.CollectNum,n.BuyNum from left_table m ,right_table n where m.id=n.uid and  m.id <=6 and n.SearchNum > 300;
++----+-----------------+------------+--------+
+| id | username        | CollectNum | BuyNum |
++----+-----------------+------------+--------+
+|  6 | 38929060@qq.com |       4951 |     96 |
++----+-----------------+------------+--------+
+1 row in set (0.00 sec)
+ 
+
+2.错把限制表left_table或称影响最终记录集的条件，从WHERE子句中放到ON字句中，这样就相当于增大的最终结果集记录数
+select m.id,m.username,n.CollectNum,n.BuyNum from left_table m ,right_table n where m.id=n.uid and  m.id <=6 and n.SearchNum > 300;
++----+-----------------+------------+--------+
+| id | username        | CollectNum | BuyNum |
++----+-----------------+------------+--------+
+|  6 | 38929060@qq.com |       4951 |     96 |
++----+-----------------+------------+--------+
+1 row in set (0.00 sec)
+
+mysql> select m.id,m.username,n.CollectNum,n.BuyNum from left_table m left join right_table n on m.id=n.uid and  n.SearchNum>300 where m.id <=6;
++----+-----------------+------------+--------+
+| id | username        | CollectNum | BuyNum |
++----+-----------------+------------+--------+
+|  1 | 27311524@qq.com |       NULL |   NULL |
+|  2 | 01644610@qq.com |       NULL |   NULL |
+|  3 | 89103050@qq.com |       NULL |   NULL |
+|  4 | 27363743@qq.com |       NULL |   NULL |
+|  5 | 09483603@qq.com |       NULL |   NULL |
+|  6 | 38929060@qq.com |       4951 |     96 |
++----+-----------------+------------+--------+
+6 rows in set (0.00 sec)
