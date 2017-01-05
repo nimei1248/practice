@@ -398,4 +398,553 @@ mysql> select * from t1;
 
 下面的例子中，对测试表 t2 中的 bit 类型字段 id 做 insert 和 select 操作，这里重点观察一下
 select 的结果：
-64
+
+mysql> use test1;
+Database changed
+
+mysql> create table t2(id bit); 
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> desc t2;
++-------+--------+------+-----+---------+-------+
+| Field | Type   | Null | Key | Default | Extra |
++-------+--------+------+-----+---------+-------+
+| id    | bit(1) | YES  |     | NULL    |       |
++-------+--------+------+-----+---------+-------+
+1 row in set (0.00 sec)
+
+mysql> insert into t2 values(1); 
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from t2;
++------+
+| id   |
++------+
+|     |
++------+
+1 row in set (0.00 sec)
+
+
+可以发现,直接 select * 结果为 NULL。改用 bin()和 hex()函数再试试:
+
+
+mysql> select bin(id),hex(id) from t2; 
++---------+---------+
+| bin(id) | hex(id) |
++---------+---------+
+| 1       | 1       |
++---------+---------+
+1 row in set (0.00 sec)
+
+
+结果可以正常显示为二进制数字和十六进制数字
+
+数据插入 bit 类型字段时,首先将数据转换为二进制,如果位数允许,将成功插入;如果位数小于 实际定义的位数,则插入失败
+
+下面的例子中,在 t2 表插入数字 2,因为它的二进制码是 “10”,而 id 的定义是 bit(1),将无法进行插入:
+mysql> desc t2;
++-------+--------+------+-----+---------+-------+
+| Field | Type   | Null | Key | Default | Extra |
++-------+--------+------+-----+---------+-------+
+| id    | bit(1) | YES  |     | NULL    |       |
++-------+--------+------+-----+---------+-------+
+1 row in set (0.00 sec)
+
+mysql> insert into t2 values(2);
+ERROR 1406 (22001): Data too long for column 'id' at row 1
+mysql> 
+mysql> show warnings;
++-------+------+----------------------------------------+
+| Level | Code | Message                                |
++-------+------+----------------------------------------+
+| Error | 1406 | Data too long for column 'id' at row 1 |
++-------+------+----------------------------------------+
+1 row in set (0.00 sec)
+
+将 ID 定义修改为 bit(2)后,重新插入,插入成功:
+
+mysql> alter table t2 modify id bit(2);
+Query OK, 1 row affected (0.03 sec)
+Records: 1  Duplicates: 0  Warnings: 0
+
+mysql> desc t2;
++-------+--------+------+-----+---------+-------+
+| Field | Type   | Null | Key | Default | Extra |
++-------+--------+------+-----+---------+-------+
+| id    | bit(2) | YES  |     | NULL    |       |
++-------+--------+------+-----+---------+-------+
+1 row in set (0.00 sec)
+
+mysql> insert into t2 values(2);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select bin(id) from t2;
++---------+
+| bin(id) |
++---------+
+| 1       |
+| 10      |
++---------+
+2 rows in set (0.00 sec)
+
+
+mysql> select bin(id),hex(id) from t2;
++---------+---------+
+| bin(id) | hex(id) |
++---------+---------+
+| 1       | 1       |
+| 10      | 2       |
++---------+---------+
+2 rows in set (0.01 sec)
+
+
+
+
+3.2 日期时间类型
+MySQL 中有多种数据类型可以用于日期和时间的表示,不同的版本可能有所差异
+表 3-2 中 列出了 MySQL 5.0 中所支持的日期和时间类型。
+
+表 3-2 MySQL 中的日期和时间类型
+日期和时间类型  字节  最小值                  最大值
+DATE            4     1000-01-01              9999-12-31
+DATETIME        8     1000-01-01 00:00:00     9999-12-31 23:59:59
+TIMESTAMP       4     19700101080001          2038 年的某个时刻
+TIME            3     -838:59:59              838:59:59
+YEAR            1     1901                    2155
+
+
+这些数据类型的主要区别如下:
+ 如果要用来表示年月日,通常用 DATE 来表示
+ 如果要用来表示年月日时分秒,通常用 DATETIME 表示
+ 如果只用来表示时分秒,通常用 TIME 来表示
+ 如果需要经常插入或者更新日期为当前系统时间,则通常使用 TIMESTAMP 来表示
+      1.TIMESTAMP 值返回后显示为“YYYY-MM-DD HH:MM:SS”格式的字符串,显示宽度固定为19 个字符
+      2.如果想要获得数字值,应在 TIMESTAMP 列添加+0
+ 如果只是表示年份,可以用 YEAR 来表示,它比 DATE 占用更少的空间
+      1.YEAR 有 2 位或 4 位格式的年。默认是 4 位格式
+      2.在 4 位格式中,允许的值是 1901~2155 和 0000
+      3.在 2 位格式中,允许的值是 70~69,表示从 1970~2069 年
+      4.MySQL 以 YYYY 格式显示 YEAR值
+
+从表 3-2 中可以看出:
+    每种日期时间类型都有一个有效值范围,如果超出这个范围,在默认的 SQLMode 下,系统会进行错误提示,并将以零值来进行存储。     不同日期类型零值的 表示如表 3-3 所示:
+
+    表 3-3 MySQL 中日期和时间类型的零值表示
+    数据类型     零值表示
+    DATETIME     0000-00-00 00:00:00
+    DATE         0000-00-00
+    TIMESTAMP    00000000000000
+    TIME         00:00:00
+    YEAR         0000
+
+
+DATE、TIME 和 DATETIME 是最常使用的 3 种日期类型,以下例子在 3 种类型字段插入了相同的日期值,来看看它们的显示结果:
+
+首先创建表 t,字段分别为 date、time、datetime 三种日期类型:
+mysql> use test1;
+Database changed
+
+mysql> create table t(d date, t time, dt datetime);
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> desc t;
++-------+----------+------+-----+---------+-------+
+| Field | Type     | Null | Key | Default | Extra |
++-------+----------+------+-----+---------+-------+
+| d     | date     | YES  |     | NULL    |       |
+| t     | time     | YES  |     | NULL    |       |
+| dt    | datetime | YES  |     | NULL    |       |
++-------+----------+------+-----+---------+-------+
+3 rows in set (0.00 sec)
+
+用 now()函数插入当前日期:
+mysql> insert into t values(now(), now(), now());
+Query OK, 1 row affected, 1 warning (0.00 sec)
+
+
+查看结果:
+mysql> select * from t;
++------------+----------+---------------------+
+| d          | t        | dt                  |
++------------+----------+---------------------+
+| 2017-01-05 | 21:27:52 | 2017-01-05 21:27:52 |
++------------+----------+---------------------+
+1 row in set (0.00 sec)
+
+
+显而易见,DATETIME是DATE和TIME的组合,用户可以根据不同的需要,来选择不同的日期或时间类型以满足不同的应用。
+
+TIMESTAMP也用来表示日期,但是和DATETIME有所不同,后面的章节中会专门介绍。下例对TIMESTAMP类型的特性进行一些测试。
+创建测试表t,字段id1为TIMESTAMP类型:
+mysql> use test1;
+Database changed
+
+mysql> alter table t rename time_test;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> show tables;
++-----------------+
+| Tables_in_test1 |
++-----------------+
+| A1              |
+| A2              |
+| A3              |
+| dept            |
+| emp             |
+| t1              |
+| t2              |
+| time_test       |
++-----------------+
+8 rows in set (0.00 sec)
+
+mysql> create table t(id1 timestamp);
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> desc t;
++-------+-----------+------+-----+---------+-------+
+| Field | Type      | Null | Key | Default | Extra |
++-------+-----------+------+-----+---------+-------+
+| id1   | timestamp | YES  |     | NULL    |       |
++-------+-----------+------+-----+---------+-------+
+1 row in set (0.00 sec)
+
+可以发现,系统给 tm 自动创建了默认值 CURRENT_TIMESTAMP(系统日期)
+经测试发现Default默认值为NULL
+
+
+插入一个 NULL 值试试:
+mysql> insert into t values(null);
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select * from t;
++------+
+| id1  |
++------+
+| NULL |
++------+
+1 row in set (0.01 sec)
+
+
+果然,t中正确插入了系统日期。注意,MySQL只给表中的第一个TIMESTAMP字段设置 默认值为系统日期,如果有第二个TIMESTAMP类型,则默认值设置为0值,测试如下:
+经测试发现都是null
+
+mysql> alter table t add id2 timestamp;
+Query OK, 0 rows affected (0.06 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> desc t;
++-------+-----------+------+-----+---------+-------+
+| Field | Type      | Null | Key | Default | Extra |
++-------+-----------+------+-----+---------+-------+
+| id1   | timestamp | YES  |     | NULL    |       |
+| id2   | timestamp | YES  |     | NULL    |       |
++-------+-----------+------+-----+---------+-------+
+2 rows in set (0.00 sec)
+
+即使将timestamp类型的默认值改成CURRENT_TIMESTAMP,插入值时，也会显示null
+mysql> alter table t modify id1 timestamp default current_timestamp;
+Query OK, 0 rows affected (0.01 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> alter table t modify id2 timestamp default current_timestamp;
+Query OK, 0 rows affected (0.01 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> desc t;
++-------+-----------+------+-----+-------------------+-------+
+| Field | Type      | Null | Key | Default           | Extra |
++-------+-----------+------+-----+-------------------+-------+
+| id1   | timestamp | YES  |     | CURRENT_TIMESTAMP |       |
+| id2   | timestamp | YES  |     | CURRENT_TIMESTAMP |       |
++-------+-----------+------+-----+-------------------+-------+
+2 rows in set (0.00 sec)
+
+mysql> insert into t values(null,null);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from t;
++------+------+
+| id1  | id2  |
++------+------+
+| NULL | NULL |
++------+------+
+1 row in set (0.00 sec)
+
+mysql> insert into t values('2017-01-01 10:10:10',null);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from t;
++---------------------+------+
+| id1                 | id2  |
++---------------------+------+
+| NULL                | NULL |
+| 2017-01-01 10:10:10 | NULL |
++---------------------+------+
+2 rows in set (0.01 sec)
+
+
+
+
+TIMESTAMP还有一个重要特点,就是和时区相关:
+当插入日期时,会先转换为本地时区后存放;而从数据库里面取出时,也同样需要将日期转换为本地时区后显示
+这样,两个不同时区的用户看到的同一个日期可能是不一样的
+
+下面的例子演示了这个差别:
+
+(1)创建表t8,包含字段id1(TIMESTAMP)和id2(DATETIME),设置id2的目的是为了和id1做对比:
+mysql> use test1;
+Database changed
+mysql> create table t8(id1 timestamp not null default current_timestamp, id2 datetime default null);
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> desc t8;
++-------+-----------+------+-----+-------------------+-------+
+| Field | Type      | Null | Key | Default           | Extra |
++-------+-----------+------+-----+-------------------+-------+
+| id1   | timestamp | NO   |     | CURRENT_TIMESTAMP |       |
+| id2   | datetime  | YES  |     | NULL              |       |
++-------+-----------+------+-----+-------------------+-------+
+2 rows in set (0.00 sec)
+
+
+(2)查看当前时区:
+mysql> show variables like 'time_zone';
++---------------+--------+
+| Variable_name | Value  |
++---------------+--------+
+| time_zone     | SYSTEM |
++---------------+--------+
+1 row in set (0.00 sec)
+
+mysql> system date
+Thu Jan  5 22:27:04 HKT 2017
+可以发现,时区的值为“SYSTEM”,这个值默认是和主机的时区值一致的,因为我们本机是HK时区, 这里的“SYSTEM”实际是东八区(+8:00)
+
+
+(3)用 now()函数插入当前日期:
+mysql> insert into t8 values(now(),now());
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from t8;
++---------------------+---------------------+
+| id1                 | id2                 |
++---------------------+---------------------+
+| 2017-01-05 22:25:19 | 2017-01-05 22:25:19 |
++---------------------+---------------------+
+1 row in set (0.00 sec)
+
+结果显示 id1 和 id2 的值完全相同
+
+
+(4)修改mysql数据库的时区为东九区,再次查看表中日期:
+mysql> set time_zone='+9:00';          
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> show variables like 'time_zone';
++---------------+--------+
+| Variable_name | Value  |
++---------------+--------+
+| time_zone     | +09:00 |
++---------------+--------+
+1 row in set (0.01 sec)
+
+mysql> select * from t8;               
++---------------------+---------------------+
+| id1                 | id2                 |
++---------------------+---------------------+
+| 2017-01-05 23:25:19 | 2017-01-05 22:25:19 |
++---------------------+---------------------+
+1 row in set (0.00 sec)
+
+
+结果中可以发现,id1 的值比 id2 的值快了 1 个小时,也就是说,东九区的人看到的“2017-01-05 23:25:19”是当地时区的实际日期,也就是东八区的“2017-01-05 22:25:19”,如果还是以 “2017-01-05 22:25:19”理解时间必然导致误差
+
+
+TIMESTAMP的取值范围为19700101080001到2038年的某一天,因此它不适合存放比较久远的日期,下面简单测试一些这个范围:
+mysql> use test1;
+Database changed
+mysql> desc t;
++-------+-----------+------+-----+-------------------+-------+
+| Field | Type      | Null | Key | Default           | Extra |
++-------+-----------+------+-----+-------------------+-------+
+| id1   | timestamp | YES  |     | CURRENT_TIMESTAMP |       |
+| id2   | timestamp | YES  |     | CURRENT_TIMESTAMP |       |
++-------+-----------+------+-----+-------------------+-------+
+2 rows in set (0.00 sec)
+
+
+mysql> alter table t drop id2;  
+Query OK, 0 rows affected (0.06 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> desc t;
++-------+-----------+------+-----+-------------------+-------+
+| Field | Type      | Null | Key | Default           | Extra |
++-------+-----------+------+-----+-------------------+-------+
+| id1   | timestamp | YES  |     | CURRENT_TIMESTAMP |       |
++-------+-----------+------+-----+-------------------+-------+
+1 row in set (0.00 sec)
+
+mysql> delete from t;
+Query OK, 3 rows affected (0.01 sec)
+
+mysql> select * from t;
+Empty set (0.00 sec)
+
+mysql> insert into t values(19700101080001);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from t;                     
++---------------------+
+| id1                 |
++---------------------+
+| 1970-01-01 08:00:01 |
++---------------------+
+1 row in set (0.00 sec)
+
+
+
+mysql> insert into t values(19700101080000);
+ERROR 1292 (22007): Incorrect datetime value: '19700101080000' for column 'id1' at row 1
+mysql> 
+mysql> show warnings;                       
++-------+------+----------------------------------------------------------------------+
+| Level | Code | Message                                                              |
++-------+------+----------------------------------------------------------------------+
+| Error | 1292 | Incorrect datetime value: '19700101080000' for column 'id1' at row 1 |
++-------+------+----------------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql> select * from t;
++---------------------+
+| id1                 |
++---------------------+
+| 1970-01-01 08:00:01 |
++---------------------+
+1 row in set (0.00 sec)
+
+
+其中 19700101080000 超出了 tm 的下限,系统出现警告提示。查询一下,发现插入值变成 了 0 值。
+将测试发现，提示时间日期不正确，数据无法插入到表
+
+
+
+再来测试一下 TIMESTAMP 的上限值:
+mysql> insert into t values('2038-01-19 11:14:07');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from t;                            
++---------------------+
+| id1                 |
++---------------------+
+| 1970-01-01 08:00:01 |
+| 1970-01-01 08:00:01 |
+| 1970-01-01 08:00:02 |
+| 2038-01-19 11:14:07 |
++---------------------+
+4 rows in set (0.00 sec)
+
+mysql> insert into t values('2038-01-19 11:14:08');
+ERROR 1292 (22007): Incorrect datetime value: '2038-01-19 11:14:08' for column 'id1' at row 1
+
+
+从上面例子可以看出,TIMESTAMP和DATETIME的表示方法非常类似,区别主要有以下几点:
+ 1.TIMESTAMP支持的时间范围较小,其取值范围从19700101080001到2038年的某个时间,而DATETIME是从1000-01-01 00:00:00到9999-12-31 23:59:59,范围更大。
+
+ 2.表中的第一个TIMESTAMP列自动设置为系统时间。如果在一个TIMESTAMP列中插入 NULL,则该列值将自动设置为当前的日期和时间。在插入或更新一行但不明确给 TIMESTAMP列赋值时也会自动设置该列的值为当前的日期和时间,当插入的值超出 取值范围时,MySQL认为该值溢出,使用“0000-00-00 00:00:00”进行填补。
+
+  3.TIMESTAMP的插入和查询都受当地时区的影响,更能反应出实际的日期。而 DATETIME则只能反应出插入时当地的时区,其他时区的人查看数据必然会有误差的
+
+  4.TIMESTAMP的属性受MySQL版本和服务器SQLMode的影响很大,本章都是以MySQL 5.0为例进行介绍,在不同的版本下可以参考相应的MySQL帮助文档
+
+
+YEAR 类型主要用来表示年份,当应用只需要记录年份时,用 YEAR 比 DATE 将更节省空间
+下面的例子在表 t 中定义了一个 YEAR 类型字段,并插入一条记录:
+mysql> use test1;
+Database changed
+mysql> create table y(y year);
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> desc y;
++-------+---------+------+-----+---------+-------+
+| Field | Type    | Null | Key | Default | Extra |
++-------+---------+------+-----+---------+-------+
+| y     | year(4) | YES  |     | NULL    |       |
++-------+---------+------+-----+---------+-------+
+1 row in set (0.00 sec)
+
+mysql> select * from y;
++------+
+| y    |
++------+
+| 2100 |
++------+
+1 row in set (0.00 sec)
+
+
+MySQL 以 YYYY 格式检索和显示 YEAR 值,范围是1901~2155。当使用两位字符串表示 年份时,其范围为“00”到“99”
+ 1.“00”到“69”范围的值被转换为 2000~2069 范围的 YEAR 值
+  2.“70”到“99”范围的值被转换为 1970~1999 范围的 YEAR 值。
+
+细心的读者可能发现,在上面的例子中,日期类型的插入格式有很多,包括整数(如 2100)、字符串(如 2038-01-19 11:14:08)、函数(如 NOW())等,大家可能会感到疑惑,到底什么样的格式才能够正确地插入到对应的日期字段中呢?
+
+下面以 DATETIME 为例进行介绍:
+ YYYY-MM-DD HH:MM:SS 或 YY-MM-DD HH:MM:SS 格式的字符串
+  允许“不严格” 语法:任何标点符都可以用做日期部分或时间部分之间的间割符:
+  例如,“98-12-31 11:30:45”、“98.12.31 11+30+45”、“98/12/31 11*30*45”和“98@12@31 11^30^45” 是等价的
+  对于包括日期部分间割符的字符串值,如果日和月的值小于10,不需要指定两位数
+  “1979-6-9”与“1979-06-09”是相同的。
+
+  同样,对于包括时间部分间割符的字符串值,如果时、分和秒的值小于10,不需要指定两位数:
+  “1979-10-30 1:2:3”与“1979-10-30 01:02:03”相同
+ YYYYMMDDHHMMSS 或 YYMMDDHHMMSS 格式的没有间割符的字符串,假定字符串对于日期类型是有意义的。
+  例如,“19970523091528”和“970523091528”被解 释为“1997-05-23 09:15:28”,
+  但“971122129015”是不合法的(它有一个没有意 义的分钟部分),将变为“0000-00-00 00:00:00”
+
+ YYYYMMDDHHMMSS 或 YYMMDDHHMMSS 格式的数字,假定数字对于日期类型是有意义的:
+  例如,19830905132800 和 830905132800 被解释为“1983-09-05 13:28:00”
+  数字值应为 6、8、12 或者 14 位长。
+  如果一个数值是 8 或 14 位长,则假定为 YYYYMMDD 或 YYYYMMDDHHMMSS 格式,前 4 位数表示年
+  如果数字 是 6 或 12 位长,则假定为 YYMMDD 或 YYMMDDHHMMSS 格式,前 2 位数表示年
+  其他数字 被解释为仿佛用零填充到了最近的长度。
+ 
+  函数返回的结果,其值适合 DATETIME、DATE 或者 TIMESTAMP 上下文,例如 NOW() 或 CURRENT_DATE。
+  对于其他数据类型,其使用原则与上面的内容类似,限于篇幅,这里就不再赘述。
+  最后通过一个例子,说明如何采用不同的格式将日期“2007-9-3 12:10:10”插入到 DATETIME 列中:
+
+
+mysql> use test1;
+Database changed
+mysql> create table t6(dt datetime);
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> desc t6;
++-------+----------+------+-----+---------+-------+
+| Field | Type     | Null | Key | Default | Extra |
++-------+----------+------+-----+---------+-------+
+| dt    | datetime | YES  |     | NULL    |       |
++-------+----------+------+-----+---------+-------+
+1 row in set (0.00 sec)
+
+mysql> insert into t6 values('2017-01-05 23:59:59');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> insert into t6 values('2017/01/05 23+59+59');  
+Query OK, 1 row affected (0.01 sec)
+
+mysql> insert into t6 values('20170105235959');     
+Query OK, 1 row affected (0.00 sec)
+
+mysql> insert into t6 values(20170105235959);  
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select * from t6;
++---------------------+
+| dt                  |
++---------------------+
+| 2017-01-05 23:59:59 |
+| 2017-01-05 23:59:59 |
+| 2017-01-05 23:59:59 |
+| 2017-01-05 23:59:59 |
++---------------------+
+4 rows in set (0.00 sec)
