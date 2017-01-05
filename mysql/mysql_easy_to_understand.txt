@@ -1,3 +1,16 @@
+第2章 SQL基础
+
+
+2.1 SQL简介
+当面对一个陌生的数据库时,通常需要一种方式与它进行交互,以完成用户所需要的各种工作,这个时候,就要用到 SQL 语言了
+SQL 是 Structure Query Language（结构化查询语言）的缩写，它是使用关系模型的数据库应用语言，
+由 IBM 在 20 世纪 70 年代开发出来，作为 IBM 关系数据库原型 System R 的原型关系语言，实现了关系数据库中的信息检索
+
+20 世纪 80 年代初，美国国家标准局（ANSI）开始着手制定 SQL 标准，最早的 ANSI 标准于1986 年完成，就被叫作 SQL-86。
+标准的出台使 SQL 作为标准关系数据库语言的地位得到了加强。SQL 标准目前已几经修改更趋完善。
+正是由于 SQL 语言的标准化,所以大多数关系型数据库系统都支持 SQL 语言,它已经发展成为多种平台进行交互操作的底层会话语言
+
+
 2.2 (My)SQL 使用入门
 这里用了(My)SQL 这样的标题，目的是在介绍标准 SQL 的同时，也将一些 MySQL 在标准 SQL上的扩展一同介绍给大家
 希望读者看完本节后，能够对标准 SQL 的基本语法和 MySQL的部分扩展语法有所了解
@@ -1482,3 +1495,308 @@ Oracle Core Essential Internals for DBAs and Developers.pdf
 
 
 
+（6）子查询
+某些情况下，当我们查询的时候，需要的条件是另外一个 select 语句的结果，这个时候，就要用到子查询
+用于子查询的关键字主要包括 in、not in、=、!=、exists、not exists 等
+
+例如，从 emp 表中查询出所有部门在 dept 表中的所有记录：
+
+mysql> insert into dept values(3,'hr');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> insert into emp values('bzshen','2017-01-05',4000,3);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from emp;                                   
++--------+------------+---------+--------+
+| ename  | hiredate   | sal     | deptno |
++--------+------------+---------+--------+
+| zzx    | 2017-01-04 | 2000.00 |      1 |
+| lisa   | 2017-01-04 | 8000.00 |      2 |
+| bjguan | 2017-01-04 | 3000.00 |      1 |
+| dony   | 2015-01-01 | 2000.00 |      4 |
+| bzshen | 2017-01-05 | 4000.00 |      3 |
++--------+------------+---------+--------+
+5 rows in set (0.01 sec)
+
+mysql> select * from dept;
++--------+----------+
+| deptno | deptname |
++--------+----------+
+|      1 | tech     |
+|      2 | sale     |
+|      5 | fin      |
+|      3 | hr       |
++--------+----------+
+4 rows in set (0.00 sec)
+
+
+mysql> select deptno from dept;
++--------+
+| deptno |
++--------+
+|      1 |
+|      2 |
+|      5 |
+|      3 |
++--------+
+4 rows in set (0.00 sec)
+
+mysql> select * from emp where deptno in (select deptno from dept);
++--------+------------+---------+--------+
+| ename  | hiredate   | sal     | deptno |
++--------+------------+---------+--------+
+| zzx    | 2017-01-04 | 2000.00 |      1 |
+| lisa   | 2017-01-04 | 8000.00 |      2 |
+| bjguan | 2017-01-04 | 3000.00 |      1 |
+| bzshen | 2017-01-05 | 4000.00 |      3 |
++--------+------------+---------+--------+
+4 rows in set (0.01 sec)
+
+
+如果子查询记录数唯一，还可以用=代替 in：
+mysql> select * from emp where deptno = (select deptno from dept);  
+ERROR 1242 (21000): Subquery returns more than 1 row
+mysql> 
+mysql> select * from emp where deptno = (select deptno from dept limit 1);
++--------+------------+---------+--------+
+| ename  | hiredate   | sal     | deptno |
++--------+------------+---------+--------+
+| zzx    | 2017-01-04 | 2000.00 |      1 |
+| bjguan | 2017-01-04 | 3000.00 |      1 |
++--------+------------+---------+--------+
+2 rows in set (0.00 sec)
+
+
+某些情况下，子查询可以转化为表连接，例如：
+mysql> select * from emp where deptno in (select deptno from dept);         
++--------+------------+---------+--------+
+| ename  | hiredate   | sal     | deptno |
++--------+------------+---------+--------+
+| zzx    | 2017-01-04 | 2000.00 |      1 |
+| lisa   | 2017-01-04 | 8000.00 |      2 |
+| bjguan | 2017-01-04 | 3000.00 |      1 |
+| bzshen | 2017-01-05 | 4000.00 |      3 |
++--------+------------+---------+--------+
+4 rows in set (0.00 sec)
+
+
+转换为表连接后:
+mysql> select emp.* from emp,dept where emp.deptno=dept.deptno;
++--------+------------+---------+--------+
+| ename  | hiredate   | sal     | deptno |
++--------+------------+---------+--------+
+| zzx    | 2017-01-04 | 2000.00 |      1 |
+| lisa   | 2017-01-04 | 8000.00 |      2 |
+| bjguan | 2017-01-04 | 3000.00 |      1 |
+| bzshen | 2017-01-05 | 4000.00 |      3 |
++--------+------------+---------+--------+
+4 rows in set (0.01 sec)
+
+
+注意：子查询和表连接之间的转换主要应用在两个方面：
+     1.MySQL 4.1 以前的版本不支持子查询，需要用表连接来实现子查询的功能
+     2.表连接在很多情况下用于优化子查询
+
+
+（7）记录联合
+我们经常会碰到这样的应用，将两个表的数据按照一定的查询条件查询出来后，将结果合并到一起显示出来，这个时候，
+就需要用 union 和 union all 关键字来实现这样的功能
+语法如下：
+SELECT * FROM t1
+UNION|UNION ALL
+SELECT * FROM t2
+……
+UNION|UNION ALL
+SELECT * FROM tn;
+UNION 和 UNION ALL 的主要区别是 UNION ALL 是把结果集直接合并在一起，而 UNION 是将UNION ALL 后的结果进行一次 DISTINCT，去除重复记录后的结果
+
+
+来看下面例子，将 emp 和 dept 表中的部门编号的集合显示出来：
+mysql> select * from emp;
++--------+------------+---------+--------+
+| ename  | hiredate   | sal     | deptno |
++--------+------------+---------+--------+
+| zzx    | 2017-01-04 | 2000.00 |      1 |
+| lisa   | 2017-01-04 | 8000.00 |      2 |
+| bjguan | 2017-01-04 | 3000.00 |      1 |
+| dony   | 2015-01-01 | 2000.00 |      4 |
+| bzshen | 2017-01-05 | 4000.00 |      3 |
++--------+------------+---------+--------+
+5 rows in set (0.00 sec)
+
+mysql> select * from dept;
++--------+----------+
+| deptno | deptname |
++--------+----------+
+|      1 | tech     |
+|      2 | sale     |
+|      5 | fin      |
+|      3 | hr       |
++--------+----------+
+4 rows in set (0.00 sec)
+
+
+mysql> select deptno from emp union all select deptno from dept;
+mysql> select deptno from emp
+    -> union all
+    -> select deptno from dept;
++--------+
+| deptno |
++--------+
+|      1 |
+|      2 |
+|      1 |
+|      4 |
+|      3 |
+|      1 |
+|      2 |
+|      5 |
+|      3 |
++--------+
+9 rows in set (0.00 sec)
+
+
+如果希望将结果去掉重复记录后显示：
+mysql> select deptno from emp union select deptno from dept; 
++--------+
+| deptno |
++--------+
+|      1 |
+|      2 |
+|      4 |
+|      3 |
+|      5 |
++--------+
+5 rows in set (0.00 sec)
+
+
+
+2.2.4 DCL 语句
+DCL 语句主要是 DBA 用来管理系统中的对象权限时所使用，一般的开发人员很少使用
+下面通过一个例子来简单说明一下:
+
+创建一个数据库用户 z1，具有对 sakila 数据库中所有表的 SELECT/INSERT 权限
+mysql> create database sakila;
+Query OK, 1 row affected (0.01 sec)
+
+mysql> show databases;        
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sakila             |
+| sys                |
+| test               |
+| test1              |
++--------------------+
+7 rows in set (0.00 sec)
+
+mysql> grant select,insert on sakila.* to 'z1'@'localhost' identified by '123';
+Query OK, 0 rows affected, 2 warnings (0.02 sec)
+
+mysql> use sakila;
+Database changed
+
+mysql> create table emp(ename varchar(20), hiredate date, sal decimal(10,2), deptno int(2));
+Query OK, 0 rows affected (0.02 sec)
+
+
+
+$ mysql -uz1 -p123 -S /mysqldata/inst1/sock/mysql.sock
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| sakila             |
++--------------------+
+2 rows in set (0.00 sec)
+
+mysql> use sakila;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> insert into emp values('bzshen','2017-01-05',3000,'3');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from emp;
++--------+------------+---------+--------+
+| ename  | hiredate   | sal     | deptno |
++--------+------------+---------+--------+
+| bzshen | 2017-01-05 | 3000.00 |      3 |
++--------+------------+---------+--------+
+1 row in set (0.00 sec)
+
+
+
+由于权限变更，需要将 z1 的权限变更，收回 INSERT，只能对数据进行 SELECT 操作：
+$ mysql -uroot -p123 -S /mysqldata/inst1/sock/mysql.sock
+mysql> revoke insert on sakila.* from 'z1'@'localhost';
+Query OK, 0 rows affected, 1 warning (0.01 sec)
+
+
+用户 z1 重新登录后执行前面语句:
+如果不重新登录还是有权限insert
+mysql> insert into emp values('bzshen','2017-01-05',3000,'4');
+Query OK, 1 row affected (0.00 sec)
+
+
+$ mysql -uz1 -p123 -S /mysqldata/inst1/sock/mysql.sock
+mysql> use sakila;
+Database changed
+mysql> 
+mysql> insert into emp values('bzshen','2017-01-05',3000,'5');
+ERROR 1142 (42000): INSERT command denied to user 'z1'@'localhost' for table 'emp'
+
+以上例子中的 grant 和 revoke 分别授出和收回了用户 z1 的部分权限，达到了我们的目的。
+关于权限的更多内容，将会在第 4 篇中详细介绍
+
+
+2.3 帮助的使用
+在 MySQL 使用过程中，可能经常会遇到以下问题：
+ 某个操作语法忘记了，需要快速查找。
+ 当前版本上，某个字段类型我们想快速知道它的取值范围？
+ 当前版本上，都支持哪些函数？希望有例子能快速入门。
+ 当前版本上，是否支持某个功能？
+对于上面列出的各种问题，我们可能想到的办法是查找 MySQL 的文档。不错，这些问题在
+MySQL 官方文档中都可以很清楚地查到，但是却要耗费大量的时间和精力。
+所以对于以上问题，最好的解决办法是使用 MySQL 安装后自带的帮助文档，这样在遇到问
+题时就可以方便快捷地进行查询。
+2.3.1 按照层次看帮助
+如果不知道帮助能够提供些什么， 可以用 “？contents” 命令来显示所有可供查询的的分类，
+如下例所示：
+mysql> ? contents
+You asked for help about help category: "Contents"
+For more information, type 'help <item>', where <item> is one of the following
+categories:
+Account Management
+Administration
+...................................
+
+
+对于列出的分类，可以使用“? 类别名称”的方式针对用户感兴趣的内容做进一步的查看。
+例如，想看看 MySQL 中都支持哪些数据类型，可以执行“? data types”命令：
+mysql> ? data types
+You asked for help about help category: "Data Types"
+For more information, type 'help <item>', where <item> is one of the following
+topics:
+AUTO_INCREMENT
+BIGINT
+....................................
+
+
+2.3.3 常用的网络资源
+http://dev.mysql.com/downloads ## 是MySQL的官方网站,可以下载到各个版本的MySQL以及相关客户端开发工具等
+http://dev.mysql.com/doc  ## 提供了目前最权威的 MySQL 数据库及工具的在线手册
+http://bugs.mysql.com  ## 查看到 MySQL 已经发布的 bug 列表， 或者向 MySQL 提交 bug报告
+http://www.mysql.com/news-and-events/newsletter  ## 通常会发布各种关于 MySQL 的最新消息
+
+
+2.4 小结
+本章简单地介绍了 SQL 语句的基本分类 DML/DDL/DCL,并对每一种分类下的常用 SQL 的用法进行了举例说明
+MySQL 在标准 SQL 的基础上进行了很多扩展,本章对常用的一些语法做了简单介绍,更详细的说明,读者可以参考 MySQL 的帮助或者官方文档
+在本章的最后，还介绍了用户应如何使用 MySQL 中的帮助文档，以便快速查找各种语法定义

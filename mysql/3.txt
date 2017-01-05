@@ -1,0 +1,401 @@
+第3章 MySQL 支持的数据类型
+
+
+每一个常量，变量和参数都有数据类型，它用来指定一定的存储格式、约束和有效范围。
+MySQL 提供了多种数据类型， 主要包括数值型、 字符串类型、 日期和时间类型
+不同的 MySQL版本支持的数据类型可能会稍有不同， 用户可以通过查询相应版本的帮助文件来获得具体信息
+本章将以 MySQL 5.0 为例，详细介绍 MySQL 中的各种数据类型
+
+
+3.1 数值类型
+MySQL 支持所有标准 SQL 中的数值类型,其中包括严格数值类型(INTEGER、SMALLINT、DECIMAL 和 NUMERIC)以及近似数值数据类型(FLOAT、REAL 和 DOUBLE PRECISION),并在此基础上做了扩展
+扩展后增加了 TINYINT、MEDIUMINT 和 BIGINT 这 3 种长度不同的整型，并增加了 BIT 类型，用来存放位数据
+
+
+表 3-1 中列出了 MySQL 5.0 中支持的所有数值类型，其中 INT 是 INTEGER 的同名词，DEC 是 DECIMAL 的同名词
+
+MySQL 中的数值类型
+整数类型       字节    最小值				      最大值
+TINYINT        1       有符号-128 无符号 0		      有符号 127 无符号 255
+SMALLINT       2       有符号-32768 无符号 0		      有符号 32767 无符号 65535
+MEDIUMINT      3       有符号-8388608 无符号 0		      有符号 8388607 无符号 1677215
+INT、INTEGER   4       有符号-2147483648 无符号 0	      有符号 2147483647 无符号 4294967295
+BIGINT         8       有符号-9223372036854775808 无符号 0    有符号 9223372036854775807 无符号 18446744073709551615
+
+
+浮点数类型    字节     最小值                     最大值
+FLOAT         4        ±1.175494351E-38           ±3.402823466E+38
+DOUBLE        8        ±2.2250738585072014E-308   ±1.7976931348623157E+308
+
+
+定点数类型              字节       描述
+DEC(M,D),DECIMAL(M,D)   M+2        最大取值范围与DOUBLE相同,给定DECIMAL的有效取值范围由M和D决定,如,decimal(10,2)
+
+
+位类型       字节       最小值     最大值
+BIT(M)       1～8       BIT(1)     BIT(64)
+
+
+
+在整数类型中，按照取值范围和存储方式不同，分为 tinyint、smallint、mediumint、int、bigint 这 5 个类型
+如果超出类型范围的操作，会发生“Out of range”错误提示
+为了避免此类问题发生，在选择数据类型时要根据应用的实际情况确定其取值范围，最后根据确定的结果慎重选择数据类型
+
+对于整型数据，MySQL还支持在类型名称后面的小括号内指定显示宽度:
+例如, int(5)表示当数值宽度小于 5 位的时候在数字前面填满宽度，如果不显示指定宽度则默认为 int(11)
+
+一般配合 zerofill 使用，顾名思义，zerofill 就是用“0”填充的意思，也就是在数字位数不够的空间用字符“0”填满
+
+以下几个例子分别描述了填充前后的区别:
+（1）创建表 t1，有 id1 和 id2 两个字段，指定其数值宽度分别为 int 和 int(5)
+mysql> use test1;
+Database changed
+mysql> create table t1(id1 int, id2 int(5)); 
+Query OK, 0 rows affected (0.03 sec)
+
+
+当int不是无符号unsigned时,int默认长度为11
+mysql> desc t1;
++-------+---------+------+-----+---------+-------+
+| Field | Type    | Null | Key | Default | Extra |
++-------+---------+------+-----+---------+-------+
+| id1   | int(11) | YES  |     | NULL    |       |
+| id2   | int(5)  | YES  |     | NULL    |       |
++-------+---------+------+-----+---------+-------+
+2 rows in set (0.00 sec)
+
+
+（2）在 id1 和 id2 中都插入数值 1，可以发现格式没有异常:
+mysql> insert into t1 values(1,1);
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select * from t1;
++------+------+
+| id1  | id2  |
++------+------+
+|    1 |    1 |
++------+------+
+1 row in set (0.00 sec)
+
+
+（3）分别修改 id1 和 id2 的字段类型，加入 zerofill 参数：
+当int是无符号unsigned时,int默认长度为10, zerofill用于填充0
+
+mysql> alter table t1 modify id1 int zerofill;
+Query OK, 1 row affected (0.03 sec)
+Records: 1  Duplicates: 0  Warnings: 0
+
+mysql> alter table t1 modify id2 int(5) zerofill;
+Query OK, 1 row affected (0.03 sec)
+Records: 1  Duplicates: 0  Warnings: 0
+
+mysql> desc t1;
++-------+---------------------------+------+-----+---------+-------+
+| Field | Type                      | Null | Key | Default | Extra |
++-------+---------------------------+------+-----+---------+-------+
+| id1   | int(10) unsigned zerofill | YES  |     | NULL    |       |
+| id2   | int(5) unsigned zerofill  | YES  |     | NULL    |       |
++-------+---------------------------+------+-----+---------+-------+
+2 rows in set (0.00 sec)
+
+mysql> select * from t1;
++------------+-------+
+| id1        | id2   |
++------------+-------+
+| 0000000001 | 00001 |
++------------+-------+
+1 row in set (0.00 sec)
+
+
+可以发现，在数值前面用字符“0”填充了剩余的宽度
+
+大家可能会有所疑问，设置了宽度限制后，如果插入大于宽度限制的值，会不会截断或者插不进去报错？
+答案是肯定的：不会对插入的数据有任何影响，还是按照类型的实际精度进行保存
+这时，宽度格式实际已经没有意义，左边不会再填充任何的“0”字符
+
+下面在表t1的字段 id1 中插入数值 1，id2 中插入数值 1111111，位数为 7，大于 id2 的显示位数 5，再观察一下测试结果：
+ql> desc t1;
++-------+---------------------------+------+-----+---------+-------+
+| Field | Type                      | Null | Key | Default | Extra |
++-------+---------------------------+------+-----+---------+-------+
+| id1   | int(10) unsigned zerofill | YES  |     | NULL    |       |
+| id2   | int(5) unsigned zerofill  | YES  |     | NULL    |       |
++-------+---------------------------+------+-----+---------+-------+
+2 rows in set (0.01 sec)
+
+mysql> select * from t1;
++------------+-------+
+| id1        | id2   |
++------------+-------+
+| 0000000001 | 00001 |
++------------+-------+
+1 row in set (0.00 sec)
+
+mysql> insert into t1 values(1,1111111);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from t1;                
++------------+---------+
+| id1        | id2     |
++------------+---------+
+| 0000000001 |   00001 |
+| 0000000001 | 1111111 |
++------------+---------+
+2 rows in set (0.00 sec)
+
+很显然，如上面所说，id2 中显示了正确的数值，并没有受宽度限制影响
+
+
+整数类型之UNSIGNED（无符号）正数:
+1.所有的整数类型都有一个可选属性 UNSIGNED（无符号）,
+  如果需要在字段里面保存非负数或者需要较大的上限值时，可以用此选项
+
+2.它的取值范围是正常值的下限取 0，上限取原值的 2 倍,
+  例如，tinyint 有符号范围是-128～+127，而无符号范围是 0～255
+
+3.有符号和无符号怎么理解？
+  正负数,有符号是负数,无符号是正数,如果为正数是无法插入负数数据:
+        mysql> select * from t1;
+	+------------+---------+
+	| id1        | id2     |
+	+------------+---------+
+	| 0000000001 |   00001 |
+	| 0000000001 | 1111111 |
+	+------------+---------+
+	2 rows in set (0.00 sec)
+
+	mysql> insert into t1 values(-123,-111);
+	ERROR 1264 (22003): Out of range value for column 'id1' at row 1
+	mysql> 
+	mysql> insert into t1 values(-1,-111);  
+	ERROR 1264 (22003): Out of range value for column 'id1' at row 1
+	mysql> 
+	mysql> insert into t1 values(-1,-1);  
+	ERROR 1264 (22003): Out of range value for column 'id1' at row 1
+
+
+4.如果一个列指定为 zerofill，则 MySQL 自动为该列添加 UNSIGNED 属性
+
+
+整数类型属性之： AUTO_INCREMENT
+1.在需要产生唯一标识符或顺序值时，可利用此属性, 这个属性只用于整数类型
+2.AUTO_INCREMENT值一般从 1 开始， 每行增加 1
+3.在插入 NULL 到一个 AUTO_INCREMENT 列时，MySQL 插入一个比该列中当前最大值大 1 的值
+4.一个表中最多只能有一个 AUTO_INCREMENT列
+5.对于任何想要使用 AUTO_INCREMENT的列，应该定义为 NOT NULL，并定义为 PRIMARY KEY 或定义为 UNIQUE键
+
+例如，可按下列任何一种方式定义AUTO_INCREMENT列:
+ql> use test1;
+Database changed
+mysql> create table A1(ID INT AUTO_INCREMENT NOT NULL PRIMARY KEY);
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> create table A2(ID INT AUTO_INCREMENT NOT NULL, PRIMARY KEY(ID));
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> create table A3(ID INT AUTO_INCREMENT NOT NULL, UNIQUE(ID));      
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> desc A1;
++-------+---------+------+-----+---------+----------------+
+| Field | Type    | Null | Key | Default | Extra          |
++-------+---------+------+-----+---------+----------------+
+| ID    | int(11) | NO   | PRI | NULL    | auto_increment |
++-------+---------+------+-----+---------+----------------+
+1 row in set (0.00 sec)
+
+mysql> desc A2;
++-------+---------+------+-----+---------+----------------+
+| Field | Type    | Null | Key | Default | Extra          |
++-------+---------+------+-----+---------+----------------+
+| ID    | int(11) | NO   | PRI | NULL    | auto_increment |
++-------+---------+------+-----+---------+----------------+
+1 row in set (0.00 sec)
+
+mysql> desc A3;
++-------+---------+------+-----+---------+----------------+
+| Field | Type    | Null | Key | Default | Extra          |
++-------+---------+------+-----+---------+----------------+
+| ID    | int(11) | NO   | PRI | NULL    | auto_increment |
++-------+---------+------+-----+---------+----------------+
+1 row in set (0.00 sec)
+
+
+
+对于小数的表示，MySQL 分为两种方式：浮点数和定点数
+浮点数包括 float（单精度）和 double（双精度）
+
+定点数则只有 decimal 一种表示
+定点数在 MySQL 内部以字符串形式存放，比浮点数更精确，适合用来表示货币等精度高的数据
+
+浮点数和定点数都可以用类型名称后加“(M,D)”的方式来进行表示:
+“(M,D)”表示该值一共显示 M 位数字（整数位+小数位）,其中 D 位位于小数点后面，M 和 D 又称为精度和标度
+
+例如，定义为 float(7,4)的一个列可以显示为-999.9999。MySQL 保存值时进行四舍五入，因此如果在 float(7,4)列内插入 999.00009，近似结果是 999.0001
+
+值得注意的是，浮点数后面跟“(M,D)”的用法是非标准用法，如果要用于数据库的迁移，则最好不要这么使用
+
+float 和 double 在不指定精度时，默认会按照实际的精度（由实际的硬件和操作系统决定）来显示
+decimal 在不指定精度时，默认的整数位为 10，默认的小数位为 0
+
+下面通过一个例子来比较 float、double 和 decimal 三者之间的不同:
+（1） 创建测试表， 分别将 id1、 id2、 id3 字段设置为 float(5,2)、 double(5,2)、 decimal(5,2)
+mysql> use test1;
+Database changed
+
+mysql> drop table t1;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> create table t1 (id1 float(5,2) default NULL, id2 double(5,2) default NULL, id3 decimal(5,2) default NUll);
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> desc t1;
++-------+--------------+------+-----+---------+-------+
+| Field | Type         | Null | Key | Default | Extra |
++-------+--------------+------+-----+---------+-------+
+| id1   | float(5,2)   | YES  |     | NULL    |       |
+| id2   | double(5,2)  | YES  |     | NULL    |       |
+| id3   | decimal(5,2) | YES  |     | NULL    |       |
++-------+--------------+------+-----+---------+-------+
+3 rows in set (0.00 sec)
+
+
+（2）往 id1、id2 和 id3 这 3 个字段中插入数据 1.23
+ql> insert into t1 values(1.23, 1.23, 1.23);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from t1;
++------+------+------+
+| id1  | id2  | id3  |
++------+------+------+
+| 1.23 | 1.23 | 1.23 |
++------+------+------+
+1 row in set (0.01 sec)
+
+可以发现，数据都正确地插入了表 t1
+
+
+（3）再向 id1 和 id2 字段中插入数据 1.234，而 id3 字段中仍然插入 1.23
+mysql> insert into t1 values(1.234, 1.234, 1.23);
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select * from t1;                         
++------+------+------+
+| id1  | id2  | id3  |
++------+------+------+
+| 1.23 | 1.23 | 1.23 |
+| 1.23 | 1.23 | 1.23 |
++------+------+------+
+2 rows in set (0.00 sec)
+
+可以发现,id1、 id2、 id3 都插入了表 t1, 但是 id1 和 id2 由于标度的限制，舍去了最后一位，数据变为了1.23
+
+
+（4）同时向 id1、id2、id3 字段中都插入数据 1.234
+mysql> insert into t1 values(1.234, 1.234, 1.234);
+Query OK, 1 row affected, 1 warning (0.01 sec)
+
+mysql> show warnings;
++-------+------+------------------------------------------+
+| Level | Code | Message                                  |
++-------+------+------------------------------------------+
+| Note  | 1265 | Data truncated for column 'id3' at row 1 |
++-------+------+------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql> select * from t1;
++------+------+------+
+| id1  | id2  | id3  |
++------+------+------+
+| 1.23 | 1.23 | 1.23 |
+| 1.23 | 1.23 | 1.23 |
+| 1.23 | 1.23 | 1.23 |
++------+------+------+
+3 rows in set (0.00 sec)
+
+此时发现，虽然数据都插入进去，但是系统出现了一个 warning，报告 id3 被截断
+如果是在传统的 SQLMode（第 16 章将会详细介绍 SQLMode）下，这条记录是无法插入的
+
+
+（5）将 id1、id2、id3 字段的精度和标度全部去掉，再次插入数据 1.23
+mysql> desc t1;
++-------+--------------+------+-----+---------+-------+
+| Field | Type         | Null | Key | Default | Extra |
++-------+--------------+------+-----+---------+-------+
+| id1   | float(5,2)   | YES  |     | NULL    |       |
+| id2   | double(5,2)  | YES  |     | NULL    |       |
+| id3   | decimal(5,2) | YES  |     | NULL    |       |
++-------+--------------+------+-----+---------+-------+
+3 rows in set (0.00 sec)
+
+mysql> alter table t1 modify id1 float;
+Query OK, 0 rows affected (0.00 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> alter table t1 modify id2 double;
+Query OK, 0 rows affected (0.00 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> alter table t1 modify id3 decimal;
+Query OK, 3 rows affected, 3 warnings (0.02 sec)
+Records: 3  Duplicates: 0  Warnings: 3
+
+mysql> desc t1;
++-------+---------------+------+-----+---------+-------+
+| Field | Type          | Null | Key | Default | Extra |
++-------+---------------+------+-----+---------+-------+
+| id1   | float         | YES  |     | NULL    |       |
+| id2   | double        | YES  |     | NULL    |       |
+| id3   | decimal(10,0) | YES  |     | NULL    |       |
++-------+---------------+------+-----+---------+-------+
+3 rows in set (0.00 sec)
+
+
+再次插入数据测试:
+mysql> select * from t1;
++------+------+------+
+| id1  | id2  | id3  |
++------+------+------+
+| 1.23 | 1.23 |    1 |
+| 1.23 | 1.23 |    1 |
+| 1.23 | 1.23 |    1 |
++------+------+------+
+3 rows in set (0.00 sec)
+
+mysql> insert into t1 values(1.234, 1.234, 1.234);
+Query OK, 1 row affected, 1 warning (0.00 sec)
+
+mysql> show warnings;
++-------+------+------------------------------------------+
+| Level | Code | Message                                  |
++-------+------+------------------------------------------+
+| Note  | 1265 | Data truncated for column 'id3' at row 1 |
++-------+------+------------------------------------------+
+1 row in set (0.00 sec)
+
+mysql> select * from t1;                          
++-------+-------+------+
+| id1   | id2   | id3  |
++-------+-------+------+
+|  1.23 |  1.23 |    1 |
+|  1.23 |  1.23 |    1 |
+|  1.23 |  1.23 |    1 |
+| 1.234 | 1.234 |    1 |
++-------+-------+------+
+4 rows in set (0.00 sec)
+
+
+这个时候，可以发现 id1、id2 字段中可以正常插入数据，而 id3 字段的小数位被截断。
+上面这个例子验证了上面提到的浮点数如果不写精度和标度，则会按照实际精度值显示，
+如果有精度和标度，则会自动将四舍五入后的结果插入，系统不会报错；
+
+定点数如果不写精度和标度，则按照默认值 decimal(10,0)来进行操作，并且如果数据超越了精度和标度值，系统
+则会报错
+
+
+对于 BIT（位）类型，用于存放位字段值，BIT(M)可以用来存放多位二进制数，M 范围从 1～64，如果不写则默认为 1 位
+对于位字段，直接使用 SELECT 命令将不会看到结果，可以用bin()（显示为二进制格式）或者 hex()（显示为十六进制格式）函数进行读取
+
+下面的例子中，对测试表 t2 中的 bit 类型字段 id 做 insert 和 select 操作，这里重点观察一下
+select 的结果：
+64
