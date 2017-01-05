@@ -1342,7 +1342,7 @@ mysql> select sum(sal),max(sal),min(sal) from emp;
 
 
 
-（5）表连接。
+（5）表连接
 当需要同时显示多个表中的字段时，就可以用表连接来实现这样的功能。
 从大类上分，表连接分为内连接和外连接，它们之间的最主要区别是:
 內连接仅选出两张表中互相匹配的记录
@@ -1475,5 +1475,10 @@ http://www.dbdao.com/mysql-dba-road/mysql-query-tuning/1
 
 认证:
 http://www.askmaclean.com/archives/oracle%E8%AE%A4%E8%AF%81%EF%BC%9A%E7%BB%8F%E5%B8%B8%E9%97%AE%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98oca-ocp-oce-ocm.html
+
+下载oracle这本书:
+http://down.51cto.com/data/429298
+Oracle Core Essential Internals for DBAs and Developers.pdf
+
 
 
