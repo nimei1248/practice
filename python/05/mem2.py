@@ -1,5 +1,9 @@
 # coding:utf-8
 
+## 此脚本功能用于实现系统内存获取展示
+
+
+## 对函数get_mem_info()的小列表元素进行处理,条件判断后,进行字符串拼接,再返回给函数get_mem_info()
 def format_num(num):
     num = int(num)
     o = 'KB'
@@ -11,6 +15,8 @@ def format_num(num):
         o = 'MB'
     return '%.2f%s' % (num,o)
 
+
+## 函数get_mem_info()对字符串进行分割,形成list,再对list的元素重新赋值,返回处理后的小列表给函数operate()
 def get_mem_info(arr):
     tmp = arr.split()
     tmp[1] = format_num(tmp[1])
@@ -49,5 +55,6 @@ def get_html(arr):
 def getMem():
     mem_info = operate(get_mem_info)  ## 将函数get_mem_info()传递给入口函数operate()
     return get_html(mem_info)  ## 将入口函数operate()处理结果(为list),通过return返回传递给函数get_html()
+
 
 getMem()
