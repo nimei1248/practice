@@ -46,3 +46,21 @@ Out[3]: '{"age": 321, "name": 123}'
    浏览器点击按钮操作页面，页面是flask监听的路由，每个路由下面对应的是函数/文件处理的模块，文件处理的模块处理文件；
    然后再一层层返回给浏览器上
 
+1.input type=hidden 修改密码时需要前端传递给后端用户名和密码，同时用户名不能显示给客人;
+2.显示但不能编辑用户名
+
+
+flask 官网
+flask session 使用方式同dict
+session 存在服务器端
+cooike 存在客户端浏览器端，客户端删除seesion后，浏览器请求时没有session信息，后端就无法验证浏览器端是否登录
+服务器应答时带上session信息，告诉浏览器存储次session信息
+浏览器下次请求时带上session信息，服务器端对此session信息进行验证判断是否登录等
+它们需要互相配合
+http协议的set-cooike
+
+cookie与session原理：
+见图
+
+记在服务器端的是session，记在浏览器端是cookie
+
