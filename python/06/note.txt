@@ -18,12 +18,6 @@ Out[3]: '{"age": 321, "name": 123}'
 4.跳转 redirect
 
 
-数据库:
-   1.数据库基础增删改查
-   2.python操作数据库
-      直接执行sql
-      orm
-
 
 作业:
 今天作业：上次课的作业,存储换成数据库，加上修改密码功能
@@ -64,3 +58,142 @@ cookie与session原理：
 
 记在服务器端的是session，记在浏览器端是cookie
 
+
+
+数据库:
+   1.数据库基础增删改查
+   2.python操作数据库
+      直接执行sql
+      orm
+         .add()
+
+SQL:
+
+mysql> create database reboot12;
+Query OK, 1 row affected (0.00 sec)
+
+mysql> create table woniu_user(user varchar(100), pwd varchar(100));
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> desc woniu_user;
++-------+--------------+------+-----+---------+-------+
+| Field | Type         | Null | Key | Default | Extra |
++-------+--------------+------+-----+---------+-------+
+| user  | varchar(100) | YES  |     | NULL    |       |
+| pwd   | varchar(100) | YES  |     | NULL    |       |
++-------+--------------+------+-----+---------+-------+
+2 rows in set (0.01 sec)
+
+
+mysql> insert into woniu_user values('woniu','1234');
+Query OK, 1 row affected (0.01 sec)
+
+
+mysql> insert into woniu_user values('pc','12345');   
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select * from woniu_user;                     
++-------+-------+
+| user  | pwd   |
++-------+-------+
+| woniu | 1234  |
+| pc    | 12345 |
++-------+-------+
+2 rows in set (0.00 sec)
+
+
+mysql> update woniu_user set pwd='xxxooo' where user='pc';
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> select * from woniu_user;                          
++-------+--------+
+| user  | pwd    |
++-------+--------+
+| woniu | 1234   |
+| pc    | xxxooo |
++-------+--------+
+2 rows in set (0.00 sec)
+
+
+mysql> insert into woniu_user values('pc2','12345');      
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from woniu_user;                    
++-------+--------+
+| user  | pwd    |
++-------+--------+
+| woniu | 1234   |
+| pc    | xxxooo |
+| pc2   | 12345  |
++-------+--------+
+3 rows in set (0.00 sec)
+
+mysql> delete from woniu_user where user='pc2';
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from woniu_user;               
++-------+--------+
+| user  | pwd    |
++-------+--------+
+| woniu | 1234   |
+| pc    | xxxooo |
++-------+--------+
+2 rows in set (0.00 sec)
+
+
+
+pip install MySQL-python
+
+In [1]: import MySQLdb
+
+In [2]: 
+
+
+引入模块：
+   import MySQLdb as mysql
+
+链接数据库，返回链接对象
+   conn = msql.connect()
+
+获取游标对象,操作sql
+   cur = conn.cursor
+
+游标对象执行sql,返回影响的行数
+   cur.execute('select * from xxx')
+
+游标对象的fetchall,返回结果
+   for user in cur.fetchall():
+       print user
+
+练习：添加用户 改成存放到数据库中
+
+
+事务：sql要么全部执行成功，要么执行全部失败
+mysql事务
+
+编程的模型
+
+计算机知识体系:
+招式：
+   语法 语言 python php go js
+
+
+内力:
+    编程思想
+    算法 网络 操作系统 数据库
+    算法: 手写冒泡 进阶手写快速排序，了解链表，了解二叉数, 图的遍历
+
+    网络：基于socket手写http服务器
+          xx.com/a.jpg
+          图解http协议
+
+          ip=>tcp=>(http,ftp,ssh)
+          ip=>udp=>dns
+          ip：负责寻址
+          tcp: 负责数据完整性,有序
+          netstring协议
+
+          既然tcp那么可靠，为什么还需要应用层协议？
+          主要原因是控制什么时候终止
+          tcp没有终止概念
