@@ -1,0 +1,19 @@
+<table border='1'>
+       <tr>
+             <td>user</td>
+             <td>pwd</td>
+             <td>action</td>
+       </tr>
+
+       {% for user in userlist %}
+
+       <tr>
+             <td>{{ user[0] }}</td>
+             <td>{{ user[1] }}</td>
+             <td>
+                   <a  href='/del?user={{ user[0] }}'>delete</a>
+             </td>
+       </tr>
+
+       {% endfor %}
+</table>
