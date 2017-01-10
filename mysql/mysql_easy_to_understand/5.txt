@@ -243,34 +243,327 @@ mysql> select substring('beijing2008', 8, 4), substring('beijing2008', 1, 7);
 
 
 5.2 数值函数
-MySQL 中另外一类很重要的函数就是数值函数,这些函数能处理很多数值方面的运算。可 以想象,如果没有这些函数的支持,用户在编写有关数值运算方面的代码时将会困难重重, 举个例子,如果没有 ABS 函数的话,如果要取一个数值的绝对值,就需要进行好多次判断 才能返回这个值,而数字函数能够大大 高用户的工作效率。表 5-2 中列出了在 MySQL 中 会经常使用的数值函数。
+MySQL 中另外一类很重要的函数就是数值函数,这些函数能处理很多数值方面的运算
+可以想象,如果没有这些函数的支持,用户在编写有关数值运算方面的代码时将会困难重重, 
+举个例子,如果没有 ABS 函数的话,如果要取一个数值的绝对值,就需要进行好多次判断才能返回这个值,而数字函数能够大大高用户的工作效率
+
 表 5-2 MySQL 中的常用数值函数
-mysql> select substring('beijing2008',8,4),substring('beijing2008',1,7); +------------------------------+------------------------------+
-| substring('beijing2008',8,4) | substring('beijing2008',1,7) | +------------------------------+------------------------------+
-| 2008 | beijing | +------------------------------+------------------------------+
+函数           功能
+ABS(x)         返回 x 的绝对值
+CEIL(x)        返回大于 x 的最大整数值
+FLOOR(x)       返回小于 x 的最大整数值
+MOD(x,y)       返回 x/y 的模
+RAND()         返回0到1内的随机值
+ROUND(x,y)     返回参数 x 的四舍五入的有 y 位小数的值
+TRUNCATE(x,y)  返回数字 x 截断为 y 位小数的结果
+
+
+下面将结合实例对这些函数进行介绍
+1.ABS(x)函数:
+  a.返回x的绝对值
+
+下例中显示了对正数和负数分别取绝对值之后的结果
+mysql> select ABS(-0.8), ABS(0.8);
++-----------+----------+
+| ABS(-0.8) | ABS(0.8) |
++-----------+----------+
+|       0.8 |      0.8 |
++-----------+----------+
+1 row in set (0.00 sec)
+
+
+2.CEIL(x)函数:
+  a.返回大于x的最大整数
+
+下例中显示了对 0.8 和-0.8 分别 CEIL 后的结果
+mysql> select ceil(-0.8), ceil(0.8);
++------------+-----------+
+| ceil(-0.8) | ceil(0.8) |
++------------+-----------+
+|          0 |         1 |
++------------+-----------+
+1 row in set (0.00 sec)
+
+
+3.FLOOR(x)函数:
+  a.返回小于x的最大整数,和CEIL的用法刚好相反
+
+下例中显示了对 0.8 和-0.8 分别 FLOOR 后的结果
+mysql> select floor(-0.8), floor(0.8);
++-------------+------------+
+| floor(-0.8) | floor(0.8) |
++-------------+------------+
+|          -1 |          0 |
++-------------+------------+
+1 row in set (0.00 sec)
+
+
+4.MOD(x,y)函数:返回x/y的模
+  a.和 x%y 的结果相同,模数和被模数任何一个为 NULL 结果都为 NULL
+
+mysql> select mod(15,10), mod(1,11), mod(null,10);
++------------+-----------+--------------+
+| mod(15,10) | mod(1,11) | mod(null,10) |
++------------+-----------+--------------+
+|          5 |         1 |         NULL |
++------------+-----------+--------------+
+1 row in set (0.00 sec)
+
+
+5.RAND()函数:
+  a.默认返回0到1内的随机值,可与其它函数配合使用
+  b.每次执行结果都不一样,如下例所示
+
+mysql> select RAND(), RAND();
++--------------------+--------------------+
+| RAND()             | RAND()             |
++--------------------+--------------------+
+| 0.9363492885011707 | 0.6171650324176672 |
++--------------------+--------------------+
+1 row in set (0.00 sec)
+
+
+利用此函数可以取任意指定范围内的随机数,比如需要产生 0~100 内的任意随机整数,可 以操作如下:
+mysql> select ceil(100 * rand()), ceil(100 * rand());
++--------------------+--------------------+
+| ceil(100 * rand()) | ceil(100 * rand()) |
++--------------------+--------------------+
+|                 28 |                 54 |
++--------------------+--------------------+
+1 row in set (0.00 sec)
+
+mysql> select ceil(100 * rand()), ceil(100 * rand());
++--------------------+--------------------+
+| ceil(100 * rand()) | ceil(100 * rand()) |
++--------------------+--------------------+
+|                 84 |                 57 |
++--------------------+--------------------+
+1 row in set (0.00 sec)
+
+
+6.ROUND(x,y)函数:
+  a.返回参数x的四舍五入的有y位小数的值
+  b.如果是整数,将会保留 y 位数量的 0;
+  c.如果不写 y,则默认 y 为 0,即将 x 四舍五入后取整
+  d.适合于将所有数字保留同样小数位的情况
+
+如下例所示:
+mysql> select round(1.1), round(1.1,2), round(1,2);
++------------+--------------+------------+
+| round(1.1) | round(1.1,2) | round(1,2) |
++------------+--------------+------------+
+|          1 |         1.10 |          1 |
++------------+--------------+------------+
+1 row in set (0.00 sec)
+
+mysql> select round(1.1), round(1.1,2), round(2,2);
++------------+--------------+------------+
+| round(1.1) | round(1.1,2) | round(2,2) |
++------------+--------------+------------+
+|          1 |         1.10 |          2 |
++------------+--------------+------------+
+1 row in set (0.00 sec)
+
+
+7.TRUNCATE(x,y)函数:
+  a.返回数字x截断为y位小数的结果
+  b.注意 TRUNCATE 和 ROUND 的区别在于 TRUNCATE 仅仅是截断,而不进行四舍五入
+
+下例中述了二者的区别:
+mysql> select round(1.235,2), truncate(1.235,2);
++----------------+-------------------+
+| round(1.235,2) | truncate(1.235,2) |
++----------------+-------------------+
+|           1.24 |              1.23 |
++----------------+-------------------+
+1 row in set (0.00 sec)
+
+
+
+
+5.3 日期和时间函数
+有时我们可能会遇到这样的需求:当前时间是多少、下个月的今天是星期几、统计截止到当 前日期前 3 天的收入总和等。这些需求就需要日期和时间函数来实现,表 5-3 列出了 MySQL 中支持的一些常用日期和时间函数。
+表 5-3 MySQL 中的常用日期时间函数
+ 
 函数
+ 
  
 功能
  
-ABS(x)
-返回 x 的绝对值
-CEIL(x)
+CURDATE()
+返回当前日期
  
-返回大于 x 的最大整数值
-FLOOR(x)
+CURTIME()
  
-返回小于 x 的最大整数值
-MOD(x,y)
+返回当前时间
  
-返回 x/y 的模
-RAND()
+NOW()
  
-返回0到1内的随机值
-ROUND(x,y)
  
-返回参数 x 的四舍五入的有 y 位小数的值
+返回当前的日期和时间
  
-TRUNCATE(x,y)
-返回数字 x 截断为 y 位小数的结果
- 下面将结合实例对这些函数进行介绍。
-  ABS(x)函数:返回x的绝对值。 下例中显示了对正数和负数分别取绝对值之后的结果
+UNIX_TIMESTAMP(date)
+返回日期 date 的 UNIX 时间戳
+ 
+FROM_UNIXTIME
+ 
+返回 UNIX 时间戳的日期值
+ 
+WEEK(date)
+ 
+ 
+返回日期 date 为一年中的第几周
+ 
+YEAR(date)
+返回日期 date 的年份
+HOUR(time)
+返回 time 的小时值
+MINUTE(time)
+返回 time 的分钟值
+MONTHNAME(date)
+返回 date 的月份名
+DATE_FORMAT(date,fmt)
+返回按字符串 fmt 格式化日期 date 值
+DATE_ADD(date,INTERVAL expr type)
+返回一个日期或时间值加上一个时间间隔的时间值
+DATEDIFF(expr,expr2)
+返回起始时间 expr 和结束时间 expr2 之间的天数
+
+下面结合一些实例来逐个讲解每个函数的使用方法
+
+1.CURDATE()函数:
+  a.返回当前日期,只包含年月日
+mysql> select curdate();
++------------+
+| curdate()  |
++------------+
+| 2017-01-10 |
++------------+
+1 row in set (0.00 sec)
+
+mysql> select curtime()
+    -> ;
++-----------+
+| curtime() |
++-----------+
+| 08:52:37  |
++-----------+
+1 row in set (0.00 sec)
+
+mysql> select now();
++---------------------+
+| now()               |
++---------------------+
+| 2017-01-10 08:52:51 |
++---------------------+
+1 row in set (0.00 sec)
+
+mysql> select unix_timestamp(now());
++-----------------------+
+| unix_timestamp(now()) |
++-----------------------+
+|            1484009631 |
++-----------------------+
+1 row in set (0.00 sec)
+
+mysql> select from_unixtime(1484009631);
++---------------------------+
+| from_unixtime(1484009631) |
++---------------------------+
+| 2017-01-10 08:53:51       |
++---------------------------+
+1 row in set (0.00 sec)
+
+mysql> select unix_timestamp(curdate());
++---------------------------+
+| unix_timestamp(curdate()) |
++---------------------------+
+|                1483977600 |
++---------------------------+
+1 row in set (0.00 sec)
+
+mysql> select from_unixtime(1483977600);
++---------------------------+
+| from_unixtime(1483977600) |
++---------------------------+
+| 2017-01-10 00:00:00       |
++---------------------------+
+1 row in set (0.00 sec)
+
+mysql> select week(now()), year(now());
++-------------+-------------+
+| week(now()) | year(now()) |
++-------------+-------------+
+|           2 |        2017 |
++-------------+-------------+
+1 row in set (0.00 sec)
+
+mysql> select hour(curtime()),minute(curtime());
++-----------------+-------------------+
+| hour(curtime()) | minute(curtime()) |
++-----------------+-------------------+
+|               8 |                57 |
++-----------------+-------------------+
+1 row in set (0.00 sec)
+
+mysql> select monthname(now());
++------------------+
+| monthname(now()) |
++------------------+
+| January          |
++------------------+
+1 row in set (0.00 sec)
+
+mysql> select date_format(now(), '%M, %D, %Y');
++----------------------------------+
+| date_format(now(), '%M, %D, %Y') |
++----------------------------------+
+| January, 10th, 2017              |
++----------------------------------+
+1 row in set (0.00 sec)
+
+mysql> select now() current, date_add(now(), interval 31 day) after 31 days, date_add(now(), interval, '1_2' year_month) after_oneyear_twomonth;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '31 days, date_add(now(), interval, '1_2' year_month) after_oneyear_twomonth' at line 1
+mysql>
+mysql>
+mysql> select now() current, date_add(now(), interval 31 day) after31days, date_add(now(), interval, '1_2' year_month) after_oneyear_twomonth;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ' '1_2' year_month) after_oneyear_twomonth' at line 1
+mysql>
+mysql>
+mysql>
+mysql> select now() current, date_add(now(), interval 31 day) after31days, date_add(now(), interval '1_2' year_month) after_oneyear_twomonth;
++---------------------+---------------------+------------------------+
+| current             | after31days         | after_oneyear_twomonth |
++---------------------+---------------------+------------------------+
+| 2017-01-10 09:03:44 | 2017-02-10 09:03:44 | 2018-03-10 09:03:44    |
++---------------------+---------------------+------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> select now() current, date_add(now(), interval -31 day) after31days, date_add(now(), interval '-1_-2' year_month) after_oneyear_twomonth;
++---------------------+---------------------+------------------------+
+| current             | after31days         | after_oneyear_twomonth |
++---------------------+---------------------+------------------------+
+| 2017-01-10 09:05:27 | 2016-12-10 09:05:27 | 2015-11-10 09:05:27    |
++---------------------+---------------------+------------------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> select datediff('2008-08-08', now())
+    -> ;
++-------------------------------+
+| datediff('2008-08-08', now()) |
++-------------------------------+
+|                         -3077 |
++-------------------------------+
+1 row in set (0.00 sec)
+
+mysql> select datediff(now(), '2008-08-08');
++-------------------------------+
+| datediff(now(), '2008-08-08') |
++-------------------------------+
+|                          3077 |
++-------------------------------+
+1 row in set (0.00 sec)
+
+
