@@ -626,3 +626,277 @@ CASE [expr] WHEN [value1] THEN[result1]...ELSE[default]END           如果 expr
 
 
 下面的例子中模拟了对职员薪水进行分类,这里首先创建并初始化一个职员薪水表
+mysql> create database test;
+Query OK, 1 row affected (0.00 sec)
+
+mysql> use test;
+Database changed
+
+mysql> create table salary (userid int, salary decimal(9,2));
+Query OK, 0 rows affected (0.02 sec)
+
+
+插入一些测试数据:
+mysql> insert into salary values(1,1000),(2,2000),(3,3000),(4,4000),(5,5000),(1,null);
+Query OK, 6 rows affected (0.01 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+mysql> select * from salary;
++--------+---------+
+| userid | salary  |
++--------+---------+
+|      1 | 1000.00 |
+|      2 | 2000.00 |
+|      3 | 3000.00 |
+|      4 | 4000.00 |
+|      5 | 5000.00 |
+|      1 |    NULL |
++--------+---------+
+6 rows in set (0.00 sec)
+
+
+接下来,通过这个表来介绍各个函数的应用:
+
+1.IF(value,t,f)函数:
+    a.我们认为月薪在 2000 元以上的职员属于高薪,用“high”表示;而2000 元以下的职员属于低薪,用“low”表示
+
+mysql> select if (salary > 2000,'high','low') from salary;
++---------------------------------+
+| if (salary > 2000,'high','low') |
++---------------------------------+
+| low                             |
+| low                             |
+| high                            |
+| high                            |
+| high                            |
+| low                             |
++---------------------------------+
+6 rows in set (0.00 sec)
+
+
+2.IFNULL(value1,value2)函数:
+  a.这个函数一般用来替换NULL值的,我们知道NULL值是不能参与数值运算的,下面这个语句就是把 NULL 值用 0 来替换
+
+mysql> select ifnull(salary,0) from salary;
++------------------+
+| ifnull(salary,0) |
++------------------+
+|          1000.00 |
+|          2000.00 |
+|          3000.00 |
+|          4000.00 |
+|          5000.00 |
+|             0.00 |
++------------------+
+6 rows in set (0.00 sec)
+
+
+3.CASE WHEN [value1] THEN[result1]...ELSE[default]END 函数: 
+  a.我们也可以用 case when...then 函数实现上面例子中高薪低薪的问题
+
+ql> select case when salary <= 2000 then 'low' else 'high' end from salary;
++-----------------------------------------------------+
+| case when salary <= 2000 then 'low' else 'high' end |
++-----------------------------------------------------+
+| low                                                 |
+| low                                                 |
+| high                                                |
+| high                                                |
+| high                                                |
+| high                                                |
++-----------------------------------------------------+
+6 rows in set (0.00 sec)
+
+mysql> select case when salary > 2000 then 'high' else 'low' end from salary;
++----------------------------------------------------+
+| case when salary > 2000 then 'high' else 'low' end |
++----------------------------------------------------+
+| low                                                |
+| low                                                |
+| high                                               |
+| high                                               |
+| high                                               |
+| low                                                |
++----------------------------------------------------+
+6 rows in set (0.00 sec)
+
+
+4.CASE [expr] WHEN [value1] THEN[result1]...ELSE[default]END 函数:
+  a.这里还可以分多种情况把职员的薪水分多个档次,比如下面的例子分成高、中、低 3 种情况
+  b.同样还可以分成更多种情 况,这里就不再举例了,有兴趣的读者可以自己测试一下
+
+mysql> select case salary when 1000 then 'low' when 2000 then 'mid' else 'high' end from salary;
++-----------------------------------------------------------------------+
+| case salary when 1000 then 'low' when 2000 then 'mid' else 'high' end |
++-----------------------------------------------------------------------+
+| low                                                                   |
+| mid                                                                   |
+| high                                                                  |
+| high                                                                  |
+| high                                                                  |
+| high                                                                  |
++-----------------------------------------------------------------------+
+6 rows in set (0.00 sec)
+
+
+
+
+5.5 其它常用函数
+MySQL提供的函数很丰富,除了前面介绍的字符串函数、数字函数、日期函数、流程函数 以外还有很多其他函数,在此不再一一列举,有兴趣的读者可以参考 MySQL 官方手册
+表 5-7 MySQL 中的其他常用函数
+ 
+函数              功能
+DATABASE()        返回当前数据库名
+VERSION()         返回当前数据库版本
+USER()            返回当前登录用户名
+INET_ATON(IP)     返回 IP 地址的数字表示
+INET_NTOA(num)    返回数字代表的 IP 地址
+PASSWORD(str)     返回字符串 str 的加密版本
+MD5()             返回字符串 str 的 MD5 值
+
+
+1.  DATABASE()函数:返回当前数据库名
+mysql> select database();
++------------+
+| database() |
++------------+
+| test       |
++------------+
+1 row in set (0.00 sec)
+
+
+2.  VERSION()函数:返回当前数据库版本
+mysql> select version();
++-----------+
+| version() |
++-----------+
+| 5.7.13    |
++-----------+
+1 row in set (0.00 sec)
+
+
+3.  USER()函数:返回当前登录用户名
+mysql> select user();
++----------------+
+| user()         |
++----------------+
+| root@localhost |
++----------------+
+1 row in set (0.00 sec)
+
+
+4.  INET_ATON(IP)函数:返回IP地址的网络字节序表示
+mysql> select inet_aton('192.168.1.1');
++--------------------------+
+| inet_aton('192.168.1.1') |
++--------------------------+
+|               3232235777 |
++--------------------------+
+1 row in set (0.00 sec)
+
+
+5.  INET_NTOA(num)函数:返回网络字节序代表的IP地址
+mysql> select inet_ntoa(3232235777);
++-----------------------+
+| inet_ntoa(3232235777) |
++-----------------------+
+| 192.168.1.1           |
++-----------------------+
+1 row in set (0.00 sec)
+
+
+INET_ATON(IP)和 INET_NTOA(num)函数主要的用途是将字符串的 IP 地址转换为数字表示的网 络字节序,这样可以更方便地进行 IP 或者网段的比较
+比如在下面的表中,要想知道在“192.168.1.3”和“192.168.1.20”之间一共有多少 IP 地址:
+
+mysql> alter table salary add ip varchar(20);
+Query OK, 0 rows affected (0.05 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> desc salary;
++--------+--------------+------+-----+---------+-------+
+| Field  | Type         | Null | Key | Default | Extra |
++--------+--------------+------+-----+---------+-------+
+| userid | int(11)      | YES  |     | NULL    |       |
+| salary | decimal(9,2) | YES  |     | NULL    |       |
+| ip     | varchar(20)  | YES  |     | NULL    |       |
++--------+--------------+------+-----+---------+-------+
+3 rows in set (0.00 sec)
+
+mysql> insert into salary(ip) values ('192.168.1.1'),('192.168.1.3'),('192.168.1.6'),('192.168.1.10'),('192.168.1.20'),('192.168.1.30');
+Query OK, 4 rows affected (0.00 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> select ip from salary;
++--------------+
+| ip           |
++--------------+
+| NULL         |
+| NULL         |
+| NULL         |
+| NULL         |
+| NULL         |
+| NULL         |
+| 192.168.1.1  |
+| 192.168.1.3  |
+| 192.168.1.6  |
+| 192.168.1.10 |
+| 192.168.1.20 |
+| 192.168.1.30 |
++--------------+
+10 rows in set (0.00 sec)
+
+
+按照正常的思维,应该用字符串来进行比较,下面是字符串的比较结果:
+mysql> select ip from salary where ip >= '192.168.1.3' and ip <= '192.168.1.20';
+Empty set (0.00 sec)
+
+结果没有如我们所愿,竟然是个空集
+其实原因就在于字符串的比较是一个字符一个字符的比较,
+当对应字符相同时候,就比较下一个,直到遇到能区分出大小的字符,才停止比较, 后面的字符也将忽略
+显然,在此例中,“192.168.1.3”其实比“192.168.1.20”要“大”, 因为“3”比“2”大,而不能用我们日常的思维 3<20,
+所以“ip>='192.168.1.3' and ip<='192.168.1.20'”必然是个空集。
+
+在这里,如果要想实现上面的功能,就可用函数 INET_ATON 来实现,将 IP 转换为字节序后 再比较,如下所示:
+mysql> select ip from salary where inet_aton(ip) >= inet_aton('192.168.1.3') and inet_aton(ip) <= inet_aton('192.168.1.20');
++--------------+
+| ip           |
++--------------+
+| 192.168.1.3  |
+| 192.168.1.6  |
+| 192.168.1.10 |
+| 192.168.1.20 |
++--------------+
+4 rows in set (0.00 sec)
+
+
+6.PASSWORD(str)函数:返回字符串str的加密版本,一个41位长的字符串。 此函数只用来设置系统用户的密码,但是不能用来对应用的数据加密。如果应用方面有加密 的需求,可以使用 MD5 等加密函数来实现
+
+下例中显示了字符串“123456”的 PASSWORD 加密后的值:
+mysql> select password('123456');
++-------------------------------------------+
+| password('123456')                        |
++-------------------------------------------+
+| *6BB4837EB74329105EE4568DDA7DC67ED2CA2AD9 |
++-------------------------------------------+
+1 row in set, 1 warning (0.00 sec)
+
+
+7.MD5(str)函数:返回字符串str的MD5值,常用来对应用中的数据进行加密
+
+下例中显示了字符串“123456”的 MD5 值:
+mysql> select md5('123456');
++----------------------------------+
+| md5('123456')                    |
++----------------------------------+
+| e10adc3949ba59abbe56e057f20f883e |
++----------------------------------+
+1 row in set (0.00 sec)
+
+
+
+5.6 小结
+本章主要对 MySQL 常用的各类常用函数通过实例做了介绍
+MySQL 有很多内建函数,这些 内建函数实现了很多应用需要的功能并且拥有很好的性能,
+如果用户在工作中需要实现某种 功能,最好先查一下 MySQL 官方文档或者帮助,看是否已经有相应的函数实现了我们需要 的功能,可以大大 高工作效率
+由于篇幅所限,本章并没有介绍所有的函数,读者可以去 进一步查询相关文档
+
