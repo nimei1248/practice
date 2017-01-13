@@ -1,12 +1,11 @@
 mysql图形化界面工具:
 
-1.mysql administrator 由msyql公司提供
+1.MySQL Administrator 是 MySQL 公司提供的图形化管理工具,主要用于 MySQL 数据库的连接管理、健康检查、备份管理、Catalogs 管理等,
+  使用此工具可以实现远程图形化管理服务器, 应用比较方便
   http://dev.mysql.com/downloads/workbench
 
-  MySQL Administrator 是 MySQL 公司提供的图形化管理工具,主要用于 MySQL 数据库的连接管理、健康检查、备份管理、Catalogs 管理等,
-  使用此工具可以实现远程图形化管理服务器, 应用比较方便
-
 2.MySQL Query Brower 是 MySQL 公司供的客户端查询工具,开发和管理人员可以使用它进行数据库直接访问和统计,同时可以将查询结果在客户端导出保存
+  https://downloads.mysql.com/archives/gui/
 
 3.phpMyAdmin不是MySQL公司的产品,它的特点是可以通过Web方式对MySQL数据库进行 管理,并且它的功能也比较强大,许多网站管理员都会选择使用它管理自己的网站数据库
 
