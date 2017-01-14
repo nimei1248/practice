@@ -1,0 +1,83 @@
+<!— html是所有标签的根标签 —>
+<html>
+    <!— head标签，内部引入css文件，设置标题 设置等 —>
+    <head>
+    <!— title设置标题 —>
+        <title>nimei hahah</title>
+        <!— 设置编码 —>
+        <meta charset="utf-8">
+        <!— link标签，引入外部文件，rel设置文件属性，icon就是标题的小logo —>
+        <link rel="icon" href="http://v3.bootcss.com/favicon.ico">
+        <style>  
+            #p1{
+                color:red;
+            }
+            .bg-yellow{
+                background: yellow;
+            }
+            .color-red{
+                color:red;
+            }
+            .btn{
+                /*margin是外边距*/
+                margin-left:100px;
+                margin-top:100px;
+                margin-bottom:50px;
+
+                /*padding是内边距*/
+                padding-left:20px;
+                padding-top:40px;
+                width:100px;
+                height:50px;
+                background: green;
+                color:red;   
+                border-radius: 20px;
+            }
+            /*属性选择器*/
+            [xxx='nimei']{
+                color:green;
+            }
+            /*标签选择器*/
+            p{
+                font-size:50px;
+            }
+/*            .login{
+                font-size: 14px;
+            }*/
+
+            #hedaer{
+                background: red
+            }
+            #header p{
+                font-size: 100px;
+            }
+        </style>
+    </head>
+    <!— 所有可见的html 都放在body里 —>
+    <body>
+    <div id="header">
+        <p>登陆</p>
+    </div>
+
+    <div xxx='nimei22'>123</div>
+
+        <div class="btn">提交</div>
+        <p class='bg-yellow color-red'>第一段</p>
+        <p class='bg-yellow'>第二段</p>
+        <span>第一个span</span>
+        <span>第二个span</span>
+
+
+        <select>
+            <option>1</option>
+            <option>2</option>
+        </select>
+
+
+        <div>
+            这是一个盒子
+        </div>
+
+    </body>
+
+</html>
