@@ -378,3 +378,163 @@ possible_keys: idx_blob
 
 
 
+
+
+8.3 浮点数与定点数
+a.浮点数一般用于表示含有小数部分的数值
+  1.当一个字段被定义为浮点类型后,如果插入数据的精度超过该列定义的实际精度,
+    则插入值会被四舍五入到实际定义的精度值,然后插入,四舍五入的过程不会报错
+  2.在 MySQL 中 float、double(或 real)用来表示浮点数
+
+b.定点数不同于浮点数,定点数实际上是以字符串形式存放的,所以定点数可以更加精确的保存数据
+  1.如果实际插入的数值精度大于实际定义的精度,则 MySQL 会进行警告(默认的SQLMode下),
+    但是数据按照实际精度四舍五入后插入;
+  2.如果SQLMode是在TRADITIONAL (传统模式)下,则系统会直接报错,导致数据无法插入
+  3.在MySQL中,decimal(或numberic) 用来表示定点数
+
+在简单了解了浮点数和定点数的区别之后,
+来看一个例子,回顾一下前面讲到的浮点数精确性问题:
+mysql> drop table t;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> create table t (f float(8,1));
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> desc t;
++-------+------------+------+-----+---------+-------+
+| Field | Type       | Null | Key | Default | Extra |
++-------+------------+------+-----+---------+-------+
+| f     | float(8,1) | YES  |     | NULL    |       |
++-------+------------+------+-----+---------+-------+
+1 row in set (0.00 sec)
+
+mysql> insert into t values(1.2);
+Query OK, 1 row affected (0.00 sec)
+
+mysql> insert into t values(1.25456);
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select * from t;
++------+
+| f    |
++------+
+|  1.2 |
+|  1.3 |
++------+
+2 rows in set (0.00 sec)
+
+
+从上面的例子中,可以发现对于第一次插入值 1.23456 到 float(8,1)时,该值被截断,并保存为1.2,而第二次插入值 1.25456 到 float(8,1)时,该值进行了四舍五入然后被截断,并保存为 1.3,所以在选择浮点型数据保存小数时,要注意四舍五入的问题,并尽量保留足 够的小数位,避免存储的数据不准确
+
+
+mysql> insert into t values(123456789123456789.25456);
+ERROR 1264 (22003): Out of range value for column 'f' at row 1
+mysql>
+mysql> insert into t values(12345678.25456);
+ERROR 1264 (22003): Out of range value for column 'f' at row 1
+mysql>
+mysql> insert into t values(1234567.25456);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from t;
++-----------+
+| f         |
++-----------+
+|       1.2 |
+|       1.3 |
+| 1234567.2 |
++-----------+
+3 rows in set (0.00 sec)
+
+
+为了能够让大家了解浮点数与定点数的区别,再来看一个例子:
+mysql> create table test (c1 float(10,2), c2 decimal(10,2));
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> desc test;
++-------+---------------+------+-----+---------+-------+
+| Field | Type          | Null | Key | Default | Extra |
++-------+---------------+------+-----+---------+-------+
+| c1    | float(10,2)   | YES  |     | NULL    |       |
+| c2    | decimal(10,2) | YES  |     | NULL    |       |
++-------+---------------+------+-----+---------+-------+
+2 rows in set (0.00 sec)
+
+mysql> insert into test values(131072.32, 131072.32);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from test;
++-----------+-----------+
+| c1        | c2        |
++-----------+-----------+
+| 131072.31 | 131072.32 |
++-----------+-----------+
+1 row in set (0.00 sec)
+
+
+从上面的例子中可以看到,c1 列的值由 131072.32 变成了 131072.31,
+这是上面的数值在使用单精度浮点数表示时,产生了误差。这是浮点数特有的问题
+因此在精度要求比较高的应用中(比如货币)要使用定点数而不是浮点数来保存数据
+
+
+另外,浮点数的比较也是一个普遍存在的问题,下面的程序片断中对两个浮点数做减法运算:
+public class Test {
+       public static void main(String[] args) throws Exception {
+       System.out.print("7.22-7.0=" + (7.22f-7.0f));
+      }
+}
+
+对上面 Java 程序的输出结果可能会想当然的认为是 0.22,但是,实际结果却是 7.22-7.0=0.21999979,因此,在编程中应尽量避免浮点数的比较,如果非要使用浮点数比较则 最好使用范围比较而不要使用“==”比较。
+
+
+再看一下使用定点数来实现上面的例子:
+import java.math.BigDecimal; /*
+*  供精确的减法运算。 * @param v1
+* @param v2
+*/
+
+public class Test {
+    public static void main(String[] args) throws Exception {
+           System.out.print("7.22-7.0=" + subtract(7.22,7.0));
+    }
+
+    public static double subtract(double v1, double v2) {
+           BigDecimal b1 = new BigDecimal(Double.toString(v1));
+           BigDecimal b2 = new BigDecimal(Double.toString(v2));
+           return b1.subtract(b2).doubleValue();
+    }
+}
+
+上面的实例使用Java的 BigDecimal 类实现了定点数的精确计算,所以 7.22 减 7.0 的结果和预想的相同,为7.22-7.0=0.22
+ 
+
+注意:在今后关于浮点数和定点数的应用中,用户要考虑到以下几个原则:
+1.浮点数存在误差问题;
+2.对货币等对精度敏感的数据,应该用定点数表示或存储;
+3.在编程中,如果用到浮点数,要特别注意误差问题,并尽量避免做浮点数比较;
+4.要注意浮点数中一些特殊值的处理
+
+
+
+
+8.4 日期类型选择
+MySQL提供的常用日期类型有 DATE、TIME 、DATETIME、TIMESTAMP,
+它们之间的区别在第 3 章中已经进行过详细论述,这里就不再赘述
+
+下面主要总结一下选择日期类型的原则：
+1.根据实际需要选择能够满足应用的最小存储的日期类型
+  如果应用只需要记录“年 份”,那么用 1 个字节来存储的 YEAR 类型完全可以满足,
+  而不需要用 4 个字节来 存储的 DATE 类型。这样不仅仅能节约存储,更能够 高表的操作效率。
+2.如果要记录年月日时分秒,并且记录的年份比较久远,那么最好使用 DATETIME, 而不要使用 TIMESTAMP
+  因为 TIMESTAMP 表示的日期范围比 DATETIME 要短得多
+3.如果记录的日期需要让不同时区的用户使用,那么最好使用 TIMESTAMP,因为日期类型中只有它能够和实际时区相对应
+
+
+
+8.5 小结
+本章中主要介绍了常见数据类型的选择原则,简单归纳如下:
+1.对于字符类型,要根据存储引擎来进行相应的选择
+2.对精度要求较高的应用中,建议使用定点数来存储数值,以保证结果的准确性。
+3.对含有 TEXT 和 BLOB 字段的表,如果经常做删除和修改记录的操作要定时执行
+  OPTIMIZE TABLE 功能对表进行碎片整理。
+4.日期类型要根据实际需要选择能够满足应用的最小存储的日期类型。
