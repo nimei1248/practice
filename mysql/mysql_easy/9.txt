@@ -7,3 +7,319 @@
 
 本章将详细介绍字符集的发展历程以及 MySQL 中字符集的使用
 
+
+9.1 字符集概述
+简单地说字符集就是一套文字符号及其编码、比较规则的集合:
+1.1960(ASCII)--->ISO-646(7位编码),包括:大小写英文字母、阿拉伯数字、标点符号、33个控制符号等
+2.ISO-8859 系列、GB2312-80、GBK、BIG5 等
+3.1980--->需求统一字符编码
+
+
+9.2 Unicode 简述
+1.为统一字符编码,1984(ISO)--->UCS--->ISO-10646
+2.ISO-10646标准采用4字节（32bit）编码，因此简称UCS-4
+3.1988(Xerox)--->unicode(16位编码)--->unicode协会--->unicode技术委员会--->1991(unicode 1.0)
+4.1991.10达成协议,ISO将Unicode编码并入ISO-10646的0组0字面，叫作基本多语言文字面（Basic Multi-lingual Plane, BMP）
+5.Unicode提出了名为UTF-16或代理法（surrogates）的解决方案，UTF是UCS/Unicode Transformation Format 的缩写
+6.UTF-8
+7.二者不同版本的对应关系如下:
+ a.Unicode 2.0等同于ISO/IEC 10646-1:1993
+ b.Unicode 3.0等同于ISO/IEC 10646-1:2000
+ c.Unicode 4.0等同于ISO/IEC 10646:2003
+8.UTF-16和UTF-32因字节序的不同，又有了UTF-16BE（Big Endian）、UTF-16LE（Little Endian）和 
+  UTF-32BE（Big Endian）、UTF-32LE（Little Endian）等
+
+
+
+9.3 汉字及一些常见字符集
+1.1980--->GB2312-80
+2.1993--->GB13000
+3.1995--->GBK
+4.2000--->GB18030
+
+
+
+常用字符集比较:
+字符集               是否定长	编码方式		 其它说明
+ACSII                是		单字节7位编码		 最早的奠基性字符集
+ISO-8859-1/latin1    是		单字节8位编码		 西欧字符集，经常被一些程序员用来转码
+GB2312-80            是		双字节编码		 早期标准，不推荐再使用
+GBK                  是		双字节编码		 虽然不是国标，但支持的系统不少
+GB18030              否		2字节或4字节编码	 开始有一些支持，但数据库支持的还少见
+UTF-32               是		4字节编码		 UCS-4 原始编码，目前很少采用
+UCS-2                是		2字节编码		 Windows 2000 内部用 UCS-2
+UTF-16               否		2字节或4字节编码	 Java 和 Windows XP/NT 等内部使用 UTF-16
+UTF-8                否		1至4字节编码		 互联网和 UNIX/Linux 广泛支持的 Unicode 字符集;MySQLServer也使用UTF-8
+
+
+
+9.4 怎样选择合适的字符集
+1.对数据库来说，字符集更加重要:
+    因为数据库存储的数据大部分都是各种文字，字符集对数据库的存储、处理性能，以及日后系统的移植、推广都会有影响
+
+2.MySQL 5.0 目前支持几十种字符集，UTF-8 是 MySQL 5.0 支持的唯一 Unicode 字符集，但版本是 3.0，不支持 4 字节的扩展部分
+
+面对众多的字符集，我们该如何选择呢？
+
+虽然没有一定之规，但在选择数据库字符集时，可以根据应用的需求，结合上面介绍的一些字符集的特点来权衡，主要考虑因素包括：
+（1）满足应用支持语言的需求，如果应用要处理各种各样的文字，或者将发布到使用
+     不同语言的国家或地区，就应该选择 Unicode 字符集。对 MySQL 来说，目前就是 UTF-8
+（2）如果应用中涉及已有数据的导入，就要充分考虑数据库字符集对已有数据的兼容性
+     假如已有数据是 GBK 文字，如果选择 GB2312-80 为数据库字符集，就很可能出现某些文字无法正确导入的问题
+（3）如果数据库只需要支持一般中文，数据量很大，性能要求也很高，那就应该选择双字节定长编码的中文字符集，比如 GBK
+     因为，相对于 UTF-8 而言，GBK 比较“小”,每个汉字只占 2 个字节,而 UTF-8 汉字编码需要 3 个字节， 这样可以减少磁盘 I/O、 数据库 cache，
+以及网络传输的时间，从而提高性能。相反，如果应用主要处理英文字符，仅有少量汉字数
+据，那么选择 UTF-8 更好，因为 GBK、UCS-2、UTF-16 的西文字符编码都是 2 个字节,会造成
+很大不必要的开销。
+（4）如果数据库需要做大量的字符运算，如比较、排序等，选择定长字符集可能更好，
+因为定长字符集的处理速度要比变长字符集的处理速度快。
+（5）如果所有客户端程序都支持相同的字符集，应该优先选择该字符集作为数据库字
+符集。这样可以避免因字符集转换带来的性能开销和数据损失
+
+
+
+
+---------插播----------
+http://www.111cn.net/database/mysql/55781.htm
+
+基本概念：
+• 字符(Character)是指人类语言中最小的表义符号。例如’A'、’B'等
+• 给定一系列字符，对每个字符赋予一个数值，用数值来代表对应的字符，这一数值就是字符的编码(Encoding)。例如，我们给字符’A'赋予数值0，给字符’B'赋予数值1，则0就是字符’A'的编码；
+• 给定一系列字符并赋予对应的编码后，所有这些字符和编码对组成的集合就是字符集(Character Set)。例如，给定字符列表为{’A',’B'}时，{’A'=>0, ‘B’=>1}就是一个字符集；
+• 字符序(Collation)是指在同一字符集内字符之间的比较规则；
+• 确定字符序后，才能在一个字符集上定义什么是等价的字符，以及字符之间的大小关系；
+• 每个字符序唯一对应一种字符集，但一个字符集可以对应多种字符序，其中有一个是默认字符序(Default Collation)；
+• MySQL中的字符序名称遵从命名惯例：以字符序对应的字符集名称开头；以_ci(表示大小写不敏感)、_cs(表示大小写敏感)或_bin(表示按编码值比较)结尾。例如：在字符序“utf8_general_ci”下，字符“a”和“A”是等价的
+
+
+MySQL的字符集支持：
+1、字符集(Character set)
+2、排序比较方式(Collation)
+通过命令：show character set 和 show collation 可以分别查看Mysql支持的字符集和排序方式
+mysql> show character set;
+mysql> show collation;
+
+
+Mysql对于字符集的支持细化到四个层次：
+1、服务器(server)
+2、数据库(database)
+3、数据表(table)(字段column)
+4、连接(connection)
+   
+
+MySQL字符集变量：
+– character_set_server：默认的内部操作字符集
+– character_set_client：客户端来源数据使用的字符集
+– character_set_connection：连接层字符集
+– character_set_results：查询结果字符集
+– character_set_database：当前选中数据库的默认字符集
+– character_set_system：系统元数据(字段名等)字符集
+– 还有以collation_开头的同上面对应的变量，用来描述字符序
+
+
+1、查看默认字符集
+>SHOW VARIABLES LIKE 'character%';
++--------------------------+------------------------------------------------------------------------+
+| Variable_name            | Value                                                                  |
++--------------------------+------------------------------------------------------------------------+
+| character_set_client     | utf8                                                                   |
+| character_set_connection | utf8                                                                   |
+| character_set_database   | utf8                                                                   |
+| character_set_filesystem | binary                                                                 |
+| character_set_results    | utf8                                                                   |
+| character_set_server     | utf8                                                                   |
+| character_set_system     | utf8                                                                   |
+| character_sets_dir       | /usr/local/Percona-Server-5.7.15-9-Linux.x86_64.ssl101/share/charsets/ |
++--------------------------+------------------------------------------------------------------------+
+8 rows in set (0.01 sec)
+
+
+2.查看默认的排序方式
+>show variables like 'collation_%';
++----------------------+-----------------+
+| Variable_name        | Value           |
++----------------------+-----------------+
+| collation_connection | utf8_general_ci |
+| collation_database   | utf8_bin        |
+| collation_server     | utf8_bin        |
++----------------------+-----------------+
+3 rows in set (0.01 sec)
+
+
+
+3.用introducer指定文本字符串的字符集：
+格式为：[_charset] ’string’ [COLLATE collation]
+例如：
+– SELECT _latin1 ’string’;
+– SELECT _utf8 ‘你好’ COLLATE utf8_general_ci;
+由introducer修饰的文本字符串在请求过程中不经过多余的转码，直接转换为内部字符集处理
+
+root@localhost[test] >select _latin1 ' string';
++---------+
+| string  |
++---------+
+|  string |
++---------+
+1 row in set (0.00 sec)
+
+root@localhost[test] >select _latin1 '你好啊'; 
++---------------------+
+| ä½ å¥½å•Š           |
++---------------------+
+| ä½ å¥½å•Š           |
++---------------------+
+1 row in set (0.00 sec)
+
+root@localhost[test] >select _utf8 '你好啊';  
++-----------+
+| 你好啊    |
++-----------+
+| 你好啊    |
++-----------+
+1 row in set (0.00 sec)
+
+root@localhost[test] >select _utf8 '你好啊' collate utf8_general_ci;
++-------------------------------------------+
+| _utf8 '你好啊' collate utf8_general_ci    |
++-------------------------------------------+
+| 你好啊                                    |
++-------------------------------------------+
+1 row in set (0.00 sec)
+
+
+4.修改默认字符集
+(1) 最简单的修改方法，就是修改mysql的my.ini文件中的字符集键值（共6个），如：
+[client]
+default-character-set = utf8
+
+default-character-set = utf8
+character-set-server = utf8
+collation-server = utf8_general_ci 
+init_connect = 'SET collation_connection = utf8_general_ci'
+init_connect = 'SET NAMES utf8'
+修改完后，重启mysql的服务
+
+
+(2) 还有一种修改字符集的方法，就是使用mysql的命令:
+mysql> SET character_set_connection = utf8 ;
+mysql> SET character_set_database = utf8 ; 
+mysql> SET character_set_server = utf8 ; 
+mysql> SET collation_server = utf8 ; 
+mysql> SET collation_database = utf8 ;
+mysql> SET character_set_client = utf8 ; 
+mysql> SET character_set_results = utf8 ; 
+mysql> SET collation_connection = utf8 ;
+
+
+(3) 一般就算设置了表的默认字符集为utf8并且通过UTF-8编码发送查询，你会发现存入数据库的仍然是乱码
+问题就出在这个connection连接层上
+
+解决方法是在发送查询前执行一下下面这句：
+SET NAMES 'utf8';
+
+它相当于下面的三句指令：
+SET character_set_client = utf8;
+SET character_set_results = utf8;
+SET character_set_connection = utf8;
+
+
+5.检测字符集问题的一些手段
+SHOW CHARACTER SET;  #查看mysql支持的字符集
+SHOW COLLATION;      #查看mysql的字符序列(排序方式)
+SHOW VARIABLES LIKE ‘character%’;  #查看mysql系统默认字符集设置值
+SHOW VARIABLES LIKE ‘collation%’; #查看mysql系统默认的字符序列(排序方式) 设置值
+SQL函数HEX、LENGTH、CHAR_LENGTH
+SQL函数CHARSET、COLLATION
+
+
+6.MySQL中的字符集转换过程：
+1. MySQL Server收到请求时将请求数据从character_set_client转换为character_set_connection；
+2. 进行内部操作前将请求数据从character_set_connection转换为内部操作字符集，其确定方法如下：
+  - 使用每个数据字段的CHARACTER SET设定值；
+  - 若上述值不存在，则使用对应数据表的DEFAULT CHARACTER SET设定值(MySQL扩展，非SQL标准)；
+  - 若上述值不存在，则使用对应数据库的DEFAULT CHARACTER SET设定值；
+  - 若上述值不存在，则使用character_set_server设定值。
+3. 将操作结果从内部操作字符集转换为character_set_results。
+
+字符集转换顺序:
+1.character_set_client
+2.character_set_connection
+3.字段
+4.表
+5.库
+6.mysql服务character_set_server
+6.character_set_results
+
+
+我们产生的乱码问题：
+a.我们的字段没有设置字符集，因此使用表的数据集；
+b.我们的表没有指定字符集，默认使用数据库存的字符集；
+c.我们的数据库在创建的时候没有指定字符集，因此使用character_set_server设定值；
+d.我们没有特意去修改character_set_server的指定字符集，因此使用mysql默认；
+e.mysql默认的字符集是latin1，因此，我们使用了latin1字符集，而我们character_set_connection的字符集是UTF-8，插入中文乱码也再所难免了
+
+
+7.MySQL默认字符集：
+MySQL对于字符集的指定可以细化到一个数据库，一张表，一列，应该用什么字符集。但是传统的程序在创建数据库和数据表时并没有使用那么复杂的配置，它们用的是默认的配置，那么，默认的配置从何而来呢？
+
+(1)编译MySQL 时，指定了一个默认的字符集，这个字符集是 latin1；
+(2)安装MySQL 时，可以在配置文件 (my.ini) 中指定一个默认的的字符集，如果没指定，这个值继承自编译时指定的；
+(3)启动mysqld 时，可以在命令行参数中指定一个默认的的字符集，如果没指定，这个值继承自配置文件中的配置,
+   此时 character_set_server 被设定为这个默认的字符集；
+(4)当创建一个新的数据库时，除非明确指定，这个数据库的字符集被缺省设定为character_set_server；
+(5)当选定了一个数据库时，character_set_database 被设定为这个数据库默认的字符集；
+(6)在这个数据库里创建一张表时，表默认的字符集被设定为 character_set_database，也就是这个数据库默认的字符集；
+(7)当在表内设置一栏时，除非明确指定，否则此栏缺省的字符集就是表默认的字符集；
+
+
+简单的总结一下:
+如果什么地方都不修改，那么所有的数据库的所有表的所有栏位的都用 latin1 存储，
+不过我们如果安装 MySQL，一般都会选择多语言支持，也就是说，安装程序会自动在配置文件中把default_character_set 设置为 UTF-8，
+这保证了缺省情况下，所有的数据库的所有表的所有栏位的都用 UTF-8 存储
+
+
+
+8.常见问题解析
+
+1)向默认字符集为utf8的数据表插入utf8编码的数据前没有设置连接字符集，查询时设置连接字符集为utf8
+ – 插入时根据MySQL服务器的默认设置，character_set_client、character_set_connection和character_set_results均为latin1；
+ – 插入操作的数据将经过latin1=>latin1=>utf8的字符集转换过程，这一过程中每个插入的汉字都会从原始的3个字节变成6个字节保存；
+ – 查询时的结果将经过utf8=>utf8的字符集转换过程，将保存的6个字节原封不动返回，产生乱码。
+   
+2)向默认字符集为latin1的数据表插入utf8编码的数据前设置了连接字符集为utf8（我们遇到的错误就是属于这一种）
+ - 插入时根据连接字符集设置，character_set_client、character_set_connection和character_set_results均为utf8；
+ - 插入数据将经过utf8=>utf8=>latin1的字符集转换，若原始数据中含有u0000~u00ff范围以外的 Unicode字符，
+   会因为无法在latin1字符集中表示而被转换为“?”(0×3F)符号，以后查询时不管连接字符集设置如何都无法恢复其内容了
+   
+
+
+9.使用MySQL字符集时的建议
+• 建立数据库/表和进行数据库操作时尽量显式指出使用的字符集，而不是依赖于MySQL的默认设置，否则MySQL升级时可能带来很大困扰；
+• 数据库和连接字符集都使用latin1时，虽然大部分情况下都可以解决乱码问题，但缺点是无法以字符为单位来进行SQL操作，
+  一般情况下将数据库和连接字符集都置为utf8是较好的选择；
+• 使用mysql CAPI（mysql提供C语言操作的API）时，初始化数据库句柄后马上用mysql_options设定 MYSQL_SET_CHARSET_NAME属性为utf8，
+  这样就不用显式地用SET NAMES语句指定连接字符集，且用mysql_ping重连断开的长连接时也会把连接字符集重置为utf8；
+• 对于mysql PHP API，一般页面级的PHP程序总运行时间较短，在连接到数据库以后显式用SET NAMES语句设置一次连接字符集即可
+  但当使用长连接时，请注意保持连接通畅并在断开重连后用SET NAMES语句显式重置连接字符集
+  
+
+
+10.其它注意事项
+• my.cnf中的default_character_set设置只影响mysql命令连接服务器时的连接字符集，不会对使用libmysqlclient库的应用程序产生任何作用！
+• 对字段进行的SQL函数操作通常都是以内部操作字符集进行的，不受连接字符集设置的影响
+• SQL语句中的裸字符串会受到连接字符集或introducer设置的影响，对于比较之类的操作可能产生完全不同的结果，需要小心！
+   
+
+ 
+11.总结：
+根据上面的分析和建议，我们解决我们遇到问题应该使用什么方法大家心里应该比较清楚了
+对，就是在创建database的时候指定字符集，不要去通过修改默认配置来达到目的，
+当然你也可以采用指定表的字符集的形式，但很容易出现遗漏，特别是在很多人都参与设计的时候，更容易纰漏
+
+因此，使用什么数据库版本，不管是3.x，还是4.0.x还是4.1.x，其实对我们来说不重要，重要的有两点：
+1.正确的设定数据库编码
+  MySQL4.0以下版本的字符集总是默认ISO8859-1，MySQL4.1在安装的时候会让你选择
+  如果你准备使用UTF-8，那么在创建数据库的时候就要指定好UTF-8(创建好以后也可以改，4.1以上版本还可以单独指定表的字符集) 
+2.正确的设定数据库connection编码
+  设置好数据库的编码后，在连接数据库时候，应该指定connection的编码，比如使用jdbc连接时，指定连接为utf8方式
+
