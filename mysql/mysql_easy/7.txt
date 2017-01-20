@@ -549,16 +549,22 @@ reference_option:
 
 
 
-root@localhost[test] >create table city
-    -> (city_id smallint unsigned not null auto_increment,
-    -> city varchar(50) not null,
-    -> country_id smallint unsigned not null,
-    -> last_update timestamp not null default current_timestamp on update current_timestamp,
-    -> primary key (city_id),
-    -> key idx_fk_country_id (country_id),
-    -> constraint `fk_city_country` foreign key (country_id) references country (country_id) on delete restrict on update cascade
-    -> ) engine=innodb default charset=utf8;
+create table city
+(city_id smallint unsigned not null auto_increment,
+city varchar(50) not null,
+country_id smallint unsigned not null,
+last_update timestamp not null default current_timestamp on update current_timestamp,
+primary key (city_id),
+key idx_fk_country_id (country_id),
+constraint `fk_city_country` foreign key (country_id) references country (country_id) on delete restrict on update cascade
+) engine=innodb default charset=utf8;
 Query OK, 0 rows affected (0.02 sec)
+
+
+mysql> create table city (city_id smallint unsigned not null auto_increment, city varchar(50) not null, country_id smallint unsigned not null, last_update timestamp not null default current_timestamp on update current_timestamp, primary key (city_id), key idx_fk_country_id (country_id), constraint `fk_city_country` foreign key (country_id) references country (country_id) on delete restrict on update cascade ) engine=innodb default charset=utf8;
+Query OK, 0 rows affected (0.02 sec)
+
+
 
 
 root@localhost[test] >desc city;
