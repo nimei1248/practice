@@ -1,0 +1,608 @@
+                                        第11章  视图
+
+MySQL 从 5.0.1 版本开始提供视图功能,本章将对 MySQL 中的视图进行介绍
+
+
+11.1 什么是视图
+1.视图(View)是一种虚拟存在的表,对于使用视图的用户来说基本上是透明的
+2.视图并不在数据库中实际存在,行和列数据来自 定义视图的查询中使用的表,并且是在使用视图时是动态生成的
+3.视图相对于普通的表的优势主要包括以下几项:
+  1.简单:
+         使用视图的用户完全不需要关心后面对应的表的结构、关联条件和筛选条件,
+         对用户来说已经是过滤好的复合条件的结果集
+  2.安全:
+         使用视图的用户只能访问他们被允许查询的结果集,对表的权限管理并不能限制到某个行某个列,
+         但是通过视图就可以简单的实现
+  3.数据独立:
+         一旦视图的结构确定了,可以屏蔽表结构变化对用户的影响,源表增加列对视图没有影响;
+         源表修改列名,则可以通过修改视图来解决,不会对访问者造成影响
+
+
+
+11.2 视图操作
+     视图的操作包括创建或者修改视图、删除视图,以及查看视图定义
+
+
+11.2.1 创建或者修改视图
+a.创建视图需要有 CREATE VIEW 的权限,并且对于查询涉及的列有 SELECT 权限
+b.如果使用 CREATE OR REPLACE 或者 ALTER 修改视图,那么还需要该视图的 DROP 权限
+
+创建视图的语法为:
+mysql> help create view
+Name: 'CREATE VIEW'
+Description:
+Syntax:
+CREATE
+    [OR REPLACE]
+    [ALGORITHM = {UNDEFINED | MERGE | TEMPTABLE}]
+    [DEFINER = { user | CURRENT_USER }]
+    [SQL SECURITY { DEFINER | INVOKER }]
+    VIEW view_name [(column_list)]
+    AS select_statement
+    [WITH [CASCADED | LOCAL] CHECK OPTION]
+
+
+修改视图的语法为:
+mysql> help alter view
+Name: 'ALTER VIEW'
+Description:
+Syntax:
+ALTER
+    [ALGORITHM = {UNDEFINED | MERGE | TEMPTABLE}]
+    [DEFINER = { user | CURRENT_USER }]
+    [SQL SECURITY { DEFINER | INVOKER }]
+    VIEW view_name [(column_list)]
+    AS select_statement
+    [WITH [CASCADED | LOCAL] CHECK OPTION]
+
+
+创建视图事例：
+mysql> use test;
+Database changed
+mysql> create table vw (qty int, price int);
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> desc vw;
++-------+---------+------+-----+---------+-------+
+| Field | Type    | Null | Key | Default | Extra |
++-------+---------+------+-----+---------+-------+
+| qty   | int(11) | YES  |     | NULL    |       |
+| price | int(11) | YES  |     | NULL    |       |
++-------+---------+------+-----+---------+-------+
+2 rows in set (0.00 sec)
+
+mysql> insert into vw values(3,50);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from vw;
++------+-------+
+| qty  | price |
++------+-------+
+|    3 |    50 |
++------+-------+
+1 row in set (0.01 sec)
+
+mysql> create view v as select qty,price,qty * price as value from vw;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from v;
++------+-------+-------+
+| qty  | price | value |
++------+-------+-------+
+|    3 |    50 |   150 |
++------+-------+-------+
+1 row in set (0.00 sec)
+
+mysql> select * from vw;
++------+-------+
+| qty  | price |
++------+-------+
+|    3 |    50 |
++------+-------+
+1 row in set (0.00 sec)
+
+
+
+The results obtained from a view may be affected if you change the query processing environment by changing system variables:
+
+mysql> create view v2 (mycol) as select 'abc';
+Query OK, 0 rows affected (0.01 sec)
+
+
+mysql> show variables like '%sql_mode%'\G
+*************************** 1. row ***************************
+Variable_name: sql_mode
+        Value: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+1 row in set (0.01 sec)
+
+mysql> set sql_mode = '';
+Query OK, 0 rows affected, 1 warning (0.00 sec)
+
+mysql> show variables like '%sql_mode%'\G
+*************************** 1. row ***************************
+Variable_name: sql_mode
+        Value:
+1 row in set (0.00 sec)
+
+
+mysql> select * from v2;
++-------+
+| mycol |
++-------+
+| abc   |
++-------+
+1 row in set (0.00 sec)
+
+mysql> select "mycol" from v2;
++-------+
+| mycol |
++-------+
+| mycol |
++-------+
+1 row in set (0.00 sec)
+
+mysql> set sql_mode = 'ANSI_QUOTES';
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> select "mycol" from v2;
++-------+
+| mycol |
++-------+
+| abc   |
++-------+
+1 row in set (0.00 sec)
+
+
+mysql> set sql_mode = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
+Query OK, 0 rows affected, 1 warning (0.00 sec)
+
+mysql> show variables like '%sql_mode%'\G
+*************************** 1. row ***************************
+Variable_name: sql_mode
+        Value: ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+1 row in set (0.00 sec)
+
+
+MySQL 视图的定义有一些限制:
+例如,在 FROM 关键字后面不能包含子查询,这和其它数据库是不同的,
+     如果视图是从其它数据库迁移过来的,那么可能需要因此做一些改动,
+     可以将子查询的内容先定义成一个视图,然后对该视图再创建视图就可以实现类似的功能了
+
+
+视图的可更新性和视图中查询的定义有关系,以下类型的视图是不可更新的:
+1.包含以下关键字的 SQL 语句:
+    1.聚合函数(SUM、MIN、MAX、COUNT 等)
+    2.DISTINCT
+    3.GROUP BY
+    4.HAVING
+    5.UNION 或者 UNION ALL。
+2.常量视图
+3.SELECT中包含子查询
+4.JION
+5.FROM一个不能更新的视图
+6.WHERE子句的子查询引用了FROM字句中的表
+
+
+例如,以下的视图都是不可更新的:
+1.包含聚合函数
+mysql>use test
+mysql> create table payment (country_id smallint, payment_date datetime, amount decimal(15,2), key idx_fk_country_id (country_id) );
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> desc payment;
++--------------+---------------+------+-----+---------+-------+
+| Field        | Type          | Null | Key | Default | Extra |
++--------------+---------------+------+-----+---------+-------+
+| country_id   | smallint(6)   | YES  | MUL | NULL    |       |
+| payment_date | datetime      | YES  |     | NULL    |       |
+| amount       | decimal(15,2) | YES  |     | NULL    |       |
++--------------+---------------+------+-----+---------+-------+
+3 rows in set (0.00 sec)
+
+mysql> insert into payment values(1,'2016-05-01',100000),(2,'2016-08-01',150000);
+Query OK, 2 rows affected (0.00 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql> insert into payment values(3,'2016-08-01',100000),(4,'2017-08-01',150000);
+Query OK, 2 rows affected (0.00 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+
+创建视图:
+mysql> create or replace view payment_sum as
+    -> select country_id,sum(amount) from payment group by country_id;
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> select * from payment_sum;
++------------+-------------+
+| country_id | sum(amount) |
++------------+-------------+
+|          1 |   100000.00 |
+|          2 |   150000.00 |
+|          3 |   100000.00 |
+|          4 |   150000.00 |
++------------+-------------+
+4 rows in set (0.00 sec)
+
+
+插入相同id，可以看出对应的值通过sum函数会相加
+mysql> insert into payment values(3,'2016-09-01',100000),(4,'2017-09-01',150000);
+Query OK, 2 rows affected (0.01 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql> select * from payment_sum;
++------------+-------------+
+| country_id | sum(amount) |
++------------+-------------+
+|          1 |   100000.00 |
+|          2 |   150000.00 |
+|          3 |   200000.00 |
+|          4 |   300000.00 |
++------------+-------------+
+4 rows in set (0.00 sec)
+
+发现不能做更新操作：
+mysql> update payment_sum set amount=60000 where country_id=4;
+ERROR 1288 (HY000): The target table payment_sum of the UPDATE is not updatable
+
+mysql> delete from payment_sum where country_id=4;
+ERROR 1288 (HY000): The target table payment_sum of the DELETE is not updatable
+
+
+
+2.常量视图
+
+mysql> select 3.1415926 as pi;
++-----------+
+| pi        |
++-----------+
+| 3.1415926 |
++-----------+
+1 row in set (0.00 sec)
+
+mysql> create or replace view pi2 as select 3.1415926 as pi;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from pi2;
++-----------+
+| pi        |
++-----------+
+| 3.1415926 |
++-----------+
+1 row in set (0.00 sec)
+
+mysql> update pi2 set pi = 'xxoo';
+ERROR 1288 (HY000): The target table pi2 of the UPDATE is not updatable
+
+
+
+3.select 中包含子查询
+mysql> select city from city where city_id=1;
++-------+
+| city  |
++-------+
+| Kabul |
++-------+
+1 row in set (0.00 sec)
+
+mysql> create view city_view as select (select city from city where city_id=1);
+ERROR 1050 (42S01): Table 'city_view' already exists
+mysql> drop view city_view;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> create view city_view as select (select city from city where city_id=1);
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> select * from city_view;
++-----------------------------------------+
+| (select city from city where city_id=1) |
++-----------------------------------------+
+| Kabul                                   |
++-----------------------------------------+
+1 row in set (0.00 sec)
+
+mysql> delete from city_view;
+ERROR 1288 (HY000): The target table city_view of the DELETE is not updatable
+
+
+
+WITH [CASCADED | LOCAL] CHECK OPTION 决定了是否允许更新数据使记录不再满足视图的条件
+这个选项与 Oracle 数据库中的选项是类似的,其中:
+1.LOCAL是只要满足本视图的条件就可以更新;
+2.CASCADED则是必须满足所有针对该视图的所有视图的条件才可以更新
+3.如果没有明确是 LOCAL 还是 CASCADED,则默认是 CASCADED
+
+例如,对 payment 表创建两层视图,并进行更新操作:
+ql> use test;
+Database changed
+mysql> show create view payment_sum \G
+*************************** 1. row ***************************
+                View: payment_sum
+         Create View: CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `payment_sum` AS select `payment`.`country_id` AS `country_id`,sum(`payment`.`amount`) AS `sum(amount)` from `payment` group by `payment`.`country_id`
+character_set_client: utf8
+collation_connection: utf8_general_ci
+1 row in set (0.00 sec)
+
+mysql> drop view payment_sum;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> show create view payment_sum \G
+ERROR 1146 (42S02): Table 'test.payment_sum' doesn't exist
+
+
+
+mysql> select country_id,amount from payment;
++------------+-----------+
+| country_id | amount    |
++------------+-----------+
+|          1 | 100000.00 |
+|          2 | 150000.00 |
+|          3 | 100000.00 |
+|          4 | 150000.00 |
+|          3 | 100000.00 |
+|          4 | 150000.00 |
++------------+-----------+
+6 rows in set (0.00 sec)
+
+
+
+mysql> select country_id,amount from payment where amount < 150000;
++------------+-----------+
+| country_id | amount    |
++------------+-----------+
+|          1 | 100000.00 |
+|          3 | 100000.00 |
+|          3 | 100000.00 |
++------------+-----------+
+3 rows in set (0.00 sec)
+
+mysql> create or replace view payment_view as select country_id,amount from payment where amount < 150000 with check option;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from payment_view;
++------------+-----------+
+| country_id | amount    |
++------------+-----------+
+|          1 | 100000.00 |
+|          3 | 100000.00 |
+|          3 | 100000.00 |
++------------+-----------+
+3 rows in set (0.00 sec)
+
+
+
+
+mysql> create or replace view payment_local as select country_id,amount from payment_view where amount <= 150000 with local check option;
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> select * from payment_view;                                                                                  +------------+-----------+
+| country_id | amount    |
++------------+-----------+
+|          1 | 100000.00 |
+|          3 | 100000.00 |
+|          3 | 100000.00 |
++------------+-----------+
+3 rows in set (0.00 sec)
+
+mysql> create or replace view payment_cascaded as select country_id,amount from payment_view where amount <= 150000 with cascaded check option;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from payment_local;
++------------+-----------+
+| country_id | amount    |
++------------+-----------+
+|          1 | 100000.00 |
+|          3 | 100000.00 |
+|          3 | 100000.00 |
++------------+-----------+
+3 rows in set (0.00 sec)
+
+mysql> select * from payment_cascaded;
++------------+-----------+
+| country_id | amount    |
++------------+-----------+
+|          1 | 100000.00 |
+|          3 | 100000.00 |
+|          3 | 100000.00 |
++------------+-----------+
+3 rows in set (0.00 sec)
+
+
+
+mysql> select * from payment_local limit 1;
++------------+-----------+
+| country_id | amount    |
++------------+-----------+
+|          1 | 100000.00 |
++------------+-----------+
+1 row in set (0.00 sec)
+
+mysql> update payment_local set amount=10 where country_id=1;
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> select * from payment_local limit 1;
++------------+--------+
+| country_id | amount |
++------------+--------+
+|          1 |  10.00 |
++------------+--------+
+1 row in set (0.00 sec)
+
+
+
+
+----第2次测试
+mysql> desc payment;
++--------------+---------------+------+-----+---------+-------+
+| Field        | Type          | Null | Key | Default | Extra |
++--------------+---------------+------+-----+---------+-------+
+| country_id   | smallint(6)   | YES  | MUL | NULL    |       |
+| payment_date | datetime      | YES  |     | NULL    |       |
+| amount       | decimal(15,2) | YES  |     | NULL    |       |
++--------------+---------------+------+-----+---------+-------+
+3 rows in set (0.00 sec)
+
+mysql> create or replace view payment_view as select country_id,amount from payment where amount < 150000 with check option;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from payment_view;
++------------+--------+
+| country_id | amount |
++------------+--------+
+|          1 |  10.00 |
+|          3 |  30.00 |
+|          3 |  30.00 |
++------------+--------+
+3 rows in set (0.00 sec)
+
+mysql> create or replace view payment_view1 as select country_id,amount from payment_view where amount >= 150000 with local check option;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from payment_view;                                                                                  +------------+--------+
+| country_id | amount |
++------------+--------+
+|          1 |  10.00 |
+|          3 |  30.00 |
+|          3 |  30.00 |
++------------+--------+
+3 rows in set (0.00 sec)
+
+mysql> select * from payment_view1;
+Empty set (0.00 sec)
+
+mysql> drop view payment_view1;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> create or replace view payment_view1 as select country_id,amount from payment_view where amount < 30 with local check option;
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> select * from payment_view1;
++------------+--------+
+| country_id | amount |
++------------+--------+
+|          1 |  10.00 |
++------------+--------+
+1 row in set (0.00 sec)
+
+mysql> create or replace view payment_view2 as select country_id,amount from payment_view where amount < 30 with cascaded  check option;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from payment_view2;
++------------+--------+
+| country_id | amount |
++------------+--------+
+|          1 |  10.00 |
++------------+--------+
+1 row in set (0.00 sec)
+
+mysql> select * from payment_view1;                                                                                 +------------+--------+
+| country_id | amount |
++------------+--------+
+|          1 |  10.00 |
++------------+--------+
+1 row in set (0.00 sec)
+
+mysql> update payment_view1 set amount=1000 where country_id=1;
+ERROR 1369 (HY000): CHECK OPTION failed 'test.payment_view1'
+mysql>
+mysql> update payment_view2 set amount=1000 where country_id=1;
+ERROR 1369 (HY000): CHECK OPTION failed 'test.payment_view2'
+
+
+
+
+从测试结果可以看出,payment_view1 是 WITH LOCAL CHECK OPTION 的,所以只要满足本视 图的条件就可以更新,但是 payment_view2 是 WITH CASCADED CHECK OPTION 的,必须满足 针对该视图的所有视图才可以更新,因为更新后记录不再满足 payment_view 的条件,所以 更新操作 示错误退出
+
+
+
+
+11.2.2 删除视图
+用户可以一次删除一个或者多个视图,前提是必须有该视图的 DROP 权限
+DROP VIEW [IF EXISTS] view_name [, view_name] ...[RESTRICT | CASCADE]
+mysql> drop view payment_view1;
+Query OK, 0 rows affected (0.00 sec)
+
+
+
+11.2.3  查看视图
+从MySQL 5.1版本开始,使用SHOW TABLES命令的时候不仅显示表的名字,同时也会显示
+视图的名字,而不存在单独显示视图的 SHOW VIEWS 命令
+
+1.同样,在使用 SHOW TABLE STATUS 命令的时候,不但可以显示表的信息,同时也可以显示视 图的信息。所以,可以通过下面的命令显示视图的信息:
+SHOW TABLE STATUS [FROM db_name] [LIKE 'pattern']
+下面演示的是查看 payment_sum 视图信息的操作:
+
+mysql>use test
+mysql> show table status like 'payment_sum'\G
+*************************** 1. row ***************************
+           Name: payment_sum
+         Engine: NULL
+        Version: NULL
+     Row_format: NULL
+           Rows: NULL
+ Avg_row_length: NULL
+    Data_length: NULL
+Max_data_length: NULL
+   Index_length: NULL
+      Data_free: NULL
+ Auto_increment: NULL
+    Create_time: NULL
+    Update_time: NULL
+     Check_time: NULL
+      Collation: NULL
+       Checksum: NULL
+ Create_options: NULL
+        Comment: VIEW
+1 row in set (0.00 sec)
+
+
+2.如果需要查询某个视图的定义,可以使用 SHOW CREATE VIEW 命令进行查看:
+mysql> show create view payment_sum \G
+*************************** 1. row ***************************
+                View: payment_sum
+         Create View: CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `payment_sum` AS select `payment`.`country_id` AS `country_id`,sum(`payment`.`amount`) AS `sum(amount)` from `payment` group by `payment`.`country_id`
+character_set_client: utf8
+collation_connection: utf8_general_ci
+1 row in set (0.00 sec)
+
+
+3.最后,通过查看系统表 information_schema.views 也可以查看视图的相关信息:
+mysql> desc views;
++----------------------+--------------+------+-----+---------+-------+
+| Field                | Type         | Null | Key | Default | Extra |
++----------------------+--------------+------+-----+---------+-------+
+| TABLE_CATALOG        | varchar(512) | NO   |     |         |       |
+| TABLE_SCHEMA         | varchar(64)  | NO   |     |         |       |
+| TABLE_NAME           | varchar(64)  | NO   |     |         |       |
+| VIEW_DEFINITION      | longtext     | NO   |     | NULL    |       |
+| CHECK_OPTION         | varchar(8)   | NO   |     |         |       |
+| IS_UPDATABLE         | varchar(3)   | NO   |     |         |       |
+| DEFINER              | varchar(93)  | NO   |     |         |       |
+| SECURITY_TYPE        | varchar(7)   | NO   |     |         |       |
+| CHARACTER_SET_CLIENT | varchar(32)  | NO   |     |         |       |
+| COLLATION_CONNECTION | varchar(32)  | NO   |     |         |       |
++----------------------+--------------+------+-----+---------+-------+
+10 rows in set (0.00 sec)
+
+mysql> select * from views where table_name = 'payment_sum' \G
+*************************** 1. row ***************************
+       TABLE_CATALOG: def
+        TABLE_SCHEMA: test
+          TABLE_NAME: payment_sum
+     VIEW_DEFINITION: select `test`.`payment`.`country_id` AS `country_id`,sum(`test`.`payment`.`amount`) AS `sum(amount)` from `test`.`payment` group by `test`.`payment`.`country_id`
+        CHECK_OPTION: NONE
+        IS_UPDATABLE: NO
+             DEFINER: root@localhost
+       SECURITY_TYPE: DEFINER
+CHARACTER_SET_CLIENT: utf8
+COLLATION_CONNECTION: utf8_general_ci
+1 row in set (0.00 sec)
+
+
+
+
+11.3 小结
+本章主要介绍了 MySQL  提供的视图创建、维护等相关语法
+如果从不支持视图的旧版本升级到提供视图功能的新版本后,要想使用视图,则需要升级授权表,使之包含与视图有关的权限
+相关的升级步骤,可以参见 27.4 节 MySQL 升级内容
