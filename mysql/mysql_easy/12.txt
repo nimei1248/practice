@@ -607,3 +607,49 @@ http://www.jianshu.com/p/1cb06d5eda09
 http://database.51cto.com/art/201006/203159.htm
 
 
+
+
+12.2.4 变量的使用
+存储过程和函数中可以使用变量,而且在 MySQL 5.1 版本中,变量是不区分大小写的。
+
+1.变量的定义
+通过 DECLARE 可以定义一个局部变量,该变量的作用范围只能在 BEGIN...END 块中,可以用在嵌套的块中
+变量的定义必须写在复合语句的开头,并且在任何其它语句的前面。
+可以一 次声明多个相同类型的变量。如果需要,可以使用 DEFAULT 赋默认值
+
+定义一个变量的语法如下:
+mysql> help declare
+Many help items for your request exist.
+To make a more specific request, please type 'help <item>',
+where <item> is one of the following
+topics:
+   DECLARE CONDITION
+   DECLARE CURSOR
+   DECLARE HANDLER
+   DECLARE VARIABLE
+
+mysql> help declare variable
+Name: 'DECLARE VARIABLE'
+Description:
+Syntax:
+DECLARE var_name [, var_name] ... type [DEFAULT value]
+
+
+http://dev.mysql.com/doc/refman/5.7/en/identifiers.html.
+http://dev.mysql.com/doc/refman/5.7/en/declare-local-variable.html
+
+例如,定义一个 DATE 类型的变量,名称是 last_month_start:
+DECLARE last_month_start DATE;
+
+
+
+2.变量的赋值
+变量可以直接赋值,或者通过查询赋值
+直接赋值使用 SET,可以赋常量或者赋表达式,具体语法如下:
+SET var_name = expr [, var_name = expr] ...
+
+给刚才定义的变量 last_month_start 赋值,具体语法如下:
+
+http://www.cnblogs.com/rooney/archive/2012/03/09/2387732.html
+http://blog.csdn.net/jssg_tzw/article/details/39703889
+
