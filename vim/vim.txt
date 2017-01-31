@@ -1,3 +1,4 @@
 F7 diff
 https://github.com/SpaceVim/SpaceVim
 https://github.com/yangyangwithgnu/use_vim_as_ide
+https://github.com/SpaceVim/SpaceVim/blob/dev/autoload/SpaceVim/layers/tools.vim
