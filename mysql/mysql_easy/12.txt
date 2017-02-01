@@ -964,6 +964,7 @@ mysql> select @x,@x2;
   b·NOT FOUND 是对所有以 02 开头的 SQLSTATE 代码的速记
   c·SQLEXCEPTION 是对所有没有被 SQLWARNING 或 NOT FOUND 捕获的 SQLSTATE 代码的速记
 
+
 因此，上面的例子还可以写成以下几种方式：
 --捕获 mysql-error-code：
 DECLARE CONTINUE HANDLER FOR 1062 SET @x2 = 1;
@@ -977,4 +978,438 @@ DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SET @x2 = 1;
 
 
 
+12.2.6 光标的使用
+1.在存储过程和函数中可以使用光标对结果集进行循环的处理
+2.光标的使用包括光标的声明、OPEN、FETCH 和 CLOSE，其语法分别如下:
+ a.声明光标：
+    DECLARE cursor_name CURSOR FOR select_statement
 
+ b.OPEN 光标：
+    OPEN cursor_name
+
+ c.FETCH 光标：
+    FETCH cursor_name INTO var_name [, var_name] ...
+
+ d.CLOSE 光标：
+    CLOSE cursor_name
+
+以下例子是一个简单的使用光标的过程:
+1.对 payment 表按照行进行循环的处理，
+2.按照 staff_id值的不同累加 amount 的值，
+3.判断循环结束的条件是捕获 NOT FOUND 的条件，
+4.当 FETCH 光标找不到下一条记录的时候，就会关闭光标然后退出过程
+
+root@localhost[test] >select * from payment_2017;
++------------+---------------------+-----------+
+| country_id | payment_date        | amount    |
++------------+---------------------+-----------+
+|          1 | 2017-05-01 00:00:00 |  35000.00 |
+|          2 | 2017-08-01 00:00:00 | 220000.00 |
+|          3 | 2016-03-31 00:00:00 | 112200.00 |
++------------+---------------------+-----------+
+3 rows in set (0.00 sec)
+
+root@localhost[test] >delimiter $$
+root@localhost[test] >create procedure payment_stat ()
+    -> begin
+    ->    declare i_country_id int;
+    ->    declare d_amount decimal(8,2);
+    ->    declare cur_payment cursor for select country_id,amount from payment_2017;
+    ->    declare exit handler for not found close cur_payment;
+    -> 
+    ->    set @x1 = 0;
+    ->    set @x2 = 0;
+    -> 
+    ->    open cur_payment;
+    ->    repeat
+    ->        fetch cur_payment into i_country_id,d_amount;
+    ->            if i_country_id = 2 then
+    ->               set @x1 = @x1 + d_amount;
+    ->            else
+    ->               set @x2 = @x2 + d_amount;
+    ->            end if;
+    ->    until 0 end repeat;
+    -> 
+    ->    close cur_payment;
+    -> end$$
+Query OK, 0 rows affected (0.01 sec)
+
+
+root@localhost[test] >create procedure payment_stat () begin    declare i_country_id int;    declare d_amount decimal(8,2);    declare cur_payment cursor for select country_id,amount from payment_2017;    declare exit handler for not found close cur_payment;     set @x1 = 0;    set @x2 = 0;     open cur_payment;    repeat        fetch cur_payment into i_country_id,d_amount;            if i_country_id = 2 then               set @x1 = @x1 + d_amount;            else               set @x2 = @x2 + d_amount;            end if;    until 0 end repeat;     close cur_payment; end$$
+
+
+root@localhost[test] >call payment_stat();
+Query OK, 0 rows affected (0.00 sec)
+
+root@localhost[test] >select @x1,@x2;
++-----------+-----------+
+| @x1       | @x2       |
++-----------+-----------+
+| 220000.00 | 147200.00 |
++-----------+-----------+
+1 row in set (0.00 sec)
+
+
+注意：变量、条件、处理程序、光标都是通过 DECLARE 定义的，它们之间是有先后顺序的要求的
+      变量和条件必须在最前面声明，然后才能是光标的声明，最后才可以是处理程序的声明
+
+
+
+
+12.2.7 流程控制
+可以使用 IF、CASE、LOOP、LEAVE、ITERATE、REPEAT 及 WHILE 语句进行流程的控制,下面将逐一进行说明
+
+
+1．IF 语句
+IF 实现条件判断，满足不同的条件执行不同的语句列表，具体语法如下：
+   IF search_condition THEN statement_list
+   [ELSEIF search_condition THEN statement_list] ...
+   [ELSE statement_list]
+   END IF
+   12.2.6 小节中使用光标的例子中已经涉及了 IF 语句的使用，这里不再举例说明
+
+
+
+2．CASE 语句
+CASE 实现比 IF 更复杂一些的条件构造，具体语法如下:
+     CASE case_value
+           WHEN when_value THEN statement_list
+           [WHEN when_value THEN statement_list] ...
+           [ELSE statement_list]
+     END CASE
+
+     Or:
+
+     CASE
+           WHEN search_condition THEN statement_list
+           [WHEN search_condition THEN statement_list] ...
+           [ELSE statement_list]
+END CASE
+
+
+在上文光标的使用例子中，IF 语句也可以使用 CASE 语句来完成：
+
+case
+     when i_staff_id = 2 then
+          set @x1 = @x1 + d_amount;
+     else
+          set @x2 = @x2 + d_amount;
+     end case;
+
+     或者：
+
+     case i_staff_id
+          when 2 then
+               set @x1 = @x1 + d_amount;
+     else
+               set @x2 = @x2 + d_amount;
+     end case;
+
+
+root@localhost[test] >delimiter $$
+root@localhost[test] >create procedure payment_stat5 ()
+    -> begin
+    ->    declare i_country_id int;
+    ->    declare d_amount decimal(8,2);
+    ->    declare cur_payment cursor for select country_id,amount from payment_2017;
+    ->    declare exit handler for not found close cur_payment;
+    -> 
+    ->    set @x1 = 0;
+    ->    set @x2 = 0;
+    -> 
+    ->    open cur_payment;
+    ->    repeat
+    ->        fetch cur_payment into i_country_id,d_amount;
+    ->           case
+    ->                when i_country_id = 2 then
+    ->                     set @x1 = @x1 + d_amount;
+    ->                else
+    ->                     set @x2 = @x2 + d_amount;
+    ->           end case;
+    ->    until 0 end repeat;
+    ->    close cur_payment;
+    -> end$$
+Query OK, 0 rows affected (0.00 sec)
+
+root@localhost[test] >delimiter ;
+root@localhost[test] >call payment_stat5();
+Query OK, 0 rows affected (0.00 sec)
+
+root@localhost[test] >select @x1,@x2;
++-----------+-----------+
+| @x1       | @x2       |
++-----------+-----------+
+| 220000.00 | 147200.00 |
++-----------+-----------+
+1 row in set (0.00 sec)
+
+
+
+root@localhost[test] >delimiter $$
+root@localhost[test] >create procedure payment_stat6 ()
+    ->  begin
+    ->     declare i_country_id int;
+    ->     declare d_amount decimal(8,2);
+    ->     declare cur_payment cursor for select country_id,amount from payment_2017;
+    ->     declare exit handler for not found close cur_payment;
+    ->  
+    ->     set @x1 = 0;
+    ->     set @x2 = 0;
+    ->  
+    ->     open cur_payment;
+    ->     repeat
+    ->         fetch cur_payment into i_country_id,d_amount;
+    ->             case i_country_id
+    ->                  when 2 then
+    ->                       set @x1 = @x1 + d_amount;
+    ->                  else
+    ->                       set @x2 = @x2 + d_amount;
+    ->             end case;
+    ->     until 0 end repeat;
+    ->     close cur_payment;
+    ->  end$$
+Query OK, 0 rows affected (0.01 sec)
+
+root@localhost[test] >delimiter ;
+root@localhost[test] >call payment_stat6();
+Query OK, 0 rows affected (0.00 sec)
+
+root@localhost[test] >select @x1,@x2;
++-----------+-----------+
+| @x1       | @x2       |
++-----------+-----------+
+| 220000.00 | 147200.00 |
++-----------+-----------+
+1 row in set (0.00 sec)
+
+
+
+
+
+3．LOOP 语句
+LOOP 实现简单的循环，退出循环的条件需要使用其它的语句定义，通常可以使用 LEAVE 语句实现，具体语法如下：
+[begin_label:] LOOP
+      statement_list
+END LOOP [end_label]
+如果不在 statement_list 中增加退出循环的语句，那么 LOOP 语句可以用来实现简单的死循环
+
+
+
+
+4．LEAVE 语句
+用来从标注的流程构造中退出，通常和 BEGIN ... END 或者循环一起使用
+下面是一个使用 LOOP 和 LEAVE 的简单例子，循环 100 次向 actor 表中插入记录,当插入 100条记录后，退出循环:
+
+root@localhost[test] >desc actor;
++------------+-------------+------+-----+---------+-------+
+| Field      | Type        | Null | Key | Default | Extra |
++------------+-------------+------+-----+---------+-------+
+| actor_id   | int(11)     | NO   |     | 1       |       |
+| first_name | varchar(20) | NO   | PRI | NULL    |       |
+| last_name  | varchar(20) | NO   |     | NULL    |       |
++------------+-------------+------+-----+---------+-------+
+3 rows in set (0.00 sec)
+
+root@localhost[test] >drop table actor;
+Query OK, 0 rows affected (0.02 sec)
+
+root@localhost[test] >create table actor(actor_id int not null auto_increment primary key, first_name varchar(20) not null, last_name varchar(20) not null);
+Query OK, 0 rows affected (0.02 sec)
+
+root@localhost[test] >desc actor;
++------------+-------------+------+-----+---------+----------------+
+| Field      | Type        | Null | Key | Default | Extra          |
++------------+-------------+------+-----+---------+----------------+
+| actor_id   | int(11)     | NO   | PRI | NULL    | auto_increment |
+| first_name | varchar(20) | NO   |     | NULL    |                |
+| last_name  | varchar(20) | NO   |     | NULL    |                |
++------------+-------------+------+-----+---------+----------------+
+3 rows in set (0.00 sec)
+
+root@localhost[test] >delimiter $$
+root@localhost[test] >create procedure actor_insert8()
+    -> begin
+    ->    set @x = 0;
+    ->    ins: loop
+    ->         set @x = @x + 1;
+    ->         if @x = 100 then
+    ->            leave ins;
+    ->         end if;
+    ->        
+    ->         insert into actor(first_name,last_name) values('xxx','201');
+    ->    end loop ins;
+    -> end$$
+Query OK, 0 rows affected (0.00 sec)
+
+root@localhost[test] >delimiter ;
+root@localhost[test] >call actor_insert8();
+Query OK, 0 rows affected (0.54 sec)
+
+root@localhost[test] >select * from actor limit 3;
++----------+------------+-----------+
+| actor_id | first_name | last_name |
++----------+------------+-----------+
+|        1 | xxx        | 201       |
+|        2 | xxx        | 201       |
+|        3 | xxx        | 201       |
++----------+------------+-----------+
+3 rows in set (0.00 sec)
+
+root@localhost[test] >select count(*) from actor;        
++----------+
+| count(*) |
++----------+
+|       99 |
++----------+
+1 row in set (0.00 sec)
+
+root@localhost[test] >select count(*) from actor where first_name='xxx';
++----------+
+| count(*) |
++----------+
+|       99 |
++----------+
+1 row in set (0.00 sec)
+
+
+
+
+5．ITERATE 语句
+ITERATE 语句必须用在循环中，作用是跳过当前循环的剩下的语句，直接进入下一轮循环
+
+下面的例子使用了 ITERATE 语句，当@x 变量是偶数的时候，不再执行循环中剩下的语句，而直接进行下一轮的循环：
+接着上一个实验开始做:
+root@localhost[test] >delimiter $$
+root@localhost[test] >create procedure actor_insert9()
+    -> begin
+    ->    set @x = 0;
+    ->    ins: loop
+    ->         set @x = @x + 1;
+    ->         if @x = 10 then
+    ->            leave ins;
+    ->         elseif mod(@x,2) = 0 then
+    ->            iterate ins;
+    ->         end if;
+    -> 
+    ->         insert into actor(actor_id,first_name,last_name) values(@x+200, 'yyy', @x);
+    ->    end loop ins;
+    -> end$$
+Query OK, 0 rows affected (0.00 sec)
+
+root@localhost[test] >delimiter ;
+root@localhost[test] >call actor_insert9();
+Query OK, 0 rows affected (0.02 sec)
+
+root@localhost[test] >select * from actor where first_name='yyy';
++----------+------------+-----------+
+| actor_id | first_name | last_name |
++----------+------------+-----------+
+|      201 | yyy        | 1         |
+|      203 | yyy        | 3         |
+|      205 | yyy        | 5         |
+|      207 | yyy        | 7         |
+|      209 | yyy        | 9         |
++----------+------------+-----------+
+5 rows in set (0.00 sec)
+
+
+
+
+6．REPEAT 语句
+有条件的循环控制语句，当满足条件的时候退出循环，具体语法如下：
+[begin_label:] REPEAT
+statement_list
+UNTIL search_condition
+END REPEAT [end_label]
+
+在“12.2.6 光标的使用”小节中的例子就使用 REPEAT 语句实现光标的循环获得，下面节选
+的代码就是其中使用 REPEAT 语句的部分，详细的执行过程请参照 12.2.6 小节，这里不再赘述
+root@localhost[test] >create procedure payment_stat ()
+    -> begin
+    ->    declare i_country_id int;
+    ->    declare d_amount decimal(8,2);
+    ->    declare cur_payment cursor for select country_id,amount from payment_2017;
+    ->    declare exit handler for not found close cur_payment;
+    ->
+    ->    set @x1 = 0;
+    ->    set @x2 = 0;
+    ->
+    ->    open cur_payment;
+    ->    repeat
+    ->        fetch cur_payment into i_country_id,d_amount;
+    ->            if i_country_id = 2 then
+    ->               set @x1 = @x1 + d_amount;
+    ->            else
+    ->               set @x2 = @x2 + d_amount;
+    ->            end if;
+    ->    until 0 end repeat;
+    ->
+    ->    close cur_payment;
+    -> end$$
+Query OK, 0 rows affected (0.01 sec)
+
+
+
+
+7．WHILE 语句
+WHILE 语句实现的也是有条件的循环控制语句，即当满足条件时执行循环的内容，具体语法如下：
+[begin_label:] WHILE search_condition DO
+statement_list
+END WHILE [end_label]
+
+WHILE 循环和 REPEAT 循环的区别在于：
+1.WHILE 是满足条件才执行循环，REPEAT 是满足条件退出循环；
+2.WHILE 在首次循环执行之前就判断条件，所以循环最少执行 0 次，而 REPEAT 是在首次执行循环之后才判断条件，所以循环最少执行 1 次
+
+以下例子用来对比 REPEAT 和 WHILE 语句的功能：
+root@localhost[test] >delimiter $$
+root@localhost[test] >create procedure loop_demo()
+    -> begin
+    ->     set @x = 1, @x1 = 1;
+    ->     repeat
+    ->         set @x = @x + 1;
+    ->     until @x > 0 end repeat;
+    -> 
+    ->     while @x1 < 0 do
+    ->         set @x1 = @x1 + 1;
+    ->     end while;
+    -> end$$
+ERROR 2006 (HY000): MySQL server has gone away
+No connection. Trying to reconnect...
+Connection id:    97
+Current database: test
+
+Query OK, 0 rows affected (0.00 sec)
+
+root@localhost[test] >delimiter ;
+root@localhost[test] >
+root@localhost[test] >select @x,@x1;
++------+------+
+| @x   | @x1  |
++------+------+
+| NULL | NULL |
++------+------+
+1 row in set (0.00 sec)
+
+root@localhost[test] >call loop_demo();
+Query OK, 0 rows affected (0.00 sec)
+
+root@localhost[test] >select @x,@x1;    
++------+------+
+| @x   | @x1  |
++------+------+
+|    2 |    1 |
++------+------+
+1 row in set (0.00 sec)
+从判断的条件上看，初始值都是满足退出循环的条件的，但是 REPEAT 循环仍然执行了一次以后才退出循环的，而 WHILE 循环则一次都没有执行
+
+
+
+12.3 小结
+1.本章主要介绍了存储过程和函数的创建、修改的方式，存储过程、函数的适用场合，
+    并介绍了存储过程和函数中的变量、条件和处理、光标、流程控制的定义和使用，这些对初学者编写简单的存储过程和函数会有所帮助
+2.虽然使用变量、条件和处理、光标和流程控制可以编写功能强大的存储过程和函数，并进行复杂的逻辑处理，但是由于篇幅问题，
+    本章并没有对这部分内容进行深入，读者如果有兴趣的话，可以查询在线的 MySQL 文档获得帮助
+3.最后要强调的是，存储过程和函数的优势是可以将数据的处理放在数据库服务器上进行，避免将大量的结果集传输给客户端，减少数据的传输，
+    但是在数据库服务器上进行大量的复杂运算也会占用服务器的 CPU，造成数据库服务器的压力，
+    所以不要在存储过程和函数中进行大量的复杂运算，应尽量将这些运算操作分摊到应用服务器上执行
