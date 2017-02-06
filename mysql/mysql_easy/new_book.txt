@@ -1,0 +1,29 @@
+MySQL管理之道：性能调优、高可用与监控（第2版）    贺春旸:
+http://book.51cto.com/art/201611/521479.htm
+http://book.51cto.com/art/201701/529482.htm
+
+http://down.51cto.com/data/2270374
+
+MySQL技术内幕：SQL编程    姜承尧
+http://book.51cto.com/art/201204/331291.htm
+http://book.51cto.com/art/201204/331334.htm
+
+MySQL管理之道：性能调优、高可用与监控    贺春旸:
+http://book.51cto.com/art/201402/429083.htm
+
+MySQL技术内幕:第4版:
+http://book.51cto.com/art/201106/272073.htm
+
+MySQL性能调优与架构设计    简朝阳:
+http://book.51cto.com/art/200906/132406.htm
+
+MySQL技术内幕：InnoDB存储引擎（第2版）:
+http://book.51cto.com/art/201306/398298.htm
+http://book.51cto.com/art/201306/399018.htm
+http://book.51cto.com/art/201306/399038.htm
+
+kafka:
+http://book.51cto.com/art/201306/399018.htm
+
+SolarWinds网络管理系统【工程师注册版v8.0】:
+http://down.51cto.com/data/237574
