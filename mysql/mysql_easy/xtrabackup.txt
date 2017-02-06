@@ -5,3 +5,4 @@ https://www.percona.com/doc/percona-xtrabackup/2.3/index.html
 
 MySQL管理之道+性能调优、高可用与监控.pdf
 
+https://www.percona.com/blog/2017/02/02/pmm-alerting-with-grafana-working-with-templated-dashboards/
