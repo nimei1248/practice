@@ -1,0 +1,49 @@
+<html>
+<head>
+<style>
+    div{
+       width: 100px;
+       height: 100px;
+       background: red;
+       margin-top: 20px
+    }
+
+    .font-white{
+       /*类选择器 小数点开头*/
+       color: white;
+    }
+
+    #box2{
+       /*id 选择器 #开头*/
+       /*id只能选择一个元素*/
+       font-size: 20px;
+    }
+
+    [xxx="ooo"]{
+       /*属性选择器*/
+       border: 1px solid red;
+    }
+</style>
+</head>
+
+
+<body>
+
+/*class是类 可以让css找到这个元素*/
+<input class="input" type="text" name="user" xxx="ooo">
+<input class="input" type="text" name="pwd">
+
+<div class="font-white">
+一个没有样式的盒子
+</div>
+
+<div class="font-white" id="box2">
+一个没有样式的盒子2
+</div>
+
+<div>
+一个没有样式的盒子3
+</div>
+
+</body>
+</html>

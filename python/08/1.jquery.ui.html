@@ -1,0 +1,47 @@
+<button class="btn btn-primary" id="test3">切换</button>
+<p id="res"></p>
+   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+   <script>
+   $(function() {
+       $("#slider").slider({
+           animate:"fast",
+           max:32,
+           min:1,
+           value:1,
+           step:0.1,
+           slide: function(event, ui) {
+               $('#res').html(ui.value)
+           }
+   });
+
+
+   $('#test3').on('click',function(){
+      var $slider = $("#slider")
+      var isDsiable = $slider.slider("option","disabled")
+      if (isDsiable) {
+         $("#slider").slider("enable");
+      }else{
+         $("#slider").slider("disable");
+      }
+   })
+
+
+   $('#test').on('click',function(){
+      $("#slider").slider("disable");
+   })
+
+
+   $('#test1').on('click',function(){
+      $("#slider").slider("enable");
+   })
+
+
+   $('#test2').on('click',function(){
+      console.log($("#slider").slider("option","value"))
+   })
+
+
+   });
+   </script>
