@@ -1,0 +1,8 @@
+快速找到最高优先级进程:
+http://blog.csdn.net/russell_tao/article/details/7094287
+
+CPU时间片如何分配:
+http://blog.csdn.net/russell_tao/article/details/7103012
+
+多核系统的负载均衡:
+http://blog.csdn.net/russell_tao/article/details/7102297
