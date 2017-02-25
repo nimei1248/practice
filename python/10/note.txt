@@ -29,3 +29,5 @@ class Person:
 
 person1 = Person()
 print person1.name
+
+每个实例是独立的
