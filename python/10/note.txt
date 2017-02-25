@@ -1,0 +1,31 @@
+token
+cookie
+session
+
+1.函数可当成参数
+2.函数可当成返回值
+3.装饰器包含参数、返回值
+
+装饰器:
+    原始函数是参数,然后返回另外一个函数
+
+hello()
+my_hello(fn)  fn=hello hello()作为my_hello的参数
+   hello1()   返回函数hello1()
+
+
+面向对象:
+类: 抽象的概念
+实例: 实际存在的
+
+__init__基本每个类都必须有的,创建实例的时候,自动执行的函数,用于作初始化
+
+self参数是所有方法和__init__必须有的,可以理解为实例本身
+
+class Person:
+    def __init__(self):
+        self.name = 'nimei'
+        self.job = 'devops'
+
+person1 = Person()
+print person1.name
