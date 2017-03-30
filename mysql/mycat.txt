@@ -1,0 +1,149 @@
+create table MYCAT_SEQUENCE (name varchar(50) not null, current_value bigint(30) unsigned not null, increment bigint(30) unsigned not null default 1, primary key(name));
+
+
+
+DROP FUNCTION IF EXISTS `mycat_seq_currval`;
+DELIMITER ;;
+CREATE FUNCTION `mycat_seq_currval`(seq_name VARCHAR(64)) RETURNS varchar(64) CHARSET utf8
+    DETERMINISTIC
+BEGIN
+    DECLARE retval VARCHAR(64);
+    SET retval="-1,0";
+    SELECT concat(CAST(current_value AS CHAR),",",CAST(increment AS CHAR) ) INTO retval FROM MYCAT_SEQUENCE  WHERE name = seq_name;
+    RETURN retval ;
+END
+;;
+DELIMITER ;
+
+
+show create function mycat_seq_currval\G
+
+
+DROP FUNCTION IF EXISTS `mycat_seq_nextval`;
+DELIMITER ;;
+CREATE FUNCTION `mycat_seq_nextval`(seq_name VARCHAR(64)) RETURNS varchar(64) CHARSET utf8
+    DETERMINISTIC
+BEGIN
+    DECLARE retval VARCHAR(64);
+    DECLARE val BIGINT;
+    DECLARE inc INT;
+    DECLARE seq_lock INT;
+    set val = -1;
+    set inc = 0;
+    SET seq_lock = -1;
+    SELECT GET_LOCK(seq_name, 15) into seq_lock;
+    if seq_lock = 1 then
+      SELECT current_value + increment, increment INTO val, inc FROM MYCAT_SEQUENCE WHERE name = seq_name for update;
+      if val != -1 then
+          UPDATE MYCAT_SEQUENCE SET current_value = val WHERE name = seq_name;
+      end if;
+      SELECT RELEASE_LOCK(seq_name) into seq_lock;
+    end if;
+    SELECT concat(CAST((val - inc + 1) as CHAR),",",CAST(inc as CHAR)) INTO retval;
+    RETURN retval;
+END
+;;
+DELIMITER ;
+
+
+show create function mycat_seq_nextval\G
+
+
+
+
+
+DROP FUNCTION IF EXISTS `mycat_seq_nextvals`;
+DELIMITER ;;
+CREATE FUNCTION `mycat_seq_nextvals`(seq_name VARCHAR(64), count INT) RETURNS VARCHAR(64) CHARSET utf8
+    DETERMINISTIC
+BEGIN
+    DECLARE retval VARCHAR(64);
+    DECLARE val BIGINT;
+    DECLARE seq_lock INT;
+    SET val = -1;
+    SET seq_lock = -1;
+    SELECT GET_LOCK(seq_name, 15) into seq_lock;
+    if seq_lock = 1 then
+        SELECT current_value + count INTO val FROM MYCAT_SEQUENCE WHERE name = seq_name for update;
+        IF val != -1 THEN
+            UPDATE MYCAT_SEQUENCE SET current_value = val WHERE name = seq_name;
+        END IF;
+        SELECT RELEASE_LOCK(seq_name) into seq_lock;
+    end if;
+    SELECT CONCAT(CAST((val - count + 1) as CHAR), ",", CAST(val as CHAR)) INTO retval;
+    RETURN retval;
+END
+;;
+DELIMITER ;
+
+
+show create function mycat_seq_nextvals\G
+
+
+
+DROP FUNCTION IF EXISTS `mycat_seq_setval`;
+DELIMITER ;;
+CREATE FUNCTION `mycat_seq_setval`(seq_name VARCHAR(64), value BIGINT) RETURNS varchar(64) CHARSET utf8
+    DETERMINISTIC
+BEGIN
+    DECLARE retval VARCHAR(64);
+    DECLARE inc INT;
+    SET inc = 0;
+    SELECT increment INTO inc FROM MYCAT_SEQUENCE WHERE name = seq_name;
+    UPDATE MYCAT_SEQUENCE SET current_value = value WHERE name = seq_name;
+    SELECT concat(CAST(value as CHAR),",",CAST(inc as CHAR)) INTO retval;
+    RETURN retval;
+END
+;;
+DELIMITER ;
+
+
+
+show create function mycat_seq_setval\G
+
+
+
+insert into t_vip_customer (id,product_id,login_name,customer_id,create_time,create_by) values (next value for MYCATSEQ_GSEQ, 'A01','xx2',002,'2017-03-30 20:00:00','xxxxxxx')
+
+
+
+2017-03-30 20:44:54.411 ERROR [Thread-1] (io.mycat.route.MyCATSequnceProcessor.executeSeq(MyCATSequnceProcessor.java:89)) - MyCATSequenceProcessor.executeSeq(SesionSQLPair)
+java.lang.RuntimeException: can't fetch sequnce in db,sequnce :GSEQ detail:execute command denied to user 'mycat_user'@'%' for routine 'lamia.mycat_seq_nextval'
+        at io.mycat.route.sequence.handler.IncrSequenceMySQLHandler.getSeqValueFromDB(IncrSequenceMySQLHandler.java:125) ~[Mycat-server-1.6-RELEASE.jar:?]
+        at io.mycat.route.sequence.handler.IncrSequenceMySQLHandler.nextId(IncrSequenceMySQLHandler.java:94) ~[Mycat-server-1.6-RELEASE.jar:?]
+        at io.mycat.route.parser.druid.DruidSequenceHandler.getExecuteSql(DruidSequenceHandler.java:64) ~[Mycat-server-1.6-RELEASE.jar:?]
+        at io.mycat.route.MyCATSequnceProcessor.executeSeq(MyCATSequnceProcessor.java:85) ~[Mycat-server-1.6-RELEASE.jar:?]
+        at io.mycat.route.MyCATSequnceProcessor.access$200(MyCATSequnceProcessor.java:19) ~[Mycat-server-1.6-RELEASE.jar:?]
+        at io.mycat.route.MyCATSequnceProcessor$ExecuteThread.run(MyCATSequnceProcessor.java:110) ~[Mycat-server-1.6-RELEASE.jar:?]
+
+
+
+$ cat sequence_db_conf.properties
+#sequence stored in datanode
+GSEQ=dn17
+
+
+schema.xml:
+<table name="t_sequence" dataNode="dn17" />
+
+
+
+## global sequence db
+[17 20:48:04] mycat_user@localhost[lamia] >show grants for mycat_user@'%';                                                      +-------------------------------------------------------+
+| Grants for mycat_user@%                               |
++-------------------------------------------------------+
+| GRANT USAGE ON *.* TO 'mycat_user'@'%'                |
+| GRANT ALL PRIVILEGES ON `lamia`.* TO 'mycat_user'@'%' |
++-------------------------------------------------------+
+2 rows in set (0.00 sec
+
+
+
+
+[13 20:41:36] sys@localhost[(none)] >show grants for mycat_user@'%';
++--------------------------------------------------------------------------+
+| Grants for mycat_user@%                                                  |
++--------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO 'mycat_user'@'%'                                   |
+| GRANT ALL PRIVILEGES ON `user_a01`.* TO 'mycat_user'@'%'                 |
+| GRANT SELECT, INSERT, UPDATE, DELETE ON `user_a02`.* TO 'mycat_user'@'%' |
