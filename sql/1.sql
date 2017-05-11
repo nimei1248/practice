@@ -1,3 +1,6 @@
+-- 相同SQL，不同索引，查询效率对比
+
+
 -- mysql version
 mysql >select version();
 +-----------------+
@@ -189,3 +192,39 @@ EXPLAIN: {
 
 
 对比发现，一个索引使用了2个字段，一个索引使用了1个字段
+
+
+
+-- 执行2条sql
+mysql >
+SELECT
+    COUNT(1)
+FROM
+    t_game t USE INDEX (I_ID_FLAG_NAME_DATE)
+WHERE
+    1 = 1 AND t.flag IN (0 , 4, 5)
+        AND t.product_id = 'AX18'
+        AND t.risk_validate_require = 1
+        AND t.risk_validate_status IN (4 , 1, 0);
+
+*************************** 1. row ***************************
+COUNT(1): 7
+1 row in set (0.00 sec)
+
+
+
+mysql >
+SELECT
+    COUNT(1)
+FROM
+    t_game t USE INDEX (I_PRODUCTID_LOGINNAME_CRDATE)
+WHERE
+    1 = 1 AND t.flag IN (0 , 4, 5)
+        AND t.product_id = 'AX18'
+        AND t.risk_validate_require = 1
+        AND t.risk_validate_status IN (4 , 1, 0);
+
+*************************** 1. row ***************************
+COUNT(1): 4
+1 row in set (0.77 sec)
+
