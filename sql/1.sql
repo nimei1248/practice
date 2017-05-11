@@ -42,7 +42,7 @@ mysql >show index from t_game;
 mysql > explain extended
 SELECT
     COUNT(1)
-GFROM
+FROM
     t_game t USE INDEX (I_PRODUCTID_LOGINNAME_CRDATE)
 WHERE
     1 = 1 AND t.flag IN (0 , 4, 5)
@@ -114,10 +114,10 @@ I_ID_FLAG_NAME_DATE:           rows 5        filtered 80.00   type range
 
 
 -- 查看表实际走的索引
-mysql > explain json = format
+mysql > explain format = json
 SELECT
     COUNT(1)
-GFROM
+FROM
     t_game t USE INDEX (I_PRODUCTID_LOGINNAME_CRDATE)
 WHERE
     1 = 1 AND t.flag IN (0 , 4, 5)
@@ -228,3 +228,117 @@ WHERE
 COUNT(1): 4
 1 row in set (0.77 sec)
 
+
+
+
+-- 5.7 测试  索引都是一样
+[26 root@localhost 17:47:43 (optsql)]
+db> select version();
++---------------+
+| version()     |
++---------------+
+| 5.7.17-13-log |
++---------------+
+1 row in set (0.00 sec)
+
+
+[28 root@localhost 17:48:43 (optsql)]
+db> select count(1) from t_game;
++----------+
+| count(1) |
++----------+
+|   246078 |
++----------+
+1 row in set (0.06 sec)
+
+[29 root@localhost 17:49:59 (optsql)]
+db> show index from t_game;
++--------+------------+------------------------------+--------------+--------------+-----------+-------------+----------+--------+------+------------+---------+-----------
+| Table  | Non_unique | Key_name                     | Seq_in_index | Column_name  | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comm
++--------+------------+------------------------------+--------------+--------------+-----------+-------------+----------+--------+------+------------+---------+-----------
+| t_game |          0 | PRIMARY                      |            1 | request_id   | A         |      241092 |     NULL | NULL   |      | BTREE      |         |           
+| t_game |          1 | i_id_flag_name_date          |            1 | product_id   | A         |           3 |     NULL | NULL   |      | BTREE      |         |           
+| t_game |          1 | i_id_flag_name_date          |            2 | flag         | A         |          20 |     NULL | NULL   |      | BTREE      |         |           
+| t_game |          1 | i_id_flag_name_date          |            3 | login_name   | A         |       37453 |     NULL | NULL   |      | BTREE      |         |           
+| t_game |          1 | i_id_flag_name_date          |            4 | created_date | A         |      241092 |     NULL | NULL   | YES  | BTREE      |         |           
+| t_game |          1 | i_productid_loginname_crdate |            1 | product_id   | A         |           3 |     NULL | NULL   |      | BTREE      |         |           
+| t_game |          1 | i_productid_loginname_crdate |            2 | login_name   | A         |       16786 |     NULL | NULL   |      | BTREE      |         |           
+| t_game |          1 | i_productid_loginname_crdate |            3 | created_date | A         |      241092 |     NULL | NULL   | YES  | BTREE      |         |           
++--------+------------+------------------------------+--------------+--------------+-----------+-------------+----------+--------+------+------------+---------+-----------
+8 rows in set (0.00 sec)
+
+
+[30 root@localhost 17:50:22 (optsql)]
+db> explain               
+    -> SELECT                         
+    ->     COUNT(1)                   
+    -> FROM                          
+    ->     t_game t USE INDEX (i_productid_loginname_crdate)
+    -> WHERE                          
+    ->     1 = 1 AND t.flag IN (0 , 4, 5)     
+    ->       AND t.product_id = 'AX18'                     
+    ->      AND t.risk_validate_require = 1
+    ->      AND t.risk_validate_status IN (4 , 1, 0);
++----+-------------+-------+------------+------+------------------------------+------------------------------+---------+-------+--------+----------+-------------+
+| id | select_type | table | partitions | type | possible_keys                | key                          | key_len | ref   | rows   | filtered | Extra       |
++----+-------------+-------+------------+------+------------------------------+------------------------------+---------+-------+--------+----------+-------------+
+|  1 | SIMPLE      | t     | NULL       | ref  | i_productid_loginname_crdate | i_productid_loginname_crdate | 11      | const | 120546 |     0.90 | Using where |
++----+-------------+-------+------------+------+------------------------------+------------------------------+---------+-------+--------+----------+-------------+
+1 row in set, 1 warning (0.00 sec)
+
+
+[31 root@localhost 17:51:43 (optsql)]
+db> explain               
+    -> SELECT                         
+    ->     COUNT(1)                   
+    -> FROM                          
+    ->     t_game t USE INDEX (I_ID_FLAG_NAME_DATE)
+    -> WHERE                          
+    ->     1 = 1 AND t.flag IN (0 , 4, 5)     
+    ->       AND t.product_id = 'AX18'                     
+    ->      AND t.risk_validate_require = 1
+    ->      AND t.risk_validate_status IN (4 , 1, 0);
++----+-------------+-------+------------+-------+---------------------+---------------------+---------+------+------+----------+------------------------------------+
+| id | select_type | table | partitions | type  | possible_keys       | key                 | key_len | ref  | rows | filtered | Extra                              |
++----+-------------+-------+------------+-------+---------------------+---------------------+---------+------+------+----------+------------------------------------+
+|  1 | SIMPLE      | t     | NULL       | range | i_id_flag_name_date | i_id_flag_name_date | 15      | NULL |    7 |     3.00 | Using index condition; Using where |
++----+-------------+-------+------------+-------+---------------------+---------------------+---------+------+------+----------+------------------------------------+
+1 row in set, 1 warning (0.00 sec)
+
+
+
+-- 执行VS
+[38 root@localhost 17:59:28 (optsql)]
+db> SELECT                         
+    ->     COUNT(1)                   
+    -> FROM                          
+    ->     t_game t USE INDEX (i_id_flag_name_date)
+    -> WHERE                          
+    ->     1 = 1 AND t.flag IN (0 , 4, 5)     
+    ->       AND t.product_id = 'AX18'                     
+    ->      AND t.risk_validate_require = 1
+    ->      AND t.risk_validate_status IN (4 , 1, 0);
++----------+
+| COUNT(1) |
++----------+
+|        3 |
++----------+
+1 row in set (0.00 sec)
+
+
+[39 root@localhost 17:59:39 (optsql)]
+db> SELECT                         
+    ->     COUNT(1)                   
+    -> FROM                          
+    ->     t_game t USE INDEX (i_productid_loginname_crdate)
+    -> WHERE                          
+    ->     1 = 1 AND t.flag IN (0 , 4, 5)     
+    ->       AND t.product_id = 'AX18'                     
+    ->      AND t.risk_validate_require = 1
+    ->      AND t.risk_validate_status IN (4 , 1, 0);
++----------+
+| COUNT(1) |
++----------+
+|        3 |
++----------+
+1 row in set (0.26 sec)
