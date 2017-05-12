@@ -1,6 +1,0 @@
-## pandas学习文档
-http://pda.readthedocs.io/en/latest/chp5.html
-
-pip install pandas  ## 基于numpy,安装完pandas,numpy也就安装了
-pip install xlrd  ## 支持直接读取.xlsx
-pip install matplotlib  ## 图形化支持

@@ -1,9 +1,0 @@
-http://hexiaoshuai.blog.51cto.com/12156333/1892747?b2
-http://freeloda.blog.51cto.com/2033581/1253991
-http://freeloda.blog.51cto.com/2033581/d-3
-http://yw666.blog.51cto.com/11977292/1891597
-
-2.查询mysql用户unauthenticated user 为什么在压测的时候会出现？
-https://www.percona.com/search?s=unauthenticated
-https://www.percona.com/forums/questions-discussions/mysql-and-percona-server/5753-unauthenticated-user
-https://www.percona.com/forums/questions-discussions/mysql-and-percona-server/43921-mysql-flooded-by-unauthenticated-user

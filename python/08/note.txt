@@ -1,9 +1,0 @@
-根据http的method方法决定不同的操作
-post: 一般用于修改数据
-get:  获取信息
-
-<option value='beijing'>北京</option>
-value是用于传递给后端的值,比如数据库中的id
-北京是用于显示的信息/值
-
-
