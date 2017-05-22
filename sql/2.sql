@@ -427,4 +427,220 @@ SQL> select L.LastName, L.FirstName, R.OrderNo from Persons as L right join Orde
 
 
 
+-- https://dev.mysql.com/doc/refman/5.7/en/join.html
+SELECT left_tbl.*
+  FROM left_tbl LEFT JOIN right_tbl ON left_tbl.id = right_tbl.id
+  WHERE right_tbl.id IS NULL;
+
+
+-- Some join examples:
+SELECT * FROM table1, table2;
+SELECT * FROM table1 INNER JOIN table2 ON table1.id=table2.id;
+SELECT * FROM table1 LEFT JOIN table2 ON table1.id=table2.id;
+SELECT * FROM table1 LEFT JOIN table2 USING (id);
+SELECT * FROM table1 LEFT JOIN table2 ON table1.id=table2.id LEFT JOIN table3 ON table2.id=table3.id;
+
+
+-- Example:
+CREATE TABLE t1 (i1 INT, j1 INT);
+CREATE TABLE t2 (i2 INT, j2 INT);
+CREATE TABLE t3 (i3 INT, j3 INT);
+INSERT INTO t1 VALUES(1,1);
+INSERT INTO t2 VALUES(1,1);
+INSERT INTO t3 VALUES(1,1);
+SELECT * FROM t1, t2 JOIN t3 ON (t1.i1 = t3.i3);
+
+
+[4 sys@localhost 2017-05-22_09:20:01 (test)]
+SQL> select * from persons;
++------+----------+-----------+---------+------+
+| Id_P | LastName | FirstName | Address | City |
++------+----------+-----------+---------+------+
+|    1 | Adam     | John      | Oxfo    | Lond |
+|    2 | Bush     | Geor      | Fift    | New  |
+|    3 | Cart     | Thom      | Chan    | Beij |
++------+----------+-----------+---------+------+
+3 rows in set (0.00 sec)
+
+[5 sys@localhost 2017-05-22_09:20:14 (test)]
+SQL> select * from orders;
++------+---------+------+
+| Id_O | OrderNo | Id_P |
++------+---------+------+
+|    1 |   77895 |    3 |
+|    2 |   44678 |    3 |
+|    3 |   22456 |    1 |
+|    4 |   24562 |    1 |
+|    5 |   34764 |   65 |
++------+---------+------+
+5 rows in set (0.00 sec)
+
+[46 sys@localhost 2017-05-22_11:27:01 (test)]
+SQL> select * from persons join orders on (persons.Id_P = orders.Id_P);
++------+----------+-----------+---------+------+------+---------+------+
+| Id_P | LastName | FirstName | Address | City | Id_O | OrderNo | Id_P |
++------+----------+-----------+---------+------+------+---------+------+
+|    3 | Cart     | Thom      | Chan    | Beij |    1 |   77895 |    3 |
+|    3 | Cart     | Thom      | Chan    | Beij |    2 |   44678 |    3 |
+|    1 | Adam     | John      | Oxfo    | Lond |    3 |   22456 |    1 |
+|    1 | Adam     | John      | Oxfo    | Lond |    4 |   24562 |    1 |
++------+----------+-----------+---------+------+------+---------+------+
+4 rows in set (0.00 sec)
+
+[47 sys@localhost 2017-05-22_11:28:32 (test)]
+SQL> select * from persons AS L join orders AS R on (L.Id_P = R.Id_P);              
++------+----------+-----------+---------+------+------+---------+------+
+| Id_P | LastName | FirstName | Address | City | Id_O | OrderNo | Id_P |
++------+----------+-----------+---------+------+------+---------+------+
+|    3 | Cart     | Thom      | Chan    | Beij |    1 |   77895 |    3 |
+|    3 | Cart     | Thom      | Chan    | Beij |    2 |   44678 |    3 |
+|    1 | Adam     | John      | Oxfo    | Lond |    3 |   22456 |    1 |
+|    1 | Adam     | John      | Oxfo    | Lond |    4 |   24562 |    1 |
++------+----------+-----------+---------+------+------+---------+------+
+4 rows in set (0.00 sec)
+
+
+[50 sys@localhost 2017-05-22_11:30:04 (test)]
+SQL> select L.LastName,L.FirstName,R.OrderNo from persons AS L join orders AS R on (L.Id_P = R.Id_P) order by L.LastName;
++----------+-----------+---------+
+| LastName | FirstName | OrderNo |
++----------+-----------+---------+
+| Adam     | John      |   22456 |
+| Adam     | John      |   24562 |
+| Cart     | Thom      |   77895 |
+| Cart     | Thom      |   44678 |
++----------+-----------+---------+
+4 rows in set (0.00 sec)
+
+
+-- SELECT * FROM (t1, t2) JOIN t3 ON (t1.i1 = t3.i3);
+[53 sys@localhost 2017-05-22_11:38:16 (test)]
+SQL> select * from t;
++----+------+
+| id | name |
++----+------+
+|  1 | x    |
+|  2 | x    |
+|  3 | x    |
+|  8 | x    |
+|  9 | x    |
+| 10 | x    |
+| 11 | x    |
+| 12 | x    |
+| 13 | x    |
+| 14 | x    |
+| 15 | x    |
+| 16 | x    |
+| 17 | x    |
+| 18 | x    |
+| 19 | x    |
+| 20 | x    |
++----+------+
+16 rows in set (0.00 sec)
+
+
+[55 sys@localhost 2017-05-22_11:38:54 (test)]
+SQL> select L.LastName,L.FirstName,R.OrderNo,t.name from (persons as L, orders as R) join t on (L.Id_P = t.id);         
++----------+-----------+---------+------+
+| LastName | FirstName | OrderNo | name |
++----------+-----------+---------+------+
+| Adam     | John      |   77895 | x    |
+| Bush     | Geor      |   77895 | x    |
+| Cart     | Thom      |   77895 | x    |
+| Adam     | John      |   44678 | x    |
+| Bush     | Geor      |   44678 | x    |
+| Cart     | Thom      |   44678 | x    |
+| Adam     | John      |   22456 | x    |
+| Bush     | Geor      |   22456 | x    |
+| Cart     | Thom      |   22456 | x    |
+| Adam     | John      |   24562 | x    |
+| Bush     | Geor      |   24562 | x    |
+| Cart     | Thom      |   24562 | x    |
+| Adam     | John      |   34764 | x    |
+| Bush     | Geor      |   34764 | x    |
+| Cart     | Thom      |   34764 | x    |
++----------+-----------+---------+------+
+15 rows in set (0.00 sec)
+
+
+
+[56 sys@localhost 2017-05-22_11:41:55 (test)]
+SQL> select L.LastName,L.FirstName,R.OrderNo,t.name from persons as L join orders as R join t on (L.Id_P = t.id);    
++----------+-----------+---------+------+
+| LastName | FirstName | OrderNo | name |
++----------+-----------+---------+------+
+| Adam     | John      |   77895 | x    |
+| Bush     | Geor      |   77895 | x    |
+| Cart     | Thom      |   77895 | x    |
+| Adam     | John      |   44678 | x    |
+| Bush     | Geor      |   44678 | x    |
+| Cart     | Thom      |   44678 | x    |
+| Adam     | John      |   22456 | x    |
+| Bush     | Geor      |   22456 | x    |
+| Cart     | Thom      |   22456 | x    |
+| Adam     | John      |   24562 | x    |
+| Bush     | Geor      |   24562 | x    |
+| Cart     | Thom      |   24562 | x    |
+| Adam     | John      |   34764 | x    |
+| Bush     | Geor      |   34764 | x    |
+| Cart     | Thom      |   34764 | x    |
++----------+-----------+---------+------+
+15 rows in set (0.00 sec)
+
+
+
+SELECT * FROM t1 LEFT JOIN (t2, t3, t4) ON (t2.a = t1.a AND t3.b = t1.b AND t4.c = t1.c);
+<=>
+SELECT * FROM t1 LEFT JOIN (t2 CROSS JOIN t3 CROSS JOIN t4) ON (t2.a = t1.a AND t3.b = t1.b AND t4.c = t1.c);
+
+
+[62 sys@localhost 2017-05-22_11:51:33 (test)]
+SQL> select L.LastName,L.FirstName,R.OrderNo,t.name from persons as L left join (orders as R cross join t) on (L.Id_P = t.id);
++----------+-----------+---------+------+
+| LastName | FirstName | OrderNo | name |
++----------+-----------+---------+------+
+| Adam     | John      |   77895 | x    |
+| Adam     | John      |   44678 | x    |
+| Adam     | John      |   22456 | x    |
+| Adam     | John      |   24562 | x    |
+| Adam     | John      |   34764 | x    |
+| Bush     | Geor      |   77895 | x    |
+| Bush     | Geor      |   44678 | x    |
+| Bush     | Geor      |   22456 | x    |
+| Bush     | Geor      |   24562 | x    |
+| Bush     | Geor      |   34764 | x    |
+| Cart     | Thom      |   77895 | x    |
+| Cart     | Thom      |   44678 | x    |
+| Cart     | Thom      |   22456 | x    |
+| Cart     | Thom      |   24562 | x    |
+| Cart     | Thom      |   34764 | x    |
++----------+-----------+---------+------+
+15 rows in set (0.00 sec)
+
+
+[63 sys@localhost 2017-05-22_11:52:32 (test)]
+SQL> select L.LastName,L.FirstName,R.OrderNo,t.name from persons as L left join (orders as R, t) on (L.Id_P = t.id);            
++----------+-----------+---------+------+
+| LastName | FirstName | OrderNo | name |
++----------+-----------+---------+------+
+| Adam     | John      |   77895 | x    |
+| Adam     | John      |   44678 | x    |
+| Adam     | John      |   22456 | x    |
+| Adam     | John      |   24562 | x    |
+| Adam     | John      |   34764 | x    |
+| Bush     | Geor      |   77895 | x    |
+| Bush     | Geor      |   44678 | x    |
+| Bush     | Geor      |   22456 | x    |
+| Bush     | Geor      |   24562 | x    |
+| Bush     | Geor      |   34764 | x    |
+| Cart     | Thom      |   77895 | x    |
+| Cart     | Thom      |   44678 | x    |
+| Cart     | Thom      |   22456 | x    |
+| Cart     | Thom      |   24562 | x    |
+| Cart     | Thom      |   34764 | x    |
++----------+-----------+---------+------+
+15 rows in set (0.00 sec)
+
+
+
 
