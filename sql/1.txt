@@ -1,0 +1,2 @@
+user home dir in .bash_profile add under:
+. ~/.check_mysql_status.sh

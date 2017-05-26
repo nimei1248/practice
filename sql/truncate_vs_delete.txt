@@ -1,0 +1,23 @@
+truncate为什么比delete快？
+
+truncate操作也要写undo redo相比delete会少很多
+假如，对一张很大的表做truncate操作，在truncate执行过程中/执行了一半，断电了；
+         当系统、db程序恢复后，之前被truncate掉的数据，全部回滚了，也就是相当于没有做truncate操作；
+         那么它是通过什么机制回滚的？那说明还是要写日志，mysql启动的时候检查redo undo
+
+delete操作大家都知道的肯定会写undo(以便出错回滚) redo
+
+那truncate为什么比delete快那？
+1.truncate是RDBMS软件:
+   a.调用操作系统命令删除表中的内容,直接操作系统层面，所以快;其实感觉像对表进行了格式化,因为之前分配的page、字节等信息都被格式化没有了，后面如果有新的insert等操作就需要重新进行资源分配，会感觉有点点慢
+   b.假如有指针概念，之前是指向(.frm + .ibd), 现在只指向.frm，truncate后只剩下表基础信息没有数据
+   c.表的大小释放了，只剩下大概几K的表的基础信息
+
+2.delete慢是因为要在DB层做undo、redo操作，然后还要调用操作系统将DB层操作写到系统文件，如，ibdata1、ib_logfile、binlog等，这个操作要写2层
+  表的大小没有释放，但会增加delete标记，说明这段是已经删除的，如果有新的需求要写，那么这个被标记delete的page就会被覆盖写；
+  一个page默认大小是4k，如果新的写需求(update)是3k，就会造成空间浪费和碎片
+  delete是逻辑删除
+
+
+update = insert + delete
+先insert后delete
