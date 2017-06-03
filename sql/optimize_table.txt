@@ -1,6 +1,18 @@
 optimize table:
-https://dev.mysql.com/doc/refman/5.7/en/optimize-table.html
-操作后大小没有变
+https://dev.mysql.com/doc/refman/5.6/en/optimize-table.html
+
+
+optimize table 操作后大小没有变
+
+第一次:
+>select version();
++-----------------+
+| version()       |
++-----------------+
+| 5.6.27-75.0-log |
++-----------------+
+1 row in set (0.00 sec)
+
 
 >system ls -lh t_device_logs*
 -rw-rw---- 1 mysql mysql 8.9K Jun  1 18:01 t_device_logs.frm
@@ -18,3 +30,65 @@ https://dev.mysql.com/doc/refman/5.7/en/optimize-table.html
 >system ls -lh t_device_logs*
 -rw-rw---- 1 mysql mysql 8.9K Jun  1 18:15 t_device_logs.frm
 -rw-rw---- 1 mysql mysql 7.8G Jun  1 18:39 t_device_logs.ibd
+
+
+
+第二次:
+>select version();
++-----------------+
+| version()       |
++-----------------+
+| 5.6.27-75.0-log |
++-----------------+
+1 row in set (0.00 sec)
+
+
+ll -thr t_device_logs.*
+-rw-rw---- 1 mysql mysql 8.9K Jun  1 18:15 t_device_logs.frm
+-rw-rw---- 1 mysql mysql 7.9G Jun  3 10:05 t_device_logs.ibd
+
+
+>optimize table t_device_logs;
++----------------------+----------+----------+-------------------------------------------------------------------+
+| Table                | Op       | Msg_type | Msg_text                                                          |
++----------------------+----------+----------+-------------------------------------------------------------------+
+| webapi.t_device_logs | optimize | note     | Table does not support optimize, doing recreate + analyze instead |
+| webapi.t_device_logs | optimize | status   | OK                                                                |
++----------------------+----------+----------+-------------------------------------------------------------------+
+2 rows in set (14 min 59.52 sec)
+
+
+ll -thr t_device_logs.*
+-rw-rw---- 1 mysql mysql 8.9K Jun  3 10:03 t_device_logs.frm
+-rw-rw---- 1 mysql mysql 7.9G Jun  3 10:21 t_device_logs.ibd
+
+
+
+-- 查看表占用磁盘空间大小
+>SELECT TABLE_NAME, (DATA_LENGTH + INDEX_LENGTH) / 1048576, TABLE_ROWS FROM information_schema.tables WHERE TABLE_SCHEMA='webapi' AND TABLE_NAME='t_device_logs';
++---------------+----------------------------------------+------------+
+| TABLE_NAME    | (DATA_LENGTH + INDEX_LENGTH) / 1048576 | TABLE_ROWS |
++---------------+----------------------------------------+------------+
+| t_device_logs |                              7911.1875 |     907646 |
++---------------+----------------------------------------+------------+
+1 row in set (0.00 sec)
+
+
+>select count(*) from t_device_logs;
++----------+
+| count(*) |
++----------+
+|  1234963 |
++----------+
+1 row in set (0.56 sec)
+
+
+>select 1024 * 1024;
++-------------+
+| 1024 * 1024 |
++-------------+
+|     1048576 |
++-------------+
+1 row in set (0.00 sec)
+
+

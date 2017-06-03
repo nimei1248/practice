@@ -1,0 +1,30 @@
+8.怎么判断一个字段的值是否为NULL？
+
+http://www.splaybow.com/post/mysql-sql-where-is-not-null.html
+
+sys@localhost[webapi] >explain select created_at from t_user_tokens where created_at is NULL limit 1;
++----+-------------+---------------+------+---------------+------+---------+------+----------+-------------+
+| id | select_type | table         | type | possible_keys | key  | key_len | ref  | rows     | Extra       |
++----+-------------+---------------+------+---------------+------+---------+------+----------+-------------+
+|  1 | SIMPLE      | t_user_tokens | ALL  | NULL          | NULL | NULL    | NULL | 28920442 | Using where |
++----+-------------+---------------+------+---------------+------+---------+------+----------+-------------+
+1 row in set (0.00 sec)
+
+sys@localhost[webapi] >select created_at from t_user_tokens where created_at is NULL limit 1;       
+Empty set (34.13 sec)
+
+sys@localhost[webapi] >select created_at from t_user_tokens where created_at = NULL;        
+Empty set (1 min 2.59 sec)
+
+sys@localhost[webapi] >select created_at from t_user_tokens where created_at is NULL;       
+Empty set (8.38 sec)
+
+sys@localhost[webapi] >select version();
++-----------------+
+| version()       |
++-----------------+
+| 5.6.27-75.0-log |
++-----------------+
+1 row in set (0.00 sec)
+
+is null and = null 都是返回空且没有报错 为什么？
