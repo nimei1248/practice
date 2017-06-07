@@ -18,8 +18,8 @@ WHERE
                 AND T2.customer_level NOT IN (0)
                 AND T2.CUSTOMER_TYPE >= 1
                 AND T2.PRODUCT_ID = 'A01')
-        -- AND T2.login_time BETWEEN '2017-05-22 12:56:36' AND '2017-06-06 12:56:36'
         AND T1.login_time BETWEEN '2017-05-22 15:51:43' AND '2017-06-05 15:51:43'
+        -- AND T1.login_time BETWEEN '2017-05-22 12:56:36' AND '2017-06-06 12:56:36'
         AND T1.IS_WHITE = 0
         AND T1.PRODUCT_ID = 'A01'
         AND T1.customer_level NOT IN (0)
@@ -52,7 +52,7 @@ FROM
     WHERE
         T1.customer_id = '1000473649'
             AND T1.login_time BETWEEN '2017-05-22 15:51:43' AND '2017-06-05 15:51:43'
-            -- AND T2.login_time BETWEEN '2017-05-22 12:56:36' AND '2017-06-06 12:56:36'
+            -- AND T1.login_time BETWEEN '2017-05-22 12:56:36' AND '2017-06-06 12:56:36'
             AND T1.IS_WHITE = 0
             AND T1.PRODUCT_ID = 'A01'
             AND T1.customer_level NOT IN (0)
@@ -65,7 +65,7 @@ WHERE
             t_log T2
         WHERE
             T2.customer_id != '1000473649'
-                AND T1.login_time BETWEEN '2017-05-22 15:51:43' AND '2017-06-05 15:51:43'
+                AND T2.login_time BETWEEN '2017-05-22 15:51:43' AND '2017-06-05 15:51:43'
                 -- AND T2.login_time BETWEEN '2017-05-22 12:56:36' AND '2017-06-06 12:56:36'
                 AND T2.IS_WHITE = 0
                 AND T2.customer_level NOT IN (0)
@@ -75,6 +75,7 @@ WHERE
 | login_ip       | count |
 +----------------+-------+
 | 10.16.209.254 |   236 |
+| 11.136.41.58  |    20 |
 | 22.240.60.39  |    26 |
 | 32.104.1.103  |     2 |
 | 32.104.1.241  |     4 |
