@@ -1,3 +1,87 @@
+origin:
+
+SELECT
+    T1.login_ip, COUNT(T1.login_ip) AS count
+FROM
+    t_log T1
+WHERE
+    T1.customer_id = '1000473649'
+        AND T1.login_ip IN (SELECT
+            T2.login_ip
+        FROM
+            t_log T2
+        WHERE
+            T2.customer_id != '1000473649'
+                AND T2.login_time BETWEEN '2017-05-22 15:51:43' AND '2017-06-05 15:51:43'
+                AND T2.IS_WHITE = 0
+                AND T2.customer_level NOT IN (0)
+                AND T2.CUSTOMER_TYPE >= 1
+                AND T2.PRODUCT_ID = 'A01')
+        AND T1.login_time BETWEEN '2017-05-22 15:51:43' AND '2017-06-05 15:51:43'
+        AND T1.IS_WHITE = 0
+        AND T1.PRODUCT_ID = 'A01'
+        AND T1.customer_level NOT IN (0)
+        AND T1.CUSTOMER_TYPE >= 1
+GROUP BY T1.login_ip;
++----------------+-------+
+| login_ip       | count |
++----------------+-------+
+| 10.16.209.254 |   236 |
+| 11.136.41.58  |    20 |
+| 22.240.60.39  |    26 |
+| 32.104.1.103  |     2 |
+| 32.104.1.241  |     4 |
+| 32.104.1.247  |     2 |
++----------------+-------+
+6 rows in set (4 min 21.60 sec)
+
+
+
+
+zheng:
+
+SELECT
+    a.login_ip, a.count
+FROM
+    (SELECT 
+        T1.login_ip, COUNT(T1.login_ip) AS count
+    FROM
+        t_log T1
+    WHERE
+        T1.customer_id = '1000473649'
+            AND T1.login_time BETWEEN '2017-05-22 12:56:36' AND '2017-06-05 12:56:36'
+            AND T1.IS_WHITE = 0
+            AND T1.PRODUCT_ID = 'A01'
+            AND T1.customer_level NOT IN (0)
+            AND T1.CUSTOMER_TYPE >= 1
+    GROUP BY T1.login_ip) a
+WHERE
+    a.login_ip IN (SELECT 
+            T2.login_ip
+        FROM
+            t_log T2
+        WHERE
+            T2.customer_id != '1000473649'
+                AND T2.login_time BETWEEN '2017-05-22 12:56:36' AND '2017-06-05 12:56:36'
+                AND T2.IS_WHITE = 0
+                AND T2.customer_level NOT IN (0)
+                AND T2.CUSTOMER_TYPE >= 1
+                AND T2.PRODUCT_ID = 'A01');
++----------------+-------+
+| login_ip       | count |
++----------------+-------+
+| 10.16.209.254 |   236 |
+| 22.240.60.39  |    26 |
+| 32.104.1.103  |     2 |
+| 32.104.1.241  |     4 |
+| 32.104.1.247  |     2 |
++----------------+-------+
+5 rows in set (1.71 sec)
+
+
+
+-------------------------------------------------------------------
+
 explain extended
 SELECT 
     a.login_ip, a.count
