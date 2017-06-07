@@ -13,10 +13,12 @@ WHERE
         WHERE
             T2.customer_id != '1000473649'
                 AND T2.login_time BETWEEN '2017-05-22 15:51:43' AND '2017-06-05 15:51:43'
+                -- AND T2.login_time BETWEEN '2017-05-22 12:56:36' AND '2017-06-06 12:56:36'
                 AND T2.IS_WHITE = 0
                 AND T2.customer_level NOT IN (0)
                 AND T2.CUSTOMER_TYPE >= 1
                 AND T2.PRODUCT_ID = 'A01')
+        -- AND T2.login_time BETWEEN '2017-05-22 12:56:36' AND '2017-06-06 12:56:36'
         AND T1.login_time BETWEEN '2017-05-22 15:51:43' AND '2017-06-05 15:51:43'
         AND T1.IS_WHITE = 0
         AND T1.PRODUCT_ID = 'A01'
@@ -49,7 +51,8 @@ FROM
         t_log T1
     WHERE
         T1.customer_id = '1000473649'
-            AND T1.login_time BETWEEN '2017-05-22 12:56:36' AND '2017-06-05 12:56:36'
+            AND T1.login_time BETWEEN '2017-05-22 15:51:43' AND '2017-06-05 15:51:43'
+            -- AND T2.login_time BETWEEN '2017-05-22 12:56:36' AND '2017-06-06 12:56:36'
             AND T1.IS_WHITE = 0
             AND T1.PRODUCT_ID = 'A01'
             AND T1.customer_level NOT IN (0)
@@ -62,7 +65,8 @@ WHERE
             t_log T2
         WHERE
             T2.customer_id != '1000473649'
-                AND T2.login_time BETWEEN '2017-05-22 12:56:36' AND '2017-06-05 12:56:36'
+                AND T1.login_time BETWEEN '2017-05-22 15:51:43' AND '2017-06-05 15:51:43'
+                -- AND T2.login_time BETWEEN '2017-05-22 12:56:36' AND '2017-06-06 12:56:36'
                 AND T2.IS_WHITE = 0
                 AND T2.customer_level NOT IN (0)
                 AND T2.CUSTOMER_TYPE >= 1
@@ -254,20 +258,4 @@ WHERE
 1 row in set (8.01 sec)
 
 
--- 表结构
-CREATE TABLE `t_log` (
-  `ITEM_ID` varchar(40) NOT NULL,
-  `CUSTOMER_ID` int(22) DEFAULT NULL,
-  `CUSTOMER_TYPE` tinyint(1) DEFAULT NULL,
-  `PRODUCT_ID` varchar(3) DEFAULT NULL,
-  `LOGIN_NAME` varchar(50) DEFAULT NULL,
-  `LOGIN_WEBSITE` varchar(200) DEFAULT NULL,
-  `LOGIN_GAME` varchar(10) DEFAULT NULL,
-  `LOGIN_TIME` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  `LOGIN_IP` varchar(60) DEFAULT NULL,
-  `LOGIN_END_POINT_TYPE` varchar(3) DEFAULT NULL,
-  `customer_level` int(1) DEFAULT NULL,
-  `IS_WHITE` int(1) DEFAULT '0',
-  PRIMARY KEY (`ITEM_ID`),
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
