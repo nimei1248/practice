@@ -1,3 +1,43 @@
+explain extended
+SELECT 
+    a.login_ip, a.count
+FROM
+    (SELECT 
+        T1.login_ip, COUNT(T1.login_ip) AS count
+    FROM
+        t_login_items T1
+    WHERE
+        T1.customer_id = '1000511121'
+            AND T1.login_time BETWEEN '2017-05-20 15:51:43' AND '2017-06-04 15:51:43'
+            AND T1.IS_WHITE = 0
+            AND T1.customer_level NOT IN (0)
+            AND T1.CUSTOMER_TYPE >= 1
+            AND T1.PRODUCT_ID = 'A01'
+    GROUP BY T1.login_ip) a
+WHERE
+    EXISTS( SELECT 
+            1
+        FROM
+            t_login_items T2
+        WHERE
+            T2.customer_id != '1000511121'
+                AND T2.login_time BETWEEN '2017-05-20 15:51:43' AND '2017-06-04 15:51:43'
+                AND T2.IS_WHITE = 0
+                AND T2.PRODUCT_ID = 'A01'
+                AND T2.customer_level NOT IN (0)
+                AND T2.CUSTOMER_TYPE >= 1);
+
++----+-------------+------------+-------+---------------------------------------------------+------+---------+------+---------+----------+---------------------------------------------------------------------+
+| id | select_type | table      | type  | possible_keys                                     | key  | key_len | ref  | rows    | filtered | Extra                                                               |
++----+-------------+------------+-------+---------------------------------------------------+------+---------+------+---------+----------+---------------------------------------------------------------------+
+|  1 | PRIMARY     | <derived2> | ALL   | NULL                                              | NULL | NULL    | NULL |     191 |   100.00 | NULL                                                                |
+|  3 | SUBQUERY    | T2         | range | idx1,idx2,idx4                                    | idx4 | 24      | NULL | 2244130 |   100.00 | Using index condition; Using where                                  |
+|  2 | DERIVED     | T1         | range | idx1,i_ip_id_level_type_white_time,idx3,idx2,idx4 | idx2 | 29      | NULL |     191 |   100.00 | Using index condition; Using where; Using temporary; Using filesort |
++----+-------------+------------+-------+---------------------------------------------------+------+---------+------+---------+----------+---------------------------------------------------------------------+
+3 rows in set, 1 warning (0.00 sec)
+
+
+
 -- mysql version
 select version();
 +-----------------+

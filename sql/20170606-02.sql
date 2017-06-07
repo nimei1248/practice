@@ -7,7 +7,7 @@ select version();
 1 row in set (0.01 sec)
 
 
-select count(*) as t_xxx from t_withdrawal_requests;                                            
+select count(*) as t_xxx from t_withdrawal_requests;
 +--------+
 | t_xxx  |
 +--------+
