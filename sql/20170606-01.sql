@@ -5,7 +5,7 @@ FROM
     (SELECT 
         T1.login_ip, COUNT(T1.login_ip) AS count
     FROM
-        t_login_items T1
+        t_log T1
     WHERE
         T1.customer_id = '1000511121'
             AND T1.login_time BETWEEN '2017-05-20 15:51:43' AND '2017-06-04 15:51:43'
@@ -18,7 +18,7 @@ WHERE
     EXISTS( SELECT 
             1
         FROM
-            t_login_items T2
+            t_log T2
         WHERE
             T2.customer_id != '1000511121'
                 AND T2.login_time BETWEEN '2017-05-20 15:51:43' AND '2017-06-04 15:51:43'
@@ -35,6 +35,14 @@ WHERE
 |  2 | DERIVED     | T1         | range | idx1,i_ip_id_level_type_white_time,idx3,idx2,idx4 | idx2 | 29      | NULL |     191 |   100.00 | Using index condition; Using where; Using temporary; Using filesort |
 +----+-------------+------------+-------+---------------------------------------------------+------+---------+------+---------+----------+---------------------------------------------------------------------+
 3 rows in set, 1 warning (0.00 sec)
+
+
+
+show warnings\G
+*************************** 1. row ***************************
+  Level: Note
+   Code: 1003
+Message: /* select#1 */ select `a`.`login_ip` AS `login_ip`,`a`.`count` AS `count` from (/* select#2 */ select `pncrms`.`t1`.`LOGIN_IP` AS `login_ip`,count(`pncrms`.`t1`.`LOGIN_IP`) AS `count` from `pncrms`.`t_login_items` `t1` where ((`pncrms`.`t1`.`IS_WHITE` = 0) and (`pncrms`.`t1`.`CUSTOMER_ID` = '1000511121') and (`pncrms`.`t1`.`LOGIN_TIME` between '2017-05-20 15:51:43' and '2017-06-04 15:51:43') and (`pncrms`.`t1`.`customer_level` <> 0) and (`pncrms`.`t1`.`CUSTOMER_TYPE` >= 1) and (`pncrms`.`t1`.`PRODUCT_ID` = 'A01')) group by `pncrms`.`t1`.`LOGIN_IP`) `a` where exists(/* select#3 */ select 1 from `pncrms`.`t_login_items` `t2` where ((`pncrms`.`t2`.`IS_WHITE` = 0) and (`pncrms`.`t2`.`CUSTOMER_ID` <> '1000511121') and (`pncrms`.`t2`.`LOGIN_TIME` between '2017-05-20 15:51:43' and '2017-06-04 15:51:43') and (`pncrms`.`t2`.`PRODUCT_ID` = 'A01') and (`pncrms`.`t2`.`customer_level` <> 0) and (`pncrms`.`t2`.`CUSTOMER_TYPE` >= 1)))
 
 
 
