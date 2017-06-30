@@ -1,0 +1,62 @@
+#******************************* Logs related settings ***************************
+log-error = /data/inst2/log/error.log
+
+
+#general_log = ON
+#general_log_file = /data/inst2/log/general.log
+log_output = file
+
+
+slow_query_log = ON
+long_query_time = 1
+log_slow_rate_limit = 100
+log_slow_rate_type = query
+log_slow_verbosity = full
+log_slow_admin_statements = ON
+log_slow_slave_statements = ON
+slow_query_log_always_write_time = 1
+slow_query_log_use_global_control = all
+log_queries_not_using_indexes = 1
+slow_query_log_file = /data/inst2/log/slow-query.log
+
+
+log-bin-index = /data/inst2/binlog/mysql-bin.index
+log-bin = /data/inst2/binlog/mysql-bin
+sync_binlog = 1
+binlog_cache_size = 1M
+max_binlog_size = 10M
+max_binlog_cache_size = 1M
+binlog-format = ROW
+expire_logs_days = 7
+log_slave_updates = 1
+log_bin_trust_function_creators = 1
+innodb_flush_log_at_trx_commit = 1
+
+
+relay-log-index = /data/inst2/relaylog/mysql-relay-bin.index
+relay-log = /data/inst2/relaylog/mysql-relay-bin
+relay_log_recovery = 1
+
+
+#audit_log_file = /data/inst2/log/audit.log
+#audit_log_format = new
+#audit_log_strategy = ASYNCHRONOUS
+#audit_log_buffer_size = 3145728
+#audit_log_policy = logins
+
+
+#userstat = 1
+#innodb_monitor_enable = all
+#query_response_time_stats = ON
+
+
+slave_parallel_workers = 2
+master-info-repository = TABLE
+relay-log-info-repository = TABLE
+slave-skip-errors = 1022,1032,1062
+
+
+server-id = 501194312
+gtid-mode = ON
+enforce-gtid-consistency = 1
+skip-slave-start = 1
