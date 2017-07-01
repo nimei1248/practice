@@ -50,14 +50,6 @@ show slave status
 error executing row event: ‘table ‘db1.t1’ doesn’t exist’
 怎么修复那？
 
-mysqldump —single-transaction —master-data=2 
+mysqldump —single-transaction —master-data=2
 可以重建主从，reset slave all;
 grep change 1.sql
-
-
-
-
-
-
-
-
