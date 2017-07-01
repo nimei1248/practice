@@ -1,0 +1,63 @@
+基于binlog+position环境复制
+
+基于binlog复制
+
+master:
+server-id
+log-bin
+binlog_format = row
+
+row mixed statement 3种格式的区别？
+
+创建复制账户：
+create user ‘repuser’@‘1.1.1.1’ identified by ‘repasswd’;
+grant replication slave on *.* to ‘repuser’@‘1.1.1.1’;
+创建完成后再从库上测试是否可以登录及看到的库是否正确
+
+
+slave配置：
+server-id
+log-bin
+log_slave_updates   在主库上写的日志，开启此参数，会写入从库的binlog，否则从库的binlog只有自己产生的binlog
+
+master:
+show master status;
+
+slave:
+查看复制：show slave status;
+停止复制：stop slave;
+change master to
+    master_host=‘’,
+    master_user=‘’,
+    master_password=‘’,
+    master_port=,
+    master_log_file=‘’,
+    master_log_pos=‘’,
+    master_connect_retry=60;
+show slave status
+开始复制：start slave;
+针对复制线程的开关：stop slave io_thread; stop slave sql_thread;
+                                    start slave io_thread; start slave sql_thread;
+注意:
+1.上面做change master to时单引号前后不要包含空格，否则导致无法启动主从复制，如果已经添加了空格，解决方法：stop slave;change master…
+2.从master的哪个binlog文件哪个位置同步，这个位置前面的binlog将不会复制，这也许会造成看起来有差异
+   如果想跟master完全一致，则可以通过mysqldump —single-transaction —master-data=2 
+
+校验环境：
+创建库 表测试主从是否正常
+
+如果在同步的文件和位置点之前,master有一个db1库，则是不会同步到从库上的，如果此时再db1中做写操作，则slave会报错：
+error executing row event: ‘table ‘db1.t1’ doesn’t exist’
+怎么修复那？
+
+mysqldump —single-transaction —master-data=2 
+可以重建主从，reset slave all;
+grep change 1.sql
+
+
+
+
+
+
+
+
