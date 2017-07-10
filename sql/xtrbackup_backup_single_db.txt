@@ -1,0 +1,90 @@
+﻿一、通过已有的从库部署一个新从库
+1、环境说明
+主库(192.168.10.20/ra1)
+从库(192.168.10.21/rac2)
+新从库(192.168.10.24/rac3)    # 这上面已经有一个pipi库了
+备份操作都是在从库上面完成的
+
+2、xtrabackup实现
+2.1、Xtrbackup 2.4.2通过已有的从库(rac2)部署一个新从库（rac3） --只同步duobao和wuyong两个库
+
+2.2、备份duobao和wuyong库
+[root@rac2 bin]# 
+./innobackupex  --defaults-file=/etc/my.cnf --user=root --password=wuyong  --parallel=5 --slave-info --databases="wuyong duobao" --no-timestamp  /data/`date +%Y%m%d` 2>/data/wy.log
+
+2.3、验证备份是否生成
+[root@rac2 data]# cd /data/20160519/
+[root@rac2 20160519]# ll
+total 102536
+-rw-r----- 1 root root       425 May 19 02:29 backup-my.cnf
+drwxr-x--- 2 root root      4096 May 19 02:29 duobao
+-rw-r----- 1 root root 104857600 May 19 02:28 ibdata1
+drwxr-x--- 2 root root      4096 May 19 02:29 wuyong
+-rw-r----- 1 root root        22 May 19 02:29 xtrabackup_binlog_info
+-rw-r----- 1 root root       117 May 19 02:29 xtrabackup_checkpoints
+-rw-r----- 1 root root       568 May 19 02:29 xtrabackup_info
+-rw-r----- 1 root root      2560 May 19 02:29 xtrabackup_logfile
+-rw-r----- 1 root root        73 May 19 02:29 xtrabackup_slave_info
+ 
+2.4、scp备份到用于做新从库的服务器上(192.168.10.24/rac3)
+[root@rac2 data]# scp -r /data/20160519/ root@192.168.10.24:/data/backup
+
+
+2.5、新从库关闭实例
+[root@rac3 ~]# /etc/init.d/mysql stop
+Shutting down MySQL.. SUCCESS! 
+
+
+2.6、备份新从库mysql datadir目录文件，然后重新创建datadir目录
+[root@rac3 mysql]# 
+mv /data/mysql/mysql3376/ /data/mysql/mysql3376bak
+mkdir -p /data/mysql/mysql3376/{data,logs,tmp}
+
+
+2.7、应用日志并还原
+# copy-back之前datadir目录必须是空的，否则不能进行copy-back，出于安全考虑在copy-back之前一定要对已存在的ibdata*、ib_lofile*、binlog进行备份。
+[root@rac3 ~]#
+cd /data/xtr2.4/percona-xtrabackup-2.4.2-Linux-x86_64/bin
+./innobackupex  --defaults-file=/etc/my.cnf --parallel=5 --user=wuyong --password=wuyong --apply-log /data/backup/20160519
+./innobackupex  --defaults-file=/etc/my.cnf --parallel=5 --user=wuyong --password=wuyong --copy-back /data/backup/20160519
+
+
+2.8、删除还原出来的ibdata1、ibtmp1、ib_logfile0、ib_logfile1文件
+# 我只同步2个库，新从库上面原有的库要保留下来，所以要删除掉还原出来的ibdata和iblogfile文件，否则新从库上面原有的innodb引擎库在访问时会报表不存在的错误，如果是全库同步不需要执行这步。
+[root@rac3 ~]# 
+rm -rf /data/mysql/mysql3376/data/ibdata1
+rm -rf /data/mysql/mysql3376/data/ibtmp1
+rm -rf /data/mysql/mysql3376/logs/ib_logfile*
+
+
+2.9、将原有的pipi库、mysql库、performance_schema库、ibdata1文件cp回datadir目录下
+# 如果是全库同步这步也不需要执行。
+[root@rac3 data]# 
+cp /data/mysql/mysql3376bak/data/ibdata1  /data/mysql/mysql3376/data/
+cp -r /data/mysql/mysql3376bak/data/mysql  /data/mysql/mysql3376/data/
+cp -r /data/mysql/mysql3376bak/data/pipi /data/mysql/mysql3376/data/
+cp -r /data/mysql/mysql3376bak/data/performance_schema /data/mysql/mysql3376/data/
+
+
+2.10、修改权限
+chown -R mysql.mysql /data/mysql/mysql3376/
+
+2.11、启动新从库
+[root@rac3 mysql]# /etc/init.d/mysql start
+Starting MySQL... SUCCESS! 
+
+
+2.12、生成chang master to指向主库并在新从库上执行
+[root@rac3 20160519]# cat /data/backup/20160519/xtrabackup_slave_info 
+CHANGE MASTER TO MASTER_LOG_FILE='mysql-bin.000007', MASTER_LOG_POS=4071
+--根据上面的信息生成如下chang master to语句指向主库：
+change master to
+  master_host='192.168.10.20',
+  master_user='repl',
+  master_password='123456',
+  master_port=3376,
+  master_log_file='mysql-bin.000007',
+  master_log_pos=4071;
+  
+2.13、启动slave
+  start slave
