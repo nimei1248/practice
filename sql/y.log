@@ -1,0 +1,46 @@
+修改admin权限申请报错如下:
+
+
+# python3 -V
+Python 3.6.4
+
+
+
+2018-04-16 13:50:17,874 [Thread-20:140082289620736]                       [django.request:118] [ERROR]- Internal Server Error: /api/v1/apply_grained/
+Traceback (most recent call last):
+  File "/usr/local/python3/lib/python3.6/site-packages/django/core/handlers/exception.py", line 35, in inner
+    response = get_response(request)
+  File "/usr/local/python3/lib/python3.6/site-packages/django/core/handlers/base.py", line 128, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "/usr/local/python3/lib/python3.6/site-packages/django/core/handlers/base.py", line 126, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/python3/lib/python3.6/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/python3/lib/python3.6/site-packages/django/views/generic/base.py", line 69, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/python3/lib/python3.6/site-packages/rest_framework/views.py", line 494, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/python3/lib/python3.6/site-packages/rest_framework/views.py", line 454, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/python3/lib/python3.6/site-packages/rest_framework/views.py", line 491, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/local/yearning/src/core/api/applygrained.py", line 77, in post
+    thread = threading.Thread(target=push_message, args=({'to_user': request.user, 'workid': work_id}, 2, request.user, mail.email, work_id, '已提交'))
+AttributeError: 'NoneType' object has no attribute 'email'
+2018-04-16 13:50:17,904 [Thread-20:140082289620736]                       [django.server:124] [ERROR]- "POST /api/v1/apply_grained/ HTTP/1.1" 500 16085
+
+
+
+/usr/local/yearning/src/core/api/applygrained.py:
+class apply_grained(baseview.BaseView):
+
+    def post(self, request, args: str = None):
+
+        grained_list = json.loads(request.data['grained_list'])
+        work_id = util.workId()
+        applygrained.objects.get_or_create(work_id=work_id, username=request.user, permissions=grained_list, status=2)
+        mail = Account.objects.filter(id=1).first()
+        thread = threading.Thread(target=push_message, args=({'to_user': request.user, 'workid': work_id}, 2, request.user, mail.email, work_id, '已提交'))
+        thread.start()
+        return Response('权限申请已提交!')
+
