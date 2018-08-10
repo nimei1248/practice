@@ -132,6 +132,17 @@ SQL> select @@max_heap_table_size;
 1 row in set (0.00 sec)
 
 
++----+-------------+-----------------------+------------+------+--------------------------------------------+---------+---------+-------+----------+----------+---------------------------------+
+| id | select_type | table                 | partitions | type | possible_keys                              | key     | key_len | ref   | rows     | filtered | Extra                           |
++----+-------------+-----------------------+------------+------+--------------------------------------------+---------+---------+-------+----------+----------+---------------------------------+
+|  1 | PRIMARY     | <derived2>            | NULL       | ALL  | NULL                                       | NULL    | NULL    | NULL  |  1442072 |   100.00 | Using temporary; Using filesort |
+|  2 | DERIVED     | t_customer_summary    | NULL       | ref  | PRIMARY,last_update,i_cpi_sumdate,i_a      | i_a | 32      | const | 10235612 |    11.11 | Using index condition           |
+|  3 | UNION       | t_game_orders_summary | NULL       | ref  | PRIMARY,last_update,i_cpi_statdate,i_a     | i_a | 32      | const |  2745644 |    11.11 | Using index condition           |
++----+-------------+-----------------------+------------+------+--------------------------------------------+---------+---------+-------+----------+----------+---------------------------------+
+3 rows in set, 1 warning (0.01 sec)
+
+
+
 SQL> show warnings\G
 *************************** 1. row ***************************
   Level: Note
