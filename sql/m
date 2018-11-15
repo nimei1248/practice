@@ -1,0 +1,220 @@
+https://docs.mongodb.com/manual/administration/install-on-linux/
+
+目前学习版本为3.4: 学习文档分企业版和社区版：
+https://docs.mongodb.com/v3.4/tutorial/install-mongodb-on-red-hat/
+
+
+下载地址：
+https://www.mongodb.com/download-center?jmp=nav#previous
+https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel62-3.4.17.tgz
+
+
+二进制安装参考4.0：
+https://docs.mongodb.com/manual/tutorial/install-mongodb-on-red-hat/#using-tarballs
+
+yum install libcurl openssl
+tar -zxvf mongodb-linux-*-3.4.17.tgz
+
+/etc/profile:
+export PATH=<mongodb-install-directory>/bin:$PATH
+
+SELINUX=disabled
+Data Directories and Permissions
+
+ulimit:
+https://docs.mongodb.com/manual/reference/ulimit/
+
+禁用大页：
+https://docs.mongodb.com/manual/tutorial/transparent-huge-pages/
+
+
+groupadd  mongo
+useradd mongo -g mongo
+
+#mkdir -p /data01/mongodb7777/log
+#chown -R mongo.mongo /data01/mongodb7777
+
+mkdir -p /data01/mongodb/inst1/log
+chown -R mongo.mongo /data01/mongodb
+cd /data01/mongodb/inst1
+
+
+#vim mongodb7777.cnf
+vim mongodb.cnf
+
+## server
+ fork = true  # 后台运行
+ port = 7777  # 监听端口
+ quiet = true #官方建议关闭以方便排查问题，这里建议打开
+ dbpath = /data1/mongodb7777                 # 数据目录路径
+ logpath = /data1/mongodb7777/log/mongod.log # 指定日志路径
+ logappend = true       # 日志是否已追加的方式记录
+ journal = true         # 线上业务建议都开启journal
+ bind_ip_all = true                 # >=3.6相当于白名单默认只允许localhost访问
+ maxConns=65536 # 配置最大连接数
+
+## <=3.4
+ nohttpinterface = true # 关闭web接口 3.6已经废弃
+ directoryperdb = true  # 指定一个db.对应一个目录
+
+## slow log
+ profile = 1    # 配置日志记录级别
+ slows = 500   # 配置慢查询记录时间(毫秒)
+
+## RS
+ replSet = 7777      # 指定副本集
+ opposite=40960     # 配置oplog大小
+
+## add for 3.4
+ #shardsvr=true      # 配置节点角色(>=3.4 shard节点专用）
+
+## SCO
+ #confessor = true   # 指定config节点角色(>=3.4 config 节点专用)
+ #configdb = MSCHOST # 指定config配置信息(mongos 节点专用）
+
+## user
+ keyFile=/data1/mongodb7777/keyFile         # 指定keyFile认证文件
+ setParameter=enableLocalhostAuthBypass=1   # 开启本地认证
+
+## index
+ wiredTigerDirectoryForIndexes=true # 为索引文件指定独立的目录
+
+## engine
+ storage Engine=wiredTiger                   # 指定存储引擎
+ wiredTigerCacheSizeGB=1                    # 指定引擎内部cache
+ wiredTigerCollectionBlockCompressor=snappy # 指定引擎集合压缩模式
+
+## version
+mongo_version=mongodb34
+
+
+
+[root@mongodb log]# sudo -u mongo numactl --interleave=all /usr/local/mongodb34/bin/mongod -f /data01/mongodb/inst1/mongodb.cnf
+about to fork child process, waiting until server is ready for connections.
+forked process: 1490
+ERROR: child process failed, exited with error number 1
+
+原因：配置文件中log目录写错了
+logpath=/data1/mongodb/inst1/log/mongod.log # 指定日志路径
+---->
+logpath=/data01/mongodb/inst1/log/mongod.log # 指定日志路径
+
+[root@mongodb inst1]# sudo -u mongo numactl --interleave=all /usr/local/mongodb34/bin/mongod -f /data01/mongodb/inst1/mongodb.cnf
+about to fork child process, waiting until server is ready for connections.
+forked process: 1542
+child process started successfully, parent exiting
+
+[root@mongodb inst1]# cat mongodb.cnf 
+## server
+fork=true  # 后台运行
+port=7777  # 监听端口
+quiet=true #官方建议关闭以方便排查问题，这里建议打开
+dbpath=/data01/mongodb/inst1/data                 # 数据目录路径
+logpath=/data01/mongodb/inst1/log/mongod.log # 指定日志路径
+logappend=true       # 日志是否已追加的方式记录
+journal=true         # 线上业务建议都开启journal
+#bind_ip_all=true                 # >=3.6相当于白名单默认只允许localhost访问
+maxConns=65536 # 配置最大连接数
+
+## <=3.4
+nohttpinterface=true # 关闭web接口 3.6已经废弃
+directoryperdb=true  # 指定一个db.对应一个目录
+
+## slow log
+profile=1    # 配置日志记录级别
+slowms=500   # 配置慢查询记录时间(毫秒)
+
+## RS
+replSet=7777      # 指定副本集
+oplogSize=4096     # 配置oplog大小
+
+## add for 3.4
+#shardsvr=true      # 配置节点角色(>=3.4 shard节点专用）
+
+## SCO
+#confessor=true   # 指定config节点角色(>=3.4 config 节点专用)
+#configdb=MSCHOST # 指定config配置信息(mongos 节点专用）
+
+## user
+#keyFile=/data01/mongodb/inst1/keyFile         # 指定keyFile认证文件
+#setParameter=enableLocalhostAuthBypass=1   # 开启本地认证
+
+## index
+wiredTigerDirectoryForIndexes=true # 为索引文件指定独立的目录
+
+## engine
+storageEngine=wiredTiger                   # 指定存储引擎
+wiredTigerCacheSizeGB=1                    # 指定引擎内部cache
+wiredTigerCollectionBlockCompressor=snappy # 指定引擎集合压缩模式
+
+## version
+#mongo_version=mongodb34
+
+
+启动:
+sudo -u mongo numactl --interleave=all mongod -f /data1/mongodb7777/mongodb7777.cnf
+出现successfully就表示成功
+如果找不到mongod就指定全路径
+看日志
+初次测试的时候可以注释掉user认证
+
+
+初始化实例：
+登陆mongo shell：
+mongo --host 127.0.0.1:27017
+mongo --host 127.0.0.1:27017 --norc
+
+无认证登陆：
+mongo --host 127.0.0.1:7777
+
+初始化副本集：
+rs.initiate() 如果不能成功，使用下面标准方法
+
+cfg={_id:"replSet", version:1, members:[{_id:0, host:"ip:port"}]}  -- 3个变量都要替换
+rs.initiate(cfg)
+
+创建超级用户：
+db.createUser({user:'xxx', pwd:'xxx', roles:['__system']})
+
+
+以xxx用户登陆，创建root账号：
+db.createUser({user:'xxx', pwd:'xxx', roles:['root']})
+
+删除超级用户，也可以保留：
+db.dropUser('xxx')
+
+
+[root@mongodb inst1]# mongo --host 127.0.0.1:7777
+MongoDB shell version v3.4.17
+connecting to: mongodb://127.0.0.1:7777/
+MongoDB server version: 3.4.17
+Welcome to the MongoDB shell.
+For interactive help, type "help".
+For more comprehensive documentation, see
+        http://docs.mongodb.org/
+Questions? Try the support group
+        http://groups.google.com/group/mongodb-user
+Server has startup warnings: 
+2018-10-02T16:59:59.813+0800 I STORAGE  [initandlisten] 
+2018-10-02T16:59:59.814+0800 I STORAGE  [initandlisten] ** WARNING: The configured WiredTiger cache size is more than 80% of available RAM.
+2018-10-02T16:59:59.814+0800 I STORAGE  [initandlisten] **          See http://dochub.mongodb.org/core/faq-memory-diagnostics-wt
+2018-10-02T17:00:00.426+0800 I CONTROL  [initandlisten] 
+2018-10-02T17:00:00.426+0800 I CONTROL  [initandlisten] ** WARNING: Access control is not enabled for the database.
+2018-10-02T17:00:00.426+0800 I CONTROL  [initandlisten] **          Read and write access to data and configuration is unrestricted.
+2018-10-02T17:00:00.426+0800 I CONTROL  [initandlisten] 
+
+[root@mongodb inst1]# mongo --host 127.0.0.1:7777 --norc
+MongoDB shell version v3.4.17
+connecting to: mongodb://127.0.0.1:7777/
+MongoDB server version: 3.4.17
+Server has startup warnings: 
+2018-10-02T16:59:59.813+0800 I STORAGE  [initandlisten] 
+2018-10-02T16:59:59.814+0800 I STORAGE  [initandlisten] ** WARNING: The configured WiredTiger cache size is more than 80% of available RAM.
+2018-10-02T16:59:59.814+0800 I STORAGE  [initandlisten] **          See http://dochub.mongodb.org/core/faq-memory-diagnostics-wt
+2018-10-02T17:00:00.426+0800 I CONTROL  [initandlisten] 
+2018-10-02T17:00:00.426+0800 I CONTROL  [initandlisten] ** WARNING: Access control is not enabled for the database.
+2018-10-02T17:00:00.426+0800 I CONTROL  [initandlisten] **          Read and write access to data and configuration is unrestricted.
+2018-10-02T17:00:00.426+0800 I CONTROL  [initandlisten] 
+
+
+
