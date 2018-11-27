@@ -1,0 +1,7 @@
+$ cat .mongorc.js   
+cmdCount = 1;
+hosts = db.serverStatus().host;
+
+prompt = function() {
+             return "[" + (cmdCount++) + ' ' + "uptime:" + db.serverStatus().uptime + ' ' + db + "@" + hosts + ' ' + "conns:" + db.serverStatus().connections.current + ' ' + "documents:" + db.stats().objects + "]" + '\n' + "mongodb> "
+         }
