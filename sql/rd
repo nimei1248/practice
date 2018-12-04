@@ -1,0 +1,373 @@
+yum install ruby ruby-devel
+yum install rubygems
+https://github.com/delano/redis-dump
+[root@mongodb redis-dump]# gem install redis
+ERROR:  Error installing redis:
+        redis requires Ruby version >= 2.2.2.
+
+https://rubygems.org/pages/download
+[root@mongodb rubygems-2.7.8]# gem install rubygems-update
+Successfully installed rubygems-update-2.7.8
+1 gem installed
+Installing ri documentation for rubygems-update-2.7.8...
+Installing RDoc documentation for rubygems-update-2.7.8...
+[root@mongodb rubygems-2.7.8]# 
+[root@mongodb rubygems-2.7.8]# 
+[root@mongodb rubygems-2.7.8]# gem -v
+1.3.7
+[root@mongodb rubygems-2.7.8]# update_rubygems
+NOTE: Gem::Specification#default_executable= is deprecated with no replacement. It will be removed on or after 2018-12-01.
+Gem::Specification#default_executable= called from /usr/lib/ruby/gems/1.8/specifications/rubygems-update-2.7.8.gemspec:10.
+YAML safe loading is not available. Please upgrade psych to a version that supports safe loading (>= 2.0).
+NOTE: Gem::Specification#default_executable= is deprecated with no replacement. It will be removed on or after 2018-12-01.
+Gem::Specification#default_executable= called from /usr/lib/ruby/gems/1.8/specifications/rubygems-update-2.7.8.gemspec:10.
+Bundler 1.16.6 installed
+RubyGems 2.7.8 installed
+Regenerating binstubs
+Installing ri documentation for rubygems-2.7.8
+/usr/lib/ruby/1.8/rdoc/rdoc.rb:280: warning: conflicting chdir during another chdir block
+/usr/lib/ruby/1.8/rdoc/rdoc.rb:287: warning: conflicting chdir during another chdir block
+
+=== 2.7.8 / 2018-11-02
+
+[root@mongodb rubygems-2.7.8]# gem -v
+NOTE: Gem::Specification#default_executable= is deprecated with no replacement. It will be removed on or after 2018-12-01.
+Gem::Specification#default_executable= called from /usr/lib/ruby/gems/1.8/specifications/rubygems-update-2.7.8.gemspec:10.
+YAML safe loading is not available. Please upgrade psych to a version that supports safe loading (>= 2.0).
+2.7.8
+[root@mongodb rubygems-2.7.8]# gem install psych
+NOTE: Gem::Specification#default_executable= is deprecated with no replacement. It will be removed on or after 2018-12-01.
+Gem::Specification#default_executable= called from /usr/lib/ruby/gems/1.8/specifications/rubygems-update-2.7.8.gemspec:10.
+YAML safe loading is not available. Please upgrade psych to a version that supports safe loading (>= 2.0).
+NOTE: Gem::Specification#default_executable= is deprecated with no replacement. It will be removed on or after 2018-12-01.
+Gem::Specification#default_executable= called from /usr/lib/ruby/gems/1.8/specifications/rubygems-update-2.7.8.gemspec:10.
+
+
+
+Fetching: psych-3.0.3.gem (100%)
+ERROR:  Error installing psych:
+        There are no versions of psych (>= 0) compatible with your Ruby & RubyGems
+        psych requires Ruby version >= 2.2.2. The current ruby version is 1.8.
+https://www.jianshu.com/p/29ff34db5274
+解决方法
+更新 ruby
+如果没有安装那就先安装
+ curl -sSL https://get.rvm.io | bash -s stable
+看看目前能更新的最高版本是哪个?
+ rvm list known  
+查找类似 [ruby-]2.4[.1] 的地方, 查看最高支持的版本.
+ rvm install ruby 2.4  // 发文章最新版为2.4
+静静等待几分钟, 以后任意使用
+    gem install xxxx
+
+链接：https://www.jianshu.com/p/29ff34db5274
+升级ruby版本：
+[root@mongodb ~]# ruby --version
+ruby 1.8.7 (2013-06-27 patchlevel 374) [x86_64-linux]
+[root@mongodb ~]# 
+[root@mongodb ~]# rvm
+-bash: rvm: command not found
+[root@mongodb ~]#  curl -sSL https://get.rvm.io | bash -s stable
+Downloading https://github.com/rvm/rvm/archive/1.29.4.tar.gz
+Downloading https://github.com/rvm/rvm/releases/download/1.29.4/1.29.4.tar.gz.asc
+gpg: 已创建目录‘/root/.gnupg’
+gpg: 新的配置文件‘/root/.gnupg/gpg.conf’已建立
+gpg: 警告：在‘/root/.gnupg/gpg.conf’里的选项于此次运行期间未被使用
+gpg: 钥匙环‘/root/.gnupg/pubring.gpg’已建立
+gpg: 于 2018年07月02日 星期一 03时41分26秒 +08 创建的签名，使用 RSA，钥匙号 BF04FF17
+gpg: 无法检查签名：No public key
+Warning, RVM 1.26.0 introduces signed releases and automated check of signatures when GPG software found. Assuming you trust Michal Papis import the mpapis public key (downloading the signatures).
+
+GPG signature verification failed for '/usr/local/rvm/archives/rvm-1.29.4.tgz' - 'https://github.com/rvm/rvm/releases/download/1.29.4/1.29.4.tar.gz.asc'! Try to install GPG v2 and then fetch the public key:
+
+    gpg2 --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+
+or if it fails:
+
+    command curl -sSL https://rvm.io/mpapis.asc | gpg2 --import -
+
+the key can be compared with:
+
+    https://rvm.io/mpapis.asc
+    https://keybase.io/mpapis
+
+NOTE: GPG version 2.1.17 have a bug which cause failures during fetching keys from remote server. Please downgrade or upgrade to newer version (if available) or use the second method described above.
+
+[root@mongodb ~]# rvm
+-bash: rvm: command not found
+[root@mongodb ~]# gpg
+gpg: 钥匙环‘/root/.gnupg/secring.gpg’已建立
+gpg: 请开始键入您的报文……
+^C
+gpg: signal Interrupt caught ... exiting
+
+[root@mongodb ~]#     gpg2 --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+gpg: 下载密钥‘D39DC0E3’，从 hkp 服务器 keys.gnupg.net
+gpg: /root/.gnupg/trustdb.gpg：建立了信任度数据库
+gpg: 密钥 D39DC0E3：公钥“Michal Papis (RVM signing) <mpapis@gmail.com>”已导入
+gpg: 密钥 D39DC0E3：公钥“Totally Legit Signing Key <mallory@example.org>”已导入
+gpg: 没有找到任何绝对信任的密钥
+gpg: 合计被处理的数量：2
+gpg:           已导入：2  (RSA: 2)
+[root@mongodb ~]# ll .gnupg/
+总用量 116
+-rw------- 1 root root  7856 12月  4 21:40 gpg.conf
+-rw------- 1 root root 49170 12月  4 21:42 pubring.gpg
+-rw------- 1 root root 49170 12月  4 21:42 pubring.gpg~
+-rw------- 1 root root     0 12月  4 21:41 secring.gpg
+-rw------- 1 root root  1200 12月  4 21:42 trustdb.gpg
+[root@mongodb ~]#  curl -sSL https://get.rvm.io | bash -s stable
+Downloading https://github.com/rvm/rvm/archive/1.29.4.tar.gz
+Downloading https://github.com/rvm/rvm/releases/download/1.29.4/1.29.4.tar.gz.asc
+gpg: 于 2018年07月02日 星期一 03时41分26秒 +08 创建的签名，使用 RSA，钥匙号 BF04FF17
+gpg: 完好的签名，来自于“Michal Papis (RVM signing) <mpapis@gmail.com>”
+gpg:               亦即“Michal Papis <michal.papis@toptal.com>”
+gpg:               亦即“[jpeg image of size 5015]”
+gpg: 警告：这把密钥未经受信任的签名认证！
+gpg:       没有证据表明这个签名属于它所声称的持有者。
+主钥指纹： 409B 6B17 96C2 7546 2A17  0311 3804 BB82 D39D C0E3
+子钥指纹： 62C9 E5F4 DA30 0D94 AC36  166B E206 C29F BF04 FF17
+GPG verified '/usr/local/rvm/archives/rvm-1.29.4.tgz'
+Creating group 'rvm'
+Installing RVM to /usr/local/rvm/
+Installation of RVM in /usr/local/rvm/ is almost complete:
+
+  * First you need to add all users that will be using rvm to 'rvm' group,
+    and logout - login again, anyone using rvm will be operating with `umask u=rwx,g=rwx,o=rx`.
+
+  * To start using RVM you need to run `source /etc/profile.d/rvm.sh`
+    in all your open shell windows, in rare cases you need to reopen all shell windows.
+  * Please do NOT forget to add your users to the rvm group.
+     The installer no longer auto-adds root or users to the rvm group. Admins must do this.
+     Also, please note that group memberships are ONLY evaluated at login time.
+     This means that users must log out then back in before group membership takes effect!
+[root@mongodb ~]# rvm
+-bash: rvm: command not found
+
+[root@mongodb ~]# /usr/local/rvm/bin/rvm --version
+rvm 1.29.4 (latest) by Michal Papis, Piotr Kuczynski, Wayne E. Seguin [https://rvm.io]
+
+[root@mongodb ~]# /usr/local/rvm/bin/rvm list known
+# MRI Rubies
+[ruby-]1.8.6[-p420]
+[ruby-]1.8.7[-head] # security released on head
+[ruby-]1.9.1[-p431]
+[ruby-]1.9.2[-p330]
+[ruby-]1.9.3[-p551]
+[ruby-]2.0.0[-p648]
+[ruby-]2.1[.10]
+[ruby-]2.2[.10]
+[ruby-]2.3[.7]
+[ruby-]2.4[.4]
+[ruby-]2.5[.1]
+[ruby-]2.6[.0-preview2]
+ruby-head
+
+# for forks use: rvm install ruby-head-<name> --url https://github.com/github/ruby.git --branch 2.2
+
+# JRuby
+jruby-1.6[.8]
+jruby-1.7[.27]
+jruby-9.1[.17.0]
+jruby[-9.2.0.0]
+jruby-head
+
+# Rubinius
+rbx-1[.4.3]
+rbx-2.3[.0]
+rbx-2.4[.1]
+rbx-2[.5.8]
+rbx-3[.100]
+rbx-head
+
+# TruffleRuby
+truffleruby[-1.0.0-rc2]
+
+# Opal
+opal
+
+# Minimalistic ruby implementation - ISO 30170:2012
+mruby-1.0.0
+mruby-1.1.0
+mruby-1.2.0
+mruby-1.3.0
+mruby-1[.4.0]
+mruby[-head]
+
+# Ruby Enterprise Edition
+ree-1.8.6
+ree[-1.8.7][-2012.02]
+
+# Topaz
+topaz
+
+# MagLev
+maglev-1.0.0
+maglev-1.1[RC1]
+maglev[-1.2Alpha4]
+maglev-head
+
+# Mac OS X Snow Leopard Or Newer
+macruby-0.10
+macruby-0.11
+macruby[-0.12]
+macruby-nightly
+macruby-head
+
+# IronRuby
+ironruby[-1.1.3]
+ironruby-head
+
+[root@mongodb ~]# /usr/local/rvm/bin/rvm install ruby 2.5
+Searching for binary rubies, this might take some time.
+No binary rubies available for: centos/6/x86_64/ruby-2.5.1.
+Continuing with compilation. Please read 'rvm help mount' to get more information on binary rubies.
+Checking requirements for centos.
+Installing requirements for centos.
+Installing required packages: patch, autoconf, automake, bison, libtool, patch....^[[C^H^H^[[3~
+
+...
+Requirements installation successful.
+Installing Ruby from source to: /usr/local/rvm/rubies/ruby-2.5.1, this may take a while depending on your cpu(s)...
+ruby-2.5.1 - #downloading ruby-2.5.1, this may take a while depending on your connection...
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 13.3M  100 13.3M    0     0  1136k      0  0:00:12  0:00:12 --:--:-- 2108k
+ruby-2.5.1 - #extracting ruby-2.5.1 to /usr/local/rvm/src/ruby-2.5.1.....
+ruby-2.5.1 - #configuring...................................................................
+ruby-2.5.1 - #post-configuration..
+ruby-2.5.1 - #compiling................................................................................................
+ruby-2.5.1 - #installing............................
+ruby-2.5.1 - #making binaries executable..
+ruby-2.5.1 - #downloading rubygems-2.7.8
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  899k  100  899k    0     0   845k      0  0:00:01  0:00:01 --:--:-- 1076k
+No checksum for downloaded archive, recording checksum in user configuration.
+ruby-2.5.1 - #extracting rubygems-2.7.8..........................................................................................................................................
+ruby-2.5.1 - #removing old rubygems........
+ruby-2.5.1 - #installing rubygems-2.7.8.....................................
+ruby-2.5.1 - #gemset created /usr/local/rvm/gems/ruby-2.5.1@global
+ruby-2.5.1 - #importing gemset /usr/local/rvm/gemsets/global.gems...................................................
+ruby-2.5.1 - #generating global wrappers.......
+ruby-2.5.1 - #gemset created /usr/local/rvm/gems/ruby-2.5.1
+ruby-2.5.1 - #importing gemsetfile /usr/local/rvm/gemsets/default.gems evaluated to empty gem list
+ruby-2.5.1 - #generating default wrappers.......
+ruby-2.5.1 - #adjusting #shebangs for (gem irb erb ri rdoc testrb rake).
+Install of ruby-2.5.1 - #complete 
+Ruby was built without documentation, to build it run: rvm docs generate-ri
+[root@mongodb rvm]# pwd
+/usr/local/rvm
+[root@mongodb rvm]# ./rubies/ruby-2.5.1/bin/ruby --version
+ruby 2.5.1p57 (2018-03-29 revision 63029) [x86_64-linux]
+[root@mongodb rvm]# gem install psych
+Fetching: psych-3.0.3.gem (100%)
+Building native extensions. This could take a while...
+Successfully installed psych-3.0.3
+Parsing documentation for psych-3.0.3
+Installing ri documentation for psych-3.0.3
+Done installing documentation for psych after 0 seconds
+1 gem installed
+[root@mongodb redis-dump]# gem install redis
+Fetching: redis-4.0.3.gem (100%)
+Successfully installed redis-4.0.3
+Parsing documentation for redis-4.0.3
+Installing ri documentation for redis-4.0.3
+Done installing documentation for redis after 0 seconds
+1 gem installed
+[root@mongodb redis-dump]# gem install uri-redis
+Fetching: uri-redis-0.4.2.gem (100%)
+Successfully installed uri-redis-0.4.2
+Parsing documentation for uri-redis-0.4.2
+Installing ri documentation for uri-redis-0.4.2
+Done installing documentation for uri-redis after 0 seconds
+1 gem installed
+[root@mongodb redis-dump]# gem install yajl-ruby
+Fetching: yajl-ruby-1.4.1.gem (100%)
+Building native extensions. This could take a while...
+Successfully installed yajl-ruby-1.4.1
+Parsing documentation for yajl-ruby-1.4.1
+Installing ri documentation for yajl-ruby-1.4.1
+Done installing documentation for yajl-ruby after 0 seconds
+1 gem installed
+[root@mongodb redis-dump]#  gem install drydock
+Fetching: drydock-0.6.9.gem (100%)
+Successfully installed drydock-0.6.9
+Parsing documentation for drydock-0.6.9
+Installing ri documentation for drydock-0.6.9
+Done installing documentation for drydock after 0 seconds
+1 gem installed
+[root@mongodb redis-dump]# ruby -rubygems bin/redis-dump
+`ubygems.rb' is deprecated, and will be removed on or after 2018-12-01. Remove `-rubygems' from your command-line, or use `-r rubygems' instead
+NOAUTH Authentication required.
+[root@mongodb redis-dump]# ll
+总用量 28
+drwxr-xr-x 2 root root   59 12月  4 21:16 bin
+-rw-r--r-- 1 root root 1965 12月  4 21:16 CHANGES.txt
+-rw-r--r-- 1 root root 1265 12月  4 21:16 gem-public_cert.pem
+drwxr-xr-x 3 root root   18 12月  4 21:16 lib
+-rw-r--r-- 1 root root 1081 12月  4 21:16 LICENSE.txt
+-rw-r--r-- 1 root root 1585 12月  4 21:16 Rakefile
+-rw-r--r-- 1 root root 4127 12月  4 21:16 README.rdoc
+-rw-r--r-- 1 root root    0 12月  4 21:16 redis-dump.gemspec
+drwxr-xr-x 2 root root  128 12月  4 21:16 try
+-rw-r--r-- 1 root root    6 12月  4 21:16 VERSION
+[root@mongodb redis-dump]# ruby -rubygems bin/redis-dump
+`ubygems.rb' is deprecated, and will be removed on or after 2018-12-01. Remove `-rubygems' from your command-line, or use `-r rubygems' instead
+NOAUTH Authentication required.
+[root@mongodb redis-dump]# ruby -r rubygems bin/redis-dump
+NOAUTH Authentication required.
+[root@mongodb redis-dump]# 
+[root@mongodb redis-dump]# ruby -r rubygems bin/redis-dump -a 'howbuy1!'
+{"db":0,"key":"c","ttl":-1,"type":"string","value":"2","size":1}
+{"db":0,"key":"d","ttl":-1,"type":"string","value":"4","size":1}
+{"db":0,"key":"b","ttl":-1,"type":"string","value":"1","size":1}
+{"db":0,"key":"a","ttl":-1,"type":"string","value":"3","size":1}
+{"db":0,"key":"e","ttl":-1,"type":"string","value":"aaaaaaaaad","size":10}
+ERR DB index is out of range
+[root@mongodb bin]# pwd
+/data01/redis/inst1/redis-dump/bin
+[root@mongodb bin]# ./redis-dump -u 127.0.0.1:6379 -a 'howbuy1!'
+{"db":0,"key":"c","ttl":-1,"type":"string","value":"2","size":1}
+{"db":0,"key":"d","ttl":-1,"type":"string","value":"4","size":1}
+{"db":0,"key":"b","ttl":-1,"type":"string","value":"1","size":1}
+{"db":0,"key":"a","ttl":-1,"type":"string","value":"3","size":1}
+{"db":0,"key":"e","ttl":-1,"type":"string","value":"aaaaaaaaad","size":10}
+ERR DB index is out of range
+
+下面报错原因可能是因为通gem install redis是4。0版本，而线上跑的是redis 5.0版本
+[root@mongodb bin]# /usr/local/redis/bin/redis-cli 
+127.0.0.1:6379> auth howbuy1!
+OK
+127.0.0.1:6379> set name1 a
+OK
+127.0.0.1:6379> set name2 b
+OK
+127.0.0.1:6379> set name3 c
+OK
+127.0.0.1:6379> quit
+[root@mongodb bin]# ./redis-dump -u 127.0.0.1:6379 -a 'howbuy1!'
+{"db":0,"key":"name3","ttl":-1,"type":"string","value":"c","size":1}
+{"db":0,"key":"name2","ttl":-1,"type":"string","value":"b","size":1}
+{"db":0,"key":"name1","ttl":-1,"type":"string","value":"a","size":1}
+{"db":0,"key":"c","ttl":-1,"type":"string","value":"2","size":1}
+{"db":0,"key":"d","ttl":-1,"type":"string","value":"4","size":1}
+{"db":0,"key":"b","ttl":-1,"type":"string","value":"1","size":1}
+{"db":0,"key":"a","ttl":-1,"type":"string","value":"3","size":1}
+{"db":0,"key":"e","ttl":-1,"type":"string","value":"aaaaaaaaad","size":10}
+ERR DB index is out of range
+如果指定db名称就不会报错db索引超出范围：
+[root@mongodb bin]# ./redis-dump -u 127.0.0.1:6379 -a 'howbuy1!' -d 0
+{"db":0,"key":"name3","ttl":-1,"type":"string","value":"c","size":1}
+{"db":0,"key":"name2","ttl":-1,"type":"string","value":"b","size":1}
+{"db":0,"key":"name1","ttl":-1,"type":"string","value":"a","size":1}
+{"db":0,"key":"c","ttl":-1,"type":"string","value":"2","size":1}
+{"db":0,"key":"d","ttl":-1,"type":"string","value":"4","size":1}
+{"db":0,"key":"b","ttl":-1,"type":"string","value":"1","size":1}
+{"db":0,"key":"a","ttl":-1,"type":"string","value":"3","size":1}
+{"db":0,"key":"e","ttl":-1,"type":"string","value":"aaaaaaaaad","size":10}
+[root@mongodb bin]# 
+[root@mongodb bin]# ./redis-dump -u 127.0.0.1:6379 -a 'howbuy1!' -d 1
+[root@mongodb bin]#
+
+
