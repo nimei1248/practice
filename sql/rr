@@ -83,6 +83,88 @@ OK
 redis> get foo
 "bar"
 
+http://www.ywnds.com/?p=6957
+make时报错：
+[root@mongodb redis-5.0.0]# make MALLOC=jemalloc
+cd src && make all
+make[1]: Entering directory `/root/software/redis-5.0.0/src'
+    CC adlist.o
+在包含自 adlist.c：34 的文件中:
+zmalloc.h:50:31: 错误：jemalloc/jemalloc.h：没有那个文件或目录
+zmalloc.h:55:2: 错误：#error "Newer version of jemalloc required"
+make[1]: *** [adlist.o] 错误 1
+make[1]: Leaving directory `/root/software/redis-5.0.0/src'
+make: *** [all] 错误 2
+
+redis官方说明：
+Allocator
+---------
+
+Selecting a non-default memory allocator when building Redis is done by setting
+the `MALLOC` environment variable. Redis is compiled and linked against libc
+malloc by default, with the exception of jemalloc being the default on Linux
+systems. This default was picked because jemalloc has proven to have fewer
+fragmentation problems than libc malloc.
+
+To force compiling against libc malloc, use:
+
+    % make MALLOC=libc
+
+To compile against jemalloc on Mac OS X systems, use:
+
+    % make MALLOC=jemalloc
+
+分配器
+---------
+
+在构建Redis时选择非默认内存分配器是通过设置完成的`MALLOC`环境变量。 Redis是针对libc编译和链接的
+默认情况下为malloc，但jemalloc是Linux上的默认设置系统。
+之所以选择此默认值是因为jemalloc已被证明有更少碎片问题比libc malloc。
+
+要强制编译libc malloc，请使用：
+
+     ％make MALLOC = libc
+
+要在Mac OS X系统上针对jemalloc进行编译，请使用：
+
+     ％make MALLOC = jemalloc
+
+Redis在安装时关于内存分配器allocator， 如果指定了MALLOC这个环境变量，那么会用这个环境变量的去建立Redis。如果没有，那么就是用默认的分配器
+Redis 2.4版本之后，默认使用jemalloc来做内存管理，因为jemalloc被证明解决fragmentation problems（内存碎片化问题）比libc更好
+
+解决方法：
+[root@mongodb yum.repos.d]# cat /etc/redhat-release 
+CentOS release 6.10 (Final)
+
+wget https://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+rpm -ivh epel-release-6-8.noarch.rpm
+
+[root@mongodb redis-5.0.0]# yum install jemalloc
+
+[root@mongodb yum.repos.d]# rpm -qa | grep jemalloc
+jemalloc-3.6.0-1.el6.x86_64
+
+[root@mongodb redis-5.0.0]# rpm -ql jemalloc
+/usr/bin/jemalloc.sh
+/usr/lib64/libjemalloc.so.1
+/usr/share/doc/jemalloc-3.6.0
+
+编译安装最新版本jemalloc：
+[root@mongodb local]# rpm -e jemalloc
+error: package jemalloc is not installed
+
+wget https://github.com/jemalloc/jemalloc/releases/download/5.1.0/jemalloc-5.1.0.tar.bz2
+tar jxvf jemalloc-5.1.0.tar.bz2 
+cd jemalloc-5.1.0
+./configure --prefix=/usr/local/jemalloc-5.1.0
+make
+make install
+[root@mongodb local]# ln -s jemalloc-5.1.0 jemalloc
+
+make MALLOC=/usr/local/jemalloc/lib/
+
+
+
 redis目录结构：
 6379.conf
 
