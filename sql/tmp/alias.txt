@@ -1,0 +1,82 @@
+## redis
+REDIS_HOME=/usr/local/redis
+
+alias inst1_startup="${REDIS_HOME}/bin/redis-server /mysqldata/redis/inst1/redis.conf"
+alias inst1_shutdown="${REDIS_HOME}/bin/redis-cli -h 127.0.0.1 -p 6366 -a abc123 shutdown"
+alias inst1_login="${REDIS_HOME}/bin/redis-cli -h 127.0.0.1 -p 6366 -a abc123"
+alias inst1_log='tailf /mysqldata/redis/inst1/log/redis.log'
+
+
+alias inst2_startup="${REDIS_HOME}/bin/redis-server /mysqldata/redis/inst2/redis.conf"
+alias inst2_shutdown="${REDIS_HOME}/bin/redis-cli -h 127.0.0.1 -p 6367 -a abc123 shutdown"
+alias inst2_login="${REDIS_HOME}/bin/redis-cli -h 127.0.0.1 -p 6367 -a abc123"
+alias inst2_log='tailf /mysqldata/redis/inst2/log/redis.log'
+
+
+## os
+## history
+HISTTIMEFORMAT="$(whoami) [%F %T] "
+
+
+## alias
+alias grep='grep --color'
+alias egrep='egrep --color'
+
+
+## terminal ps1
+dba_ps1()
+{
+    Date=$(date +%F)
+    Time=$(date +%F_%H:%M:%S_%u_%Z)
+    IP=$(/sbin/ip route get 1 | awk '{print $NF;exit}')
+    Zone=$(grep 'ZONE' /etc/sysconfig/clock | awk -F '"' '{print $2}')
+
+    PS1="\\n\e[1;37m[\e[m\]\[\e[1;32m\u\e[m\]\[\e[1;33m@\e[m\]\[\e[1;35m\h\e[1;36m $IP\e[m\e[1;37m \[\e[1;35m$Time"_"$Zone \e[m\]\e[1;36m$(pwd)\e[m\e[1;37m]\e[m\n\\$ "
+}
+
+PROMPT_COMMAND=dba_ps1
+
+
+## mysql
+export MYSQL_HOME=/usr/local/percona_5.7.23
+export XB_HOME=/usr/local/xtrabackup_2.4.8
+export PT_HOME=/usr/local/pt_3.0.12
+export TOOLS_HOME=/home/mysql/install_mysql
+export PATH=${MYSQL_HOME}/bin:${XB_HOME}/bin:${PT_HOME}/bin:$PATH
+
+
+## color
+GREEN_COLOR='\E[1;32m'
+RED_COLOR='\E[1;31m'
+RES='\E[0m'
+
+
+## process
+echo -e "${GREEN_COLOR}$(ps -ef | grep 'bin/mysqld' | grep 'socket' | awk -F '[ = ]*' '{print $24"  "$8,$10,$22,$14,$3,$2}' | sort)${RES}"
+alias mylist="ps -ef | grep 'bin/mysqld' | grep 'socket' | awk -F '[ = ]*' '{print \$24\"  \"\$8,\$10,\$22,\$14,\$3,\$2}' | sort"
+
+
+## history
+>~/.viminfo
+>~/.mysql_history
+>~/.bash_history
+history -cw
+
+
+## .bashrc
+## inst4
+alias inst4_login='${MYSQL_HOME}/bin/mysql --socket=/disk01/mysqldata/inst4/sock/mysql.sock -usys -p -A'
+alias inst4_startup='${MYSQL_HOME}/bin/mysqld_safe --defaults-file=/disk01/mysqldata/inst4/my.cnf &'
+alias inst4_shutdown='${MYSQL_HOME}/bin/mysqladmin shutdown --socket=/disk01/mysqldata/inst4/sock/mysql.sock -usys -p'
+alias inst4_dump='${MYSQL_HOME}/bin/mysqldump -usys -p --socket=/disk01/mysqldata/inst4/sock/mysql.sock --triggers --routines --events '
+alias inst4_pump='${MYSQL_HOME}/bin/mysqlpump -usys -p --socket=/disk01/mysqldata/inst4/sock/mysql.sock --triggers --routines --events --all-databases '
+alias inst4_log='tailf /disk01/mysqldata/inst4/log/error.log'
+alias inst4_sql='tailf /disk01/mysqldata/inst4/log/slow-query.log'
+
+
+## login
+IP=$(/sbin/ip route get 1 | awk '{print $NF;exit}')
+alias colormysql=$(echo -e '${MYSQL_HOME}/bin/mysql --prompt="[\x1B[1;31m\\c \x1B[1;32m\\u\x1B[1;33m@\x1B[1;35m\\h\e[1;36m $IP:\x1B[1;32m\\p \x1B[1;35m$(date +%F)_\R:\m:\s_$(date +%u_%Z) \x1B[1;36m(\\d)\x1B[0m]\nSQL> "')
+alias inst4_login="colormysql -h127.0.0.1 -P3 -usys -p -A"
+alias inst5_login="colormysql -h127.0.0.1 -P3 -usys -p -A"
+alias inst6_login="colormysql -h127.0.0.1 -P3 -usys -p -A"
