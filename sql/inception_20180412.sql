@@ -61,10 +61,10 @@ port=7788
 socket=/usr/local/mysql/sock/inc.socket
 character-set-client-handshake=0
 character-set-server=utf8
-inception_remote_backup_host=10.180.17.136
-inception_remote_backup_port=4312
+inception_remote_backup_host=
+inception_remote_backup_port=
 inception_remote_system_user=inception
-inception_remote_system_password=nebZnlhG1XzzNgMLO1aw
+inception_remote_system_password=inception
 inception_support_charset=utf8mb4
 inception_enable_nullable=0
 inception_check_primary_key=1
@@ -183,18 +183,15 @@ mysql> inception get variables;
 
 
 备份权限：
-SQL> create user inception@'%' identified by 'nebZnlhG1XzzNgMLO1aw';
+SQL> create user inception@'%' identified by 'inception';
 Query OK, 0 rows affected (0.02 sec)
 
-[20 sys@127.0.0.1 10.160.100.16:3311 2018-04-14_11:27:30_6_HKT ((none))]
 SQL> grant create,insert,select on *.* to inception@'%';
 Query OK, 0 rows affected (0.01 sec)
 
-[21 sys@127.0.0.1 10.160.100.16:3311 2018-04-14_11:29:12_6_HKT ((none))]
 SQL> flush privileges;
 Query OK, 0 rows affected (0.01 sec)
 
-[22 sys@127.0.0.1 10.160.100.16:3311 2018-04-14_11:29:18_6_HKT ((none))]
 SQL> show grants for inception@'%';
 +--------------------------------------------------------+
 | Grants for inception@%                                 |
@@ -206,7 +203,7 @@ SQL> show grants for inception@'%';
 
 -- 执行 需要带上建表属性，否则报错
 # cat sql
-/*--user=sys;--password=abc123;--host=127.0.0.1;--execute=1;--port=3309;*/
+/*--user=sys;--password=123;--host=127.0.0.1;--execute=1;--port=3309;*/
 inception_magic_start;
 set names utf8;
 use db1;
@@ -238,7 +235,6 @@ Backup successfully | None |
 
 
 -- online instance 127.0.0.1:3309
-[17 sys@127.0.0.1 10.160.100.16:3309 2018-04-14_11:56:24_6_HKT (db1)]
 SQL> show tables;
 +---------------+
 | Tables_in_db1 |
@@ -248,7 +244,6 @@ SQL> show tables;
 +---------------+
 2 rows in set (0.00 sec)
 
-[18 sys@127.0.0.1 10.160.100.16:3309 2018-04-14_11:56:50_6_HKT (db1)]
 SQL> show create table t8\G
 *************************** 1. row ***************************
        Table: t8
@@ -260,7 +255,6 @@ Create Table: CREATE TABLE `t8` (
 
 
 -- 备份实例  127.0.0.1:3311
-[25 sys@127.0.0.1 10.160.100.16:3311 2018-04-14_11:57:04_6_HKT ((none))]
 SQL> show databases;
 +--------------------+
 | Database           |
@@ -274,11 +268,9 @@ SQL> show databases;
 +--------------------+
 6 rows in set (0.00 sec)
 
-[26 sys@127.0.0.1 10.160.100.16:3311 2018-04-14_11:57:06_6_HKT ((none))]
 SQL> use 127_0_0_1_3309_db1
 Database changed
 
-[27 sys@127.0.0.1 10.160.100.16:3311 2018-04-14_11:57:12_6_HKT (127_0_0_1_3309_db1)]
 SQL> show tables;
 +------------------------------------+
 | Tables_in_127_0_0_1_3309_db1       |
@@ -288,7 +280,6 @@ SQL> show tables;
 +------------------------------------+
 2 rows in set (0.00 sec)
 
-[28 sys@127.0.0.1 10.160.100.16:3311 2018-04-14_11:57:15_6_HKT (127_0_0_1_3309_db1)]
 SQL> show create table t8\G
 *************************** 1. row ***************************
        Table: t8
@@ -300,7 +291,6 @@ Create Table: CREATE TABLE `t8` (
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8
 1 row in set (0.00 sec)
 
-[29 sys@127.0.0.1 10.160.100.16:3311 2018-04-14_11:57:21_6_HKT (127_0_0_1_3309_db1)]
 SQL> select * from t8;
 +----+------------------------+------------------+
 | id | rollback_statement     | opid_time        |
@@ -309,7 +299,6 @@ SQL> select * from t8;
 +----+------------------------+------------------+
 1 row in set (0.00 sec)
 
-[30 sys@127.0.0.1 10.160.100.16:3311 2018-04-14_11:57:30_6_HKT (127_0_0_1_3309_db1)]
 SQL> show create table $_$inception_backup_information$_$\G
 *************************** 1. row ***************************
        Table: $_$inception_backup_information$_$
@@ -331,7 +320,6 @@ Create Table: CREATE TABLE `$_$inception_backup_information$_$` (
 1 row in set (0.00 sec)
 
 
-[32 sys@127.0.0.1 10.160.100.16:3311 2018-04-14_11:57:50_6_HKT (127_0_0_1_3309_db1)]
 SQL> select * from $_$inception_backup_information$_$\G
 *************************** 1. row ***************************
         opid_time: 1523678205_338_2
@@ -349,11 +337,9 @@ start_binlog_file:
 1 row in set (0.00 sec)
 
 
-[2 sys@127.0.0.1 10.160.100.16:3311 2018-04-14_13:12:07_6_HKT ((none))]
 SQL> use inception
 Database changed
 
-[3 sys@127.0.0.1 10.160.100.16:3311 2018-04-14_13:12:10_6_HKT (inception)]
 SQL> show tables;
 +---------------------+
 | Tables_in_inception |
@@ -362,7 +348,6 @@ SQL> show tables;
 +---------------------+
 1 row in set (0.00 sec)
 
-[4 sys@127.0.0.1 10.160.100.16:3311 2018-04-14_13:12:11_6_HKT (inception)]
 SQL> show create table statistic\G
 *************************** 1. row ***************************
        Table: statistic
@@ -392,7 +377,6 @@ Create Table: CREATE TABLE `statistic` (
 1 row in set (0.00 sec)
 
 
-[6 sys@127.0.0.1 10.160.100.16:3311 2018-04-14_13:12:30_6_HKT (inception)]
 SQL> select * from statistic\G
 *************************** 1. row ***************************
           id: 1
@@ -430,7 +414,7 @@ Query OK, 0 rows affected (0.02 sec)
 
 
 # cat sql 
-/*--user=sys;--password=abc123;--host=127.0.0.1;--execute=1;--port=3309;*/
+/*--user=sys;--password=123;--host=127.0.0.1;--execute=1;--port=3309;*/
 inception_magic_start;
 set names utf8;
 create database db3 CHARACTER SET utf8;
@@ -526,18 +510,17 @@ password = 邮箱发件账号密码
 smtp_server = 邮箱stmp地址, 具体地址请咨询对应邮箱提供者
 
 
-[root@hk02svr200111 10.160.100.16 2018-04-14_16:04:06_6_HKT /usr/local/yearning/src]
 # cat deploy.conf
 [mysql]
 db = yearning
 address = 127.0.0.1
 port = 3312
-username = sys
-password = abc123
+username = 
+password = 123
 
 
 [host]
-ipaddress = 10.160.100.16:8081
+ipaddress = 127.0.0.1:8081
 
 
 [Inception]
@@ -548,7 +531,7 @@ password  =
 backupdb = 127.0.0.1
 backupport = 3311
 backupuser = inception
-backuppassword = nebZnlhG1XzzNgMLO1aw
+backuppassword = 
 
 
 [LDAP]
@@ -574,7 +557,6 @@ dingding =
 
 
 -- 初始化数据库
-[root@hk02svr200111 10.160.100.16 2018-04-14_16:03:32_6_HKT /usr/local/yearning/src]
 # python3 manage.py makemigrations core
 Migrations for 'core':
   core/migrations/0001_initial.py
@@ -589,7 +571,6 @@ Migrations for 'core':
     - Create model Todolist
     - Create model Usermessage
 
-[root@hk02svr200111 10.160.100.16 2018-04-14_16:03:34_6_HKT /usr/local/yearning/src]
 # python3 manage.py migrate core 
 Operations to perform:
   Apply all migrations: core
@@ -609,17 +590,15 @@ Running migrations:
   
 
 -- 添加初始化用户
-[root@hk02svr200111 10.160.100.16 2018-04-14_16:06:18_6_HKT /usr/local/yearning/src]
 # echo "from core.models import Account;Account.objects.create_user(username='admin', password='admin123.', group='admin',is_staff=1)" | python3 manage.py shell
 
 
 -- 初始化权限
-[root@hk02svr200111 10.160.100.16 2018-04-14_16:06:53_6_HKT /usr/local/yearning/src]
 # echo "from core.models import grained;grained.objects.get_or_create(username='admin', permissions={'person': [], 'ddl': '1', 'ddlcon': [], 'dml': '1', 'dmlcon': [], 'dic': '1', 'diccon': [], 'dicedit': '0', 'query': '1', 'querycon': [], 'user': '1', 'base': '1', 'dicexport': '0'})" | python3 manage.py shell
 
 
 -- 初始化后的数据 yearning的数据库
-[11 sys@127.0.0.1 10.160.100.16:3312 2018-04-14_16:26:49_6_HKT (yearning)]
+[11 sys@127.0.0.1 127.0.0.1:3312 2018-04-14_16:26:49_6_HKT (yearning)]
 SQL> show tables;
 +-------------------------------+
 | Tables_in_yearning            |
@@ -646,10 +625,8 @@ SQL> show tables;
 
 
 -- 复制编译好的静态文件到nginx html目录下(如自行更改Nginx静态路径地址则将静态文件复制到对应静态文件目录下)
-[root@hk02svr200111 10.160.100.16 2018-04-14_16:08:02_6_HKT /usr/local/yearning]
 # cp -a webpage/dist/* /usr/local/nginx/html/
 
-[root@hk02svr200111 10.160.100.16 2018-04-14_16:23:06_6_HKT /usr/local/nginx/conf/vhost]
 # cat yearning.conf 
 server {
         listen 8081;
@@ -675,7 +652,6 @@ Restarting nginx (via systemctl):                          [  OK  ]
 
 
 -- 启动django
-[root@hk02svr200111 10.160.100.16 2018-04-14_16:15:01_6_HKT /usr/local/yearning/src]
 # python3 manage.py runserver 0.0.0.0:8080
 Performing system checks...
 
@@ -690,11 +666,9 @@ Quit the server with CONTROL-C.
 如果重复初始化错误，则可以，因为密码要求6位：
 django.db.utils.IntegrityError: (1062, "Duplicate entry 'admin' for key 'username'")
 
-[root@hk02svr200111 10.160.100.16 2018-04-14_16:26:32_6_HKT /usr/local/yearning/src]
 # echo "from core.models import Account;Account.objects.create_user(username='admin', password='admin123.', group='admin',is_staff=1)" | python3 manage.py shell
 
 
-[15 sys@127.0.0.1 10.160.100.16:3312 2018-04-14_16:27:43_6_HKT (yearning)]
 SQL> select * from core_account\G
 *************************** 1. row ***************************
           id: 1
@@ -712,35 +686,32 @@ is_superuser: 0
   department: 
 1 row in set (0.00 sec)
 
-[16 sys@127.0.0.1 10.160.100.16:3312 2018-04-14_16:27:44_6_HKT (yearning)]
 SQL> create table core_account_20180414 like core_account;
 Query OK, 0 rows affected (0.02 sec)
 
-[17 sys@127.0.0.1 10.160.100.16:3312 2018-04-14_16:28:08_6_HKT (yearning)]
 SQL> insert into core_account_20180414 select * from core_account    
     -> ;
 Query OK, 1 row affected (0.01 sec)
 Records: 1  Duplicates: 0  Warnings: 0
 
-[18 sys@127.0.0.1 10.160.100.16:3312 2018-04-14_16:28:21_6_HKT (yearning)]
 SQL> delete from core_account;       
 Query OK, 1 row affected (0.01 sec)
 
 
 
 -- 登录
-浏览器访问：http://10.160.100.16:8081/
+浏览器访问：http://127.0.0.1:8081/
 admin
 admin123
 
 无法登陆，发现后台程序python监听的是8000
-Request URL:http://10.160.100.16:8000/api-token-auth/
+Request URL:http://127.0.0.1:8000/api-token-auth/
 Request Headers
 Provisional headers are shown
 Access-Control-Request-Headers:accept, content-type
 Access-Control-Request-Method:POST
-Origin:http://10.160.100.16:8081
-Referer:http://10.160.100.16:8081/
+Origin:http://127.0.0.1:8081
+Referer:http://127.0.0.1:8081/
 User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36
 
 
@@ -753,8 +724,6 @@ util.url = 'http://' + document.domain + ':8000/api/v1'
 util.auth = 'http://' + document.domain + ':8000/api-token-auth/'
 
 
-
-[root@hk02svr200111 10.160.100.16 2018-04-14_16:52:40_6_HKT /usr/local/python3/lib/python3.6/site-packages/pymysql]
 # vim connections.py
 1111     def _request_authentication(self):
 1112         # https://dev.mysql.com/doc/internals/en/connection-phase-packets.html#packet-Protocol::HandshakeResponse
@@ -801,9 +770,9 @@ Traceback (most recent call last):
 AttributeError: 'NoneType' object has no attribute 'email'
 
 [email]
-username = shaw@iv66.net
+username = aa@qq.com
 password =
-smtp_server = 10.71.40.26
+smtp_server = 
 smtp_port = 25
 
 或者在界面给管理员添加邮箱地址
@@ -871,11 +840,9 @@ SQL> select * from django_migrations;
 
 
 -- 机房信息是在代码中写死的，静态页面
-[root@hk02svr200111 10.160.100.16 2018-04-14_17:11:38_6_HKT /usr/local/yearning]
 # grep util.computer_room webpage/src/libs/util.js
 util.computer_room = ['AWS', 'Aliyun', 'Own', 'Other']
 
-[root@hk02svr200111 10.160.100.16 2018-04-14_17:24:00_6_HKT /usr/local/yearning/webpage]
 # grep -o AWS dist/static/js/*                              
 dist/static/js/app.5fc2ca1c341f9ad5ac3f.js:AWS
 dist/static/js/app.5fc2ca1c341f9ad5ac3f.js.map:AWS
@@ -890,4 +857,4 @@ vim /usr/local/nginx/html/yearning/static/js/app.5fc2ca1c341f9ad5ac3f.js
 
 
 
-http://10.160.100.16:8081/
+http://127.0.0.1:8081/
