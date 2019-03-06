@@ -783,9 +783,9 @@ SQL> select * from core_account;
 +----+--------------------------------------------------------------------------------+------------+--------------+----------+------------+-----------+---------------+----------+-----------+----------------------------+-------+------------+
 | id | password                                                                       | last_login | is_superuser | username | first_name | last_name | email         | is_staff | is_active | date_joined                | group | department |
 +----+--------------------------------------------------------------------------------+------------+--------------+----------+------------+-----------+---------------+----------+-----------+----------------------------+-------+------------+
-|  3 | pbkdf2_sha256$100000$HnYUTJ2UTAs7$/IbY/LO8miC0psybwLNEpag2ovlX0QTBi0RqE8bkYYs= | NULL       |            0 | admin    |            |           | shaw@iv66.net |        1 |         1 | 2018-04-14 08:28:34.635853 | admin | DBA        |
-|  4 | pbkdf2_sha256$100000$TJu5BkljmvgA$nOSehqR22ueDHhSJ5AYqeneXcHPMbSSaCnarouWOC7o= | NULL       |            0 | b2       |            |           | b2@iv66.net   |        0 |         1 | 2018-04-14 08:45:11.550806 | guest | TSG        |
-|  5 | pbkdf2_sha256$100000$ulQOq2h23YeM$4O7nWAfXV1f3Gi/VPC+SxEn5Avs5trgfMwQv/oRECPA= | NULL       |            0 | shaw     |            |           | shaw@iv66.net |        1 |         1 | 2018-04-14 08:46:00.094448 | admin | TSG_DBA    |
+|  3 | pbkdf2_sha256$100000$HnYUTJ2UTAs7$/IbY/LO8miC0psybwLNEpag2ovlX0QTBi0RqE8bkYYs= | NULL       |            0 | admin    |            |           | aa@qq.com |        1 |         1 | 2018-04-14 08:28:34.635853 | admin | DBA        |
+|  4 | pbkdf2_sha256$100000$TJu5BkljmvgA$nOSehqR22ueDHhSJ5AYqeneXcHPMbSSaCnarouWOC7o= | NULL       |            0 | aa       |            |           | aa@qq.com   |        0 |         1 | 2018-04-14 08:45:11.550806 | guest | TSG        |
+|  5 | pbkdf2_sha256$100000$ulQOq2h23YeM$4O7nWAfXV1f3Gi/VPC+SxEn5Avs5trgfMwQv/oRECPA= | NULL       |            0 | aa     |            |           | aa@qq.com |        1 |         1 | 2018-04-14 08:46:00.094448 | admin | TSG_DBA    |
 +----+--------------------------------------------------------------------------------+------------+--------------+----------+------------+-----------+---------------+----------+-----------+----------------------------+-------+------------+
 3 rows in set (0.00 sec)
 
@@ -794,8 +794,8 @@ SQL> select * from core_grained;
 | id | username | permissions                                                                                                                                                                            |
 +----+----------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |  1 | admin    | {'person': [], 'ddl': '1', 'ddlcon': [], 'dml': '1', 'dmlcon': [], 'dic': '1', 'diccon': [], 'dicedit': '1', 'query': '1', 'querycon': [], 'user': '1', 'base': '1', 'dicexport': '0'} |
-|  2 | b2       | {'ddl': '0', 'ddlcon': [], 'dml': '0', 'dmlcon': [], 'dic': '0', 'diccon': [], 'dicedit': '0', 'query': '0', 'querycon': [], 'user': '0', 'base': '0', 'dicexport': '0', 'person': []} |
-|  3 | shaw     | {'ddl': '0', 'ddlcon': [], 'dml': '0', 'dmlcon': [], 'dic': '0', 'diccon': [], 'dicedit': '0', 'query': '0', 'querycon': [], 'user': '0', 'base': '0', 'dicexport': '0', 'person': []} |
+|  2 | aa       | {'ddl': '0', 'ddlcon': [], 'dml': '0', 'dmlcon': [], 'dic': '0', 'diccon': [], 'dicedit': '0', 'query': '0', 'querycon': [], 'user': '0', 'base': '0', 'dicexport': '0', 'person': []} |
+|  3 | aa     | {'ddl': '0', 'ddlcon': [], 'dml': '0', 'dmlcon': [], 'dic': '0', 'diccon': [], 'dicedit': '0', 'query': '0', 'querycon': [], 'user': '0', 'base': '0', 'dicexport': '0', 'person': []} |
 +----+----------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 3 rows in set (0.00 sec)
 
@@ -847,7 +847,7 @@ util.computer_room = ['AWS', 'Aliyun', 'Own', 'Other']
 dist/static/js/app.5fc2ca1c341f9ad5ac3f.js:AWS
 dist/static/js/app.5fc2ca1c341f9ad5ac3f.js.map:AWS
 dist/static/js/app.5fc2ca1c341f9ad5ac3f.js.map:AWS
-dist/static/js/vendor.337cbb60bb212f873493.js.map:AWS
+dist/static/js/vendor.337cbb60baa12f873493.js.map:AWS
 
 o.computer_room=["eastern","globe","AWS","Aliyun","Own","Other"]
 
