@@ -1,0 +1,27 @@
+semi-sync after_commit
+1> 事务已经发送到slave
+     master commit之后等待slave ack过程中：
+     commit的事务传输到slave relay_log，在slave给master响应ACK过程中master crash;
+     此时事务不会丢，client收到失败信息
+     若将此slave提升为master，client会重新发起请求提交数据到新master，产生一个新的事务：
+     若表有UK则数据不会重复提交(client会再次收到提交失败信息)，否则仅有自增PK，业务层面数据会多1条
+     当原master恢复并加入此复制拓扑后，新master会再发一次业务层面相同的事务给原master，原master就会多1条数据
+     这么来看业务层面多1条数据，对主从似乎没有影响
+
+2> 事务还没发送到slave
+     master commit之后等待slave ack过程中：
+     commit的事务传输到slave relay_log过程中，在此过程中master crash;
+     client会收到事务提交失败的信息
+     client重新提交该事务到新的master上
+     当原master恢复并加入此复制拓扑后，会发现，该事务在原master中被提交了两次，一次是之前作为master的时候，一次是被新master同步过来的，数据出现不一致情况
+
+3> 事务已经发送到slave
+     master commit之后等待slave ack过程中：
+     Master上其它事务对刚刚commit数据做update 2w行操作
+     commit的事务传输到slave relay_log，在slave给master响应ACK过程中master crash;
+     此时第1次commit的事务不会丢，但第2次update 2w行操作slave没有收到
+     client收到失败信息
+     若将此slave提升为master，client会重新发起请求提交数据到新master，产生一个新的事务：
+     若表有UK则数据不会重复提交(client会再次收到提交失败信息)，否则仅有自增PK，业务层面数据会多1条
+     当原master恢复并加入此复制拓扑后，新master会再发一次业务层面相同的事务给原master，原master就会多1条数据
+     同时，新master也会缺少第2次update 2w数据
