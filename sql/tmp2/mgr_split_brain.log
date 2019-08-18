@@ -171,6 +171,15 @@ SQL> select * from performance_schema.replication_group_members;
 
 
 此时在52.35上写入数据，发现会很慢,说明还认为52.37是online:
+SQL> select @@super_read_only,@@read_only;
++-------------------+-------------+
+| @@super_read_only | @@read_only |
++-------------------+-------------+
+|                 0 |           0 |
++-------------------+-------------+
+1 row in set (0.00 sec)
+
+
 SQL> insert into t1 set name='x';                              
 Query OK, 1 row affected (0.26 sec)
 
@@ -182,6 +191,15 @@ Query OK, 1 row affected (0.18 sec)
 
 
 此时在52.37上写入数据，发现会很快，猜测是因为检测到其它2个节点状态为UNREACHABLE，就不再冲突检测:
+SQL> select @@super_read_only,@@read_only;
++-------------------+-------------+
+| @@super_read_only | @@read_only |
++-------------------+-------------+
+|                 0 |           0 |
++-------------------+-------------+
+1 row in set (0.00 sec)
+
+
 SQL> begin;
 Query OK, 0 rows affected (0.00 sec)
 
@@ -190,6 +208,42 @@ Query OK, 1 row affected (0.00 sec)
 
 SQL> rollback;
 Query OK, 0 rows affected (0.01 sec)
+
+
+
+
+[57492 65 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_17:30:44_7_CST (db1)]
+SQL> begin;
+Query OK, 0 rows affected (0.00 sec)
+
+[57492 66 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_17:30:48_7_CST (db1)]
+SQL> select @@super_read_only,@@read_only;
++-------------------+-------------+
+| @@super_read_only | @@read_only |
++-------------------+-------------+
+|                 0 |           0 |
++-------------------+-------------+
+1 row in set (0.00 sec)
+
+[57492 67 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_17:31:04_7_CST (db1)]
+SQL> insert into t1 set name='xxxxxxxxxxxxxx';
+Query OK, 1 row affected (0.01 sec)
+
+[57492 68 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_17:33:19_7_CST (db1)]
+SQL> select * from t1 where name='xxxxxxxxxxxxxx';
++-----+----------------+
+| id  | name           |
++-----+----------------+
+| 413 | xxxxxxxxxxxxxx |
++-----+----------------+
+1 row in set (0.01 sec)
+
+[57492 69 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_17:33:31_7_CST (db1)]
+SQL> commit;
+
+commit一直卡着无法提交,但此时节点是可写的 super_read_only=OFF,read_only=OFF
+ctrl+c 也无法结束, kill先不测试了
+
 
 
 当网络恢复后，节点52.37可以正常加入MGR集群工作，其它2个节点依旧没有日志：
