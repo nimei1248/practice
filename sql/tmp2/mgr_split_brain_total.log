@@ -1,10 +1,10 @@
-当MGR节点某节点 如，52.37与其它2个节点互相不能通信时：
+当MGR节点某节点 如，52.37与其它2个节点互相不能通信时，5s就可以检查出节点网络异常：
 1> 所有节点显示均为可写状态, 有网络问题的节点写的事务无法commit，直到网络恢复或kill; 但可读
 SQL> select @@super_read_only,@@read_only;
 +-------------------+-------------+
 | @@super_read_only | @@read_only |
 +-------------------+-------------+
-|                 0 |           0 |
+|                 0 |           0 |
 +-------------------+-------------+
 1 row in set (0.00 sec)
 
@@ -14,61 +14,62 @@ SQL> select * from sys.gr_member_routing_candidate_status;
 +------------------+-----------+---------------------+----------------------+
 | viable_candidate | read_only | transactions_behind | transactions_to_cert |
 +------------------+-----------+---------------------+----------------------+
-| NO               | NO        |                   0 |                    0 |
+| NO               | NO        |                   0 |                    0 |
 +------------------+-----------+---------------------+----------------------+
 1 row in set (0.01 sec)
 
 [admin@127.0.0.1(main)] proxysql> select * from runtime_mysql_servers;
 +--------------+--------------+------+-----------+---------+--------+-------------+-----------------+---------------------+---------+----------------+------------------+
-| hostgroup_id | hostname     | port | gtid_port | status  | weight | compression | max_connections | max_replication_lag | use_ssl | max_latency_ms | comment          |
+| hostgroup_id | hostname     | port | gtid_port | status  | weight | compression | max_connections | max_replication_lag | use_ssl | max_latency_ms | comment          |
 +--------------+--------------+------+-----------+---------+--------+-------------+-----------------+---------------------+---------+----------------+------------------+
-| 100          | 10.180.52.35 | 3316 | 0         | ONLINE  | 30     | 0           | 1000            | 0                   | 0       | 0              | 100-writer_group |
-| 103          | 10.180.52.37 | 3316 | 0         | SHUNNED | 10     | 0           | 1000            | 0                   | 0       | 0              | 102-reader_group |
+| 100          | 10.180.52.35 | 3316 | 0         | ONLINE  | 30     | 0           | 1000            | 0                   | 0       | 0              | 100-writer_group |
+| 103          | 10.180.52.37 | 3316 | 0         | SHUNNED | 10     | 0           | 1000            | 0                   | 0       | 0              | 102-reader_group |
 
 
 2> 产生脑裂假象, 因为不能commit
 SQL> select * from performance_schema.replication_group_members;
 +---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
-| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
 +---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
-| group_replication_applier | 3cfe5330-b2bb-11e9-9d5c-fa163e17c322 | 10.180.52.37 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
-| group_replication_applier | 417ceb5a-b2b3-11e9-99ce-fa163e73cb8f | 10.180.52.35 |        3316 | UNREACHABLE  | PRIMARY     | 8.0.17         |
-| group_replication_applier | 9e3b5773-b2b8-11e9-be32-fa163e8abbc3 | 10.180.52.36 |        3316 | UNREACHABLE  | PRIMARY     | 8.0.17         |
+| group_replication_applier | 3cfe5330-b2bb-11e9-9d5c-fa163e17c322 | 10.180.52.37 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
+| group_replication_applier | 417ceb5a-b2b3-11e9-99ce-fa163e73cb8f | 10.180.52.35 |        3316 | UNREACHABLE  | PRIMARY     | 8.0.17         |
+| group_replication_applier | 9e3b5773-b2b8-11e9-be32-fa163e8abbc3 | 10.180.52.36 |        3316 | UNREACHABLE  | PRIMARY     | 8.0.17         |
 +---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
 3 rows in set (0.00 sec)
 
 SQL> select * from performance_schema.replication_group_members;
 +---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
-| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
 +---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
-| group_replication_applier | 3cfe5330-b2bb-11e9-9d5c-fa163e17c322 | 10.180.52.37 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
-| group_replication_applier | 417ceb5a-b2b3-11e9-99ce-fa163e73cb8f | 10.180.52.35 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
-| group_replication_applier | 9e3b5773-b2b8-11e9-be32-fa163e8abbc3 | 10.180.52.36 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
+| group_replication_applier | 3cfe5330-b2bb-11e9-9d5c-fa163e17c322 | 10.180.52.37 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
+| group_replication_applier | 417ceb5a-b2b3-11e9-99ce-fa163e73cb8f | 10.180.52.35 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
+| group_replication_applier | 9e3b5773-b2b8-11e9-be32-fa163e8abbc3 | 10.180.52.36 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
 +---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
 3 rows in set (0.00 sec)
 
 3> 当网络恢复后，取决于网络影响时间长短，受限于MGR集群内部下次检查时间
 1.如果网络影响时间很短，即，网络恢复比较快，那么有问题的节点会自动加入MGR集群，整个集群也不会发生剔除或重新选举或ERROR等
-2.如果网络影响时间很长，恢复后，将剔除其它所有节点或1个，自己成为唯一节点或重新组成新的MGR
+2.如果网络影响时间很长，恢复后，将剔除其它所有节点或1个，自己成为唯一节点或重新组成新的MGR(前提是没有发生写事务)；网络恢复后，大概需要55s MGR才会再次发起成员状态检查
+3.如果网络影响时间很长，同时在有网络问题的节点执行事务，网络恢复后，5s检查1次，会正常加入MGR集群
 
 [57542 272 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_18:49:20_7_CST (db1)]
 SQL> select * from performance_schema.replication_group_members;
 +---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
-| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
 +---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
-| group_replication_applier | 3cfe5330-b2bb-11e9-9d5c-fa163e17c322 | 10.180.52.37 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
-| group_replication_applier | 417ceb5a-b2b3-11e9-99ce-fa163e73cb8f | 10.180.52.35 |        3316 | UNREACHABLE  | PRIMARY     | 8.0.17         |
-| group_replication_applier | 9e3b5773-b2b8-11e9-be32-fa163e8abbc3 | 10.180.52.36 |        3316 | UNREACHABLE  | PRIMARY     | 8.0.17         |
+| group_replication_applier | 3cfe5330-b2bb-11e9-9d5c-fa163e17c322 | 10.180.52.37 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
+| group_replication_applier | 417ceb5a-b2b3-11e9-99ce-fa163e73cb8f | 10.180.52.35 |        3316 | UNREACHABLE  | PRIMARY     | 8.0.17         |
+| group_replication_applier | 9e3b5773-b2b8-11e9-be32-fa163e8abbc3 | 10.180.52.36 |        3316 | UNREACHABLE  | PRIMARY     | 8.0.17         |
 +---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
 3 rows in set (0.00 sec)
 
 [57542 273 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_18:49:20_7_CST (db1)]
 SQL> select * from performance_schema.replication_group_members;
 +---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
-| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
 +---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
-| group_replication_applier | 3cfe5330-b2bb-11e9-9d5c-fa163e17c322 | 10.180.52.37 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
-| group_replication_applier | 417ceb5a-b2b3-11e9-99ce-fa163e73cb8f | 10.180.52.35 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
+| group_replication_applier | 3cfe5330-b2bb-11e9-9d5c-fa163e17c322 | 10.180.52.37 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
+| group_replication_applier | 417ceb5a-b2b3-11e9-99ce-fa163e73cb8f | 10.180.52.35 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
 +---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
 2 rows in set (0.00 sec)
 
@@ -77,9 +78,9 @@ SQL> select * from performance_schema.replication_group_members;
 [107806 144 sys@127.0.0.1 10.180.52.36:3316 2019-08-18_18:53:47_7_CST (db1)]
 SQL> select * from performance_schema.replication_group_members;
 +---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
-| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
 +---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
-| group_replication_applier | 9e3b5773-b2b8-11e9-be32-fa163e8abbc3 | 10.180.52.36 |        3316 | ERROR        |             | 8.0.17         |
+| group_replication_applier | 9e3b5773-b2b8-11e9-be32-fa163e8abbc3 | 10.180.52.36 |        3316 | ERROR        |             | 8.0.17         |
 +---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
 1 row in set (0.00 sec)
 
@@ -145,6 +146,8 @@ lrwxrwxrwx 1 root root 33 Jul 30 13:28 /etc/localtime -> /usr/share/zoneinfo/Asi
 2019-08-18T19:04:52.802039+08:00 49497 [Note] [MY-010914] [Server] Aborted connection 49497 to db: 'unconnected' user: 'sys' host: '127.0.0.1' (Got timeout reading communication packets).
 
 
-4> 如果根据performance_schema.replication_group_members表查询MGR节点是否可用，目前看来需要检查每一个节点，否则可能导致将流量选择到只读节点
-5> 最终都可以重新加入节点
+4> 最终都可以重新加入节点
+
+
+
 
