@@ -1,0 +1,222 @@
+重新测试第3遍：
+[root@ph180svr052037 10.180.52.37 2019-08-18_17:55:13_7_CST /root]
+# systemctl start iptables
+
+[57492 104 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_18:03:57_7_CST (db1)]
+SQL> select * from performance_schema.replication_group_members;
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| group_replication_applier | 3cfe5330-b2bb-11e9-9d5c-fa163e17c322 | 10.180.52.37 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
+| group_replication_applier | 417ceb5a-b2b3-11e9-99ce-fa163e73cb8f | 10.180.52.35 |        3316 | UNREACHABLE  | PRIMARY     | 8.0.17         |
+| group_replication_applier | 9e3b5773-b2b8-11e9-be32-fa163e8abbc3 | 10.180.52.36 |        3316 | UNREACHABLE  | PRIMARY     | 8.0.17         |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+3 rows in set (0.00 sec)
+
+[107701 112 sys@127.0.0.1 10.180.52.36:3316 2019-08-18_18:06:27_7_CST (db1)]
+SQL> select * from performance_schema.replication_group_members;
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| group_replication_applier | 3cfe5330-b2bb-11e9-9d5c-fa163e17c322 | 10.180.52.37 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
+| group_replication_applier | 417ceb5a-b2b3-11e9-99ce-fa163e73cb8f | 10.180.52.35 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
+| group_replication_applier | 9e3b5773-b2b8-11e9-be32-fa163e8abbc3 | 10.180.52.36 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+3 rows in set (0.00 sec)
+
+[49391 53 sys@127.0.0.1 10.180.52.35:3316 2019-08-18_18:04:27_7_CST ((none))]
+SQL> select * from performance_schema.replication_group_members;
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| group_replication_applier | 3cfe5330-b2bb-11e9-9d5c-fa163e17c322 | 10.180.52.37 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
+| group_replication_applier | 417ceb5a-b2b3-11e9-99ce-fa163e73cb8f | 10.180.52.35 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
+| group_replication_applier | 9e3b5773-b2b8-11e9-be32-fa163e8abbc3 | 10.180.52.36 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+3 rows in set (0.00 sec)
+
+
+52.37：
+2019-08-18T18:03:51.959166+08:00 0 [Warning] [MY-011493] [Repl] Plugin group_replication reported: 'Member with address 10.180.52.35:3316 has become unreachable.'
+2019-08-18T18:03:52.958626+08:00 0 [Warning] [MY-011493] [Repl] Plugin group_replication reported: 'Member with address 10.180.52.36:3316 has become unreachable.'
+2019-08-18T18:03:52.958730+08:00 0 [ERROR] [MY-011495] [Repl] Plugin group_replication reported: 'This server is not able to reach a majority of members in the group. This server will now block all updates. The server will remain blocked until contact with the majority is restored. It is possible to use group_replication_force_members to force a new group membership.'
+
+
+52.36：
+2019-08-18T18:03:59.582057+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Re-using server node 0 host 10.180.52.36'
+2019-08-18T18:03:59.582209+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Re-using server node 1 host 10.180.52.37'
+2019-08-18T18:03:59.582270+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Installed site start={4d25d554 1771447 0} boot_key={4d25d554 1771436 2} event_horizon=10 node 0'
+2019-08-18T18:03:59.582493+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Re-using server node 0 host 10.180.52.36'
+2019-08-18T18:03:59.582611+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Re-using server node 1 host 10.180.52.37'
+2019-08-18T18:03:59.582645+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Installed site start={4d25d554 1771448 0} boot_key={4d25d554 1771437 0} event_horizon=10 node 0'
+2019-08-18T18:04:10.793504+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Failure reading from fd=-1 n=18446744073709551615'
+
+
+52.35：
+2019-08-18T18:04:16.190369+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Re-using server node 0 host 10.180.52.36'
+2019-08-18T18:04:16.190509+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Re-using server node 1 host 10.180.52.37'
+2019-08-18T18:04:16.190572+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Installed site start={4d25d554 1771447 0} boot_key={4d25d554 1771436 2} event_horizon=10 node 4294967295'
+2019-08-18T18:04:16.190723+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Re-using server node 0 host 10.180.52.36'
+2019-08-18T18:04:16.190771+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Re-using server node 1 host 10.180.52.37'
+2019-08-18T18:04:16.190797+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Installed site start={4d25d554 1771448 0} boot_key={4d25d554 1771437 0} event_horizon=10 node 4294967295'
+
+
+
+52.37数据数据测试：
+[57542 115 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_18:21:03_7_CST (db1)]
+SQL> select * from performance_schema.replication_group_members;
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| group_replication_applier | 3cfe5330-b2bb-11e9-9d5c-fa163e17c322 | 10.180.52.37 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
+| group_replication_applier | 417ceb5a-b2b3-11e9-99ce-fa163e73cb8f | 10.180.52.35 |        3316 | UNREACHABLE  | PRIMARY     | 8.0.17         |
+| group_replication_applier | 9e3b5773-b2b8-11e9-be32-fa163e8abbc3 | 10.180.52.36 |        3316 | UNREACHABLE  | PRIMARY     | 8.0.17         |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+3 rows in set (0.01 sec)
+
+[57542 116 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_18:21:50_7_CST (db1)]
+SQL> select @@super_read_only,@@read_only;                     
++-------------------+-------------+
+| @@super_read_only | @@read_only |
++-------------------+-------------+
+|                 0 |           0 |
++-------------------+-------------+
+1 row in set (0.00 sec)
+
+[57542 117 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_18:21:53_7_CST (db1)]
+SQL> insert into t1 set name='from 10.180.52.37:3316';
+
+
+[root@ph180svr052037 10.180.52.37 2019-08-18_18:03:47_7_CST /root]
+# systemctl stop iptables
+
+
+
+[57542 117 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_18:21:53_7_CST (db1)]
+SQL> insert into t1 set name='from 10.180.52.37:3316';
+
+
+
+Query OK, 1 row affected (54.75 sec)
+
+
+[57542 121 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_18:22:49_7_CST (db1)]
+SQL> select * from t1 where name='from 10.180.52.37:3316';             
++-----+------------------------+
+| id  | name                   |
++-----+------------------------+
+| 427 | from 10.180.52.37:3316 |
++-----+------------------------+
+1 row in set (0.00 sec) 
+
+
+日志：
+52.37：
+2019-08-18T18:22:42.559868+08:00 0 [Warning] [MY-011494] [Repl] Plugin group_replication reported: 'Member with address 10.180.52.35:3316 is reachable again.'
+2019-08-18T18:22:42.560070+08:00 0 [Warning] [MY-011498] [Repl] Plugin group_replication reported: 'The member has resumed contact with a majority of the members in the group. Regular operation is restored and transactions are unblocked.'
+2019-08-18T18:22:43.560006+08:00 0 [Warning] [MY-011494] [Repl] Plugin group_replication reported: 'Member with address 10.180.52.36:3316 is reachable again.'
+2019-08-18T18:22:46.047606+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Re-using server node 0 host 10.180.52.36'
+2019-08-18T18:22:46.047704+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Re-using server node 1 host 10.180.52.37'
+2019-08-18T18:22:46.047727+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Installed site start={4d25d554 1771447 0} boot_key={4d25d554 1771436 2} event_horizon=10 node 1'
+2019-08-18T18:22:46.047815+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Re-using server node 0 host 10.180.52.36'
+2019-08-18T18:22:46.047841+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Re-using server node 1 host 10.180.52.37'
+2019-08-18T18:22:46.047863+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Installed site start={4d25d554 1771448 0} boot_key={4d25d554 1771437 0} event_horizon=10 node 1'
+2019-08-18T18:22:48.018997+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Failure reading from fd=54 n=0'
+2019-08-18T18:22:48.948297+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Re-using server node 0 host 10.180.52.37'
+2019-08-18T18:22:48.948453+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Installed site start={4d25d554 1771489 0} boot_key={4d25d554 1771478 1} event_horizon=10 node 0'
+2019-08-18T18:22:50.943930+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Group is able to support up to communication protocol version 8.0.16'
+2019-08-18T18:22:50.944095+08:00 0 [Warning] [MY-011499] [Repl] Plugin group_replication reported: 'Members removed from the group: 10.180.52.35:3316, 10.180.52.36:3316'
+2019-08-18T18:22:50.944255+08:00 0 [Note] [MY-011503] [Repl] Plugin group_replication reported: 'Group membership changed to 10.180.52.37:3316 on view 15649859521903311:32.'
+2019-08-18T18:22:51.955370+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Failure reading from fd=55 n=0'
+2019-08-18T18:22:51.956619+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Node has already been removed: 10.180.52.36:33161 15661150215904630.'
+
+
+52.36：
+2019-08-18T18:19:12.055504+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Failure reading from fd=49 n=18446744073709551615'
+2019-08-18T18:22:44.125567+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Failure reading from fd=59 n=0'
+2019-08-18T18:22:44.127036+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Node has already been removed: 10.180.52.35:33161 15661225735340200.'
+2019-08-18T18:22:45.056271+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Re-using server node 0 host 10.180.52.37'
+2019-08-18T18:22:45.056415+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Installed site start={4d25d554 1771489 0} boot_key={4d25d554 1771478 1} event_horizon=10 node 4294967295'
+2019-08-18T18:22:48.063629+08:00 0 [ERROR] [MY-011505] [Repl] Plugin group_replication reported: 'Member was expelled from the group due to network failures, changing member status to ERROR.'
+2019-08-18T18:22:48.065749+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.066084+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.066380+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.066698+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.067006+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.067261+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.067506+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.067749+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.067996+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.068210+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.068454+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.068712+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.068959+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.069189+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.069418+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.069628+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.069841+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.070073+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.070391+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.070513+08:00 0 [ERROR] [MY-011486] [Repl] Plugin group_replication reported: 'Message received while the plugin is not ready, message discarded.'
+2019-08-18T18:22:48.070662+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.070830+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.071087+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.071281+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.071506+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.071696+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.071985+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.072224+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.072495+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.072709+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.072943+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.073189+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.073447+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.073696+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.073957+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.074150+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.074427+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+2019-08-18T18:22:48.074668+08:00 0 [Warning] [MY-011476] [Repl] Plugin group_replication reported: 'Skipping the computation of the Transactions_committed_all_members field as an older instance of this computation is still ongoing.'
+
+
+
+52.35：
+2019-08-18T18:19:28.267694+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Failure reading from fd=57 n=18446744073709551615'
+2019-08-18T18:23:00.749033+08:00 0 [ERROR] [MY-011505] [Repl] Plugin group_replication reported: 'Member was expelled from the group due to network failures, changing member status to ERROR.'
+
+
+检查状态：
+[57542 122 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_18:23:30_7_CST (db1)]
+SQL> select * from performance_schema.replication_group_members;
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| group_replication_applier | 3cfe5330-b2bb-11e9-9d5c-fa163e17c322 | 10.180.52.37 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+1 row in set (0.00 sec)
+
+[107724 120 sys@127.0.0.1 10.180.52.36:3316 2019-08-18_18:20:29_7_CST (db1)]
+SQL> select * from performance_schema.replication_group_members;
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| group_replication_applier | 9e3b5773-b2b8-11e9-be32-fa163e8abbc3 | 10.180.52.36 |        3316 | ERROR        |             | 8.0.17         |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+1 row in set (0.00 sec)
+
+[49431 61 sys@127.0.0.1 10.180.52.35:3316 2019-08-18_18:20:35_7_CST ((none))]
+SQL> select * from performance_schema.replication_group_members;
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| group_replication_applier | 417ceb5a-b2b3-11e9-99ce-fa163e73cb8f | 10.180.52.35 |        3316 | ERROR        |             | 8.0.17         |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+1 row in set (0.00 sec)
+
+
+52.35 52.36：
+stop group_replication;
+start group_replication;
+可以正常加回MGR
+
+
+

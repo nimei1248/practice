@@ -1,0 +1,150 @@
+当MGR节点某节点 如，52.37与其它2个节点互相不能通信时：
+1> 所有节点显示均为可写状态, 有网络问题的节点写的事务无法commit，直到网络恢复或kill; 但可读
+SQL> select @@super_read_only,@@read_only;
++-------------------+-------------+
+| @@super_read_only | @@read_only |
++-------------------+-------------+
+|                 0 |           0 |
++-------------------+-------------+
+1 row in set (0.00 sec)
+
+但不影响proxysql判断：
+[57542 287 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_18:57:46_7_CST (db1)]
+SQL> select * from sys.gr_member_routing_candidate_status;
++------------------+-----------+---------------------+----------------------+
+| viable_candidate | read_only | transactions_behind | transactions_to_cert |
++------------------+-----------+---------------------+----------------------+
+| NO               | NO        |                   0 |                    0 |
++------------------+-----------+---------------------+----------------------+
+1 row in set (0.01 sec)
+
+[admin@127.0.0.1(main)] proxysql> select * from runtime_mysql_servers;
++--------------+--------------+------+-----------+---------+--------+-------------+-----------------+---------------------+---------+----------------+------------------+
+| hostgroup_id | hostname     | port | gtid_port | status  | weight | compression | max_connections | max_replication_lag | use_ssl | max_latency_ms | comment          |
++--------------+--------------+------+-----------+---------+--------+-------------+-----------------+---------------------+---------+----------------+------------------+
+| 100          | 10.180.52.35 | 3316 | 0         | ONLINE  | 30     | 0           | 1000            | 0                   | 0       | 0              | 100-writer_group |
+| 103          | 10.180.52.37 | 3316 | 0         | SHUNNED | 10     | 0           | 1000            | 0                   | 0       | 0              | 102-reader_group |
+
+
+2> 产生脑裂假象, 因为不能commit
+SQL> select * from performance_schema.replication_group_members;
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| group_replication_applier | 3cfe5330-b2bb-11e9-9d5c-fa163e17c322 | 10.180.52.37 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
+| group_replication_applier | 417ceb5a-b2b3-11e9-99ce-fa163e73cb8f | 10.180.52.35 |        3316 | UNREACHABLE  | PRIMARY     | 8.0.17         |
+| group_replication_applier | 9e3b5773-b2b8-11e9-be32-fa163e8abbc3 | 10.180.52.36 |        3316 | UNREACHABLE  | PRIMARY     | 8.0.17         |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+3 rows in set (0.00 sec)
+
+SQL> select * from performance_schema.replication_group_members;
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| group_replication_applier | 3cfe5330-b2bb-11e9-9d5c-fa163e17c322 | 10.180.52.37 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
+| group_replication_applier | 417ceb5a-b2b3-11e9-99ce-fa163e73cb8f | 10.180.52.35 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
+| group_replication_applier | 9e3b5773-b2b8-11e9-be32-fa163e8abbc3 | 10.180.52.36 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+3 rows in set (0.00 sec)
+
+3> 当网络恢复后，取决于网络影响时间长短，受限于MGR集群内部下次检查时间
+1.如果网络影响时间很短，即，网络恢复比较快，那么有问题的节点会自动加入MGR集群，整个集群也不会发生剔除或重新选举或ERROR等
+2.如果网络影响时间很长，恢复后，将剔除其它所有节点或1个，自己成为唯一节点或重新组成新的MGR
+
+[57542 272 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_18:49:20_7_CST (db1)]
+SQL> select * from performance_schema.replication_group_members;
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| group_replication_applier | 3cfe5330-b2bb-11e9-9d5c-fa163e17c322 | 10.180.52.37 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
+| group_replication_applier | 417ceb5a-b2b3-11e9-99ce-fa163e73cb8f | 10.180.52.35 |        3316 | UNREACHABLE  | PRIMARY     | 8.0.17         |
+| group_replication_applier | 9e3b5773-b2b8-11e9-be32-fa163e8abbc3 | 10.180.52.36 |        3316 | UNREACHABLE  | PRIMARY     | 8.0.17         |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+3 rows in set (0.00 sec)
+
+[57542 273 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_18:49:20_7_CST (db1)]
+SQL> select * from performance_schema.replication_group_members;
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| group_replication_applier | 3cfe5330-b2bb-11e9-9d5c-fa163e17c322 | 10.180.52.37 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
+| group_replication_applier | 417ceb5a-b2b3-11e9-99ce-fa163e73cb8f | 10.180.52.35 |        3316 | ONLINE       | PRIMARY     | 8.0.17         |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+2 rows in set (0.00 sec)
+
+[57542 274 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_18:49:51_7_CST (db1)]
+
+[107806 144 sys@127.0.0.1 10.180.52.36:3316 2019-08-18_18:53:47_7_CST (db1)]
+SQL> select * from performance_schema.replication_group_members;
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+| group_replication_applier | 9e3b5773-b2b8-11e9-be32-fa163e8abbc3 | 10.180.52.36 |        3316 | ERROR        |             | 8.0.17         |
++---------------------------+--------------------------------------+--------------+-------------+--------------+-------------+----------------+
+1 row in set (0.00 sec)
+
+网络影响大于等于5分钟时：
+[root@ph180svr052037 10.180.52.37 2019-08-18_18:49:43_7_CST /root]
+# systemctl start iptables
+
+[root@ph180svr052037 10.180.52.37 2019-08-18_18:54:58_7_CST /root]
+
+52.37：
+2019-08-18T18:49:43.911664+08:00 0 [Warning] [MY-011494] [Repl] Plugin group_replication reported: 'Member with address 10.180.52.35:3316 is reachable again.'
+2019-08-18T18:49:43.911803+08:00 0 [Warning] [MY-011498] [Repl] Plugin group_replication reported: 'The member has resumed contact with a majority of the members in the group. Regular operation is restored and transactions are unblocked.'
+2019-08-18T18:49:43.940305+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Re-using server node 0 host 10.180.52.37'
+2019-08-18T18:49:43.940434+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Re-using server node 1 host 10.180.52.35'
+2019-08-18T18:49:43.940473+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Installed site start={4d25d554 1773545 0} boot_key={4d25d554 1773534 0} event_horizon=10 node 0'
+2019-08-18T18:49:43.940689+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Node has already been removed: 10.180.52.36:33161 15661250280385810.'
+2019-08-18T18:49:45.914583+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Group is able to support up to communication protocol version 8.0.16'
+2019-08-18T18:49:45.914767+08:00 0 [Warning] [MY-011499] [Repl] Plugin group_replication reported: 'Members removed from the group: 10.180.52.36:3316'
+2019-08-18T18:49:45.914951+08:00 0 [Note] [MY-011503] [Repl] Plugin group_replication reported: 'Group membership changed to 10.180.52.37:3316, 10.180.52.35:3316 on view 15649859521903311:37.'
+2019-08-18T18:49:47.463707+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Failure reading from fd=68 n=0'
+2019-08-18T18:49:47.465146+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Node has already been removed: 10.180.52.36:33161 15661250280385810.'
+2019-08-18T18:54:26.466276+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Re-using server node 0 host 10.180.52.37'
+2019-08-18T18:54:26.466367+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Re-using server node 1 host 10.180.52.35'
+2019-08-18T18:54:26.466416+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Re-using server node 2 host 10.180.52.36'
+2019-08-18T18:54:26.466436+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Installed site start={4d25d554 1773851 0} boot_key={4d25d554 1773840 1} event_horizon=10 node 0'
+2019-08-18T18:54:28.804628+08:00 0 [Note] [MY-011735] [Repl] Plugin group_replication reported: '[GCS] Group is able to support up to communication protocol version 8.0.16'
+2019-08-18T18:54:28.804983+08:00 0 [Note] [MY-011501] [Repl] Plugin group_replication reported: 'Members joined the group: 10.180.52.36:3316'
+2019-08-18T18:54:28.805206+08:00 0 [Note] [MY-011503] [Repl] Plugin group_replication reported: 'Group membership changed to 10.180.52.37:3316, 10.180.52.35:3316, 10.180.52.36:3316 on view 15649859521903311:38.'
+2019-08-18T18:54:30.647814+08:00 0 [Note] [MY-011492] [Repl] Plugin group_replication reported: 'The member with address 10.180.52.36:3316 was declared online within the replication group.'
+
+
+
+
+大于等于5分钟后打印日志，这里显示的时间不对，不知道为什么？系统本身是ok的
+[root@ph180svr052037 10.180.52.37 2019-08-18_18:49:43_7_CST /root]
+# systemctl start iptables
+
+[root@ph180svr052037 10.180.52.37 2019-08-18_18:54:58_7_CST /root]
+# date
+Sun Aug 18 19:02:37 CST 2019
+
+[root@ph180svr052037 10.180.52.37 2019-08-18_19:02:37_7_CST /root]
+# ll /etc/localtime
+lrwxrwxrwx 1 root root 33 Jul 30 13:28 /etc/localtime -> /usr/share/zoneinfo/Asia/Shanghai
+
+
+2019-08-18T18:55:02.787815+08:00 0 [Warning] [MY-011493] [Repl] Plugin group_replication reported: 'Member with address 10.180.52.35:3316 has become unreachable.'
+2019-08-18T18:55:02.787921+08:00 0 [Warning] [MY-011493] [Repl] Plugin group_replication reported: 'Member with address 10.180.52.36:3316 has become unreachable.'
+2019-08-18T18:55:02.787958+08:00 0 [ERROR] [MY-011495] [Repl] Plugin group_replication reported: 'This server is not able to reach a majority of members in the group. This server will now block all updates. The server will remain blocked until contact with the majority is restored. It is possible to use group_replication_force_members to force a new group membership.'
+
+
+其它2台日志打印时间都是正常的： 难道MGR环境网络异常时会导致日志时间停留基于出问题的时间？
+52.37：
+2019-08-18T18:56:37.258860+08:00 57583 [Note] [MY-013417] [Server] The wait_timeout period was exceeded, the idle time since last command was too long.
+2019-08-18T18:56:37.259009+08:00 57583 [Note] [MY-010914] [Server] Aborted connection 57583 to db: 'unconnected' user: 'monitor' host: '10.180.52.34' (Got timeout reading communication packets).
+
+52.36：
+2019-08-18T19:04:33.559345+08:00 107806 [Note] [MY-013417] [Server] The wait_timeout period was exceeded, the idle time since last command was too long.
+2019-08-18T19:04:33.559580+08:00 107806 [Note] [MY-010914] [Server] Aborted connection 107806 to db: 'db1' user: 'sys' host: '127.0.0.1' (Got timeout reading communication packets).
+
+52.35：
+2019-08-18T19:04:52.801909+08:00 49497 [Note] [MY-013417] [Server] The wait_timeout period was exceeded, the idle time since last command was too long.
+2019-08-18T19:04:52.802039+08:00 49497 [Note] [MY-010914] [Server] Aborted connection 49497 to db: 'unconnected' user: 'sys' host: '127.0.0.1' (Got timeout reading communication packets).
+
+
+4> 如果根据performance_schema.replication_group_members表查询MGR节点是否可用，目前看来需要检查每一个节点，否则可能导致将流量选择到只读节点
+5> 最终都可以重新加入节点
+

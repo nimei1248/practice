@@ -246,11 +246,78 @@ ctrl+c 也无法结束, kill先不测试了
 
 
 
+网络恢复后,事务才会结束:
+[57492 69 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_17:33:31_7_CST (db1)]
+SQL> commit;
+
+
+
+
+
+
+
+
+
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+^C^C -- query aborted
+
+^C^C -- query aborted
+
+^C^C -- query aborted
+
+^C^C -- query aborted
+
+^C^C -- query aborted
+
+^C^C -- query aborted
+^C^C -- query aborted
+
+
+Query OK, 0 rows affected (14 min 33.09 sec)
+
+虽然这里显示是0 rwors，但也写入成功了
+| 413 | xxxxxxxxxxxxxx         |
+| 420 | xxxxxxxxxxxxxx         |
++-----+------------------------+
+81 rows in set (0.00 sec)
+
+[57492 70 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_17:48:15_7_CST (db1)]
+
+
+
+
+
 当网络恢复后，节点52.37可以正常加入MGR集群工作，其它2个节点依旧没有日志：
 2019-08-18T16:37:59.903816+08:00 0 [Warning] [MY-011494] [Repl] Plugin group_replication reported: 'Member with address 10.180.52.35:3316 is reachable again.'
 2019-08-18T16:37:59.903955+08:00 0 [Warning] [MY-011494] [Repl] Plugin group_replication reported: 'Member with address 10.180.52.36:3316 is reachable again.'
 2019-08-18T16:37:59.904014+08:00 0 [Warning] [MY-011498] [Repl] Plugin group_replication reported: 'The member has resumed contact with a majority of the members in the group. Regular operation is restored and transactions are unblocked.'
 2019-08-18T16:38:02.748023+08:00 57430 [Warning] [MY-010957] [Server] The replication timestamps have returned to normal values.
+
+
+如果产生事务，52.37的donor会产生一条日志:
+2019-08-18T17:48:12.072468+08:00 107551 [Warning] [MY-010957] [Server] The replication timestamps have returned to normal values.
+
+
 
 [57479 51 sys@127.0.0.1 10.180.52.37:3316 2019-08-18_17:18:03_7_CST (db1)]
 SQL> select * from performance_schema.replication_group_members;
