@@ -1,0 +1,68 @@
+Each time you modify 'update mysql_group_replication_hostgroups set writer_is_also_reader=2' && 'load mysql servers to runtime' proxysql will crash
+
+
+[admin@127.0.0.1(main)] proxysql> show create table mysql_group_replication_hostgroups\G 
+*************************** 1. row ***************************
+       table: mysql_group_replication_hostgroups
+Create Table: CREATE TABLE mysql_group_replication_hostgroups (
+    writer_hostgroup INT CHECK (writer_hostgroup>=0) NOT NULL PRIMARY KEY,
+    backup_writer_hostgroup INT CHECK (backup_writer_hostgroup>=0 AND backup_writer_hostgroup<>writer_hostgroup) NOT NULL,
+    reader_hostgroup INT NOT NULL CHECK (reader_hostgroup<>writer_hostgroup AND backup_writer_hostgroup<>reader_hostgroup AND reader_hostgroup>0),
+    offline_hostgroup INT NOT NULL CHECK (offline_hostgroup<>writer_hostgroup AND offline_hostgroup<>reader_hostgroup AND backup_writer_hostgroup<>offline_hostgroup AND offline_hostgroup>=0),
+    active INT CHECK (active IN (0,1)) NOT NULL DEFAULT 1,
+    max_writers INT NOT NULL CHECK (max_writers >= 0) DEFAULT 1,
+    writer_is_also_reader INT CHECK (writer_is_also_reader IN (0,1,2)) NOT NULL DEFAULT 0,
+    max_transactions_behind INT CHECK (max_transactions_behind>=0) NOT NULL DEFAULT 0,
+    comment VARCHAR,
+    UNIQUE (reader_hostgroup),
+    UNIQUE (offline_hostgroup),
+    UNIQUE (backup_writer_hostgroup))
+1 row in set (0.01 sec)
+
+
+[admin@127.0.0.1(main)] proxysql> select * from mysql_group_replication_hostgroups;
++------------------+-------------------------+------------------+-------------------+--------+-------------+-----------------------+-------------------------+-------------+
+| writer_hostgroup | backup_writer_hostgroup | reader_hostgroup | offline_hostgroup | active | max_writers | writer_is_also_reader | max_transactions_behind | comment     |
++------------------+-------------------------+------------------+-------------------+--------+-------------+-----------------------+-------------------------+-------------+
+| 100              | 101                     | 102              | 103               | 1      | 1           | 1                     | 20                      | db1-mgr3316 |
+| 200              | 201                     | 202              | 203               | 1      | 1           | 1                     | 20                      | db2-mgr3316 |
++------------------+-------------------------+------------------+-------------------+--------+-------------+-----------------------+-------------------------+-------------+
+2 rows in set (0.00 sec)
+
+[admin@127.0.0.1(main)] proxysql> update mysql_group_replication_hostgroups set writer_is_also_reader=2 where writer_hostgroup=200;
+Query OK, 1 row affected (0.00 sec)
+
+[admin@127.0.0.1(main)] proxysql> select * from mysql_group_replication_hostgroups;
++------------------+-------------------------+------------------+-------------------+--------+-------------+-----------------------+-------------------------+-------------+
+| writer_hostgroup | backup_writer_hostgroup | reader_hostgroup | offline_hostgroup | active | max_writers | writer_is_also_reader | max_transactions_behind | comment     |
++------------------+-------------------------+------------------+-------------------+--------+-------------+-----------------------+-------------------------+-------------+
+| 100              | 101                     | 102              | 103               | 1      | 1           | 1                     | 20                      | db1-mgr3316 |
+| 200              | 201                     | 202              | 203               | 1      | 1           | 2                     | 20                      | db2-mgr3316 |
++------------------+-------------------------+------------------+-------------------+--------+-------------+-----------------------+-------------------------+-------------+
+2 rows in set (0.00 sec)
+
+[admin@127.0.0.1(main)] proxysql> select * from runtime_mysql_group_replication_hostgroups;
++------------------+-------------------------+------------------+-------------------+--------+-------------+-----------------------+-------------------------+-------------+
+| writer_hostgroup | backup_writer_hostgroup | reader_hostgroup | offline_hostgroup | active | max_writers | writer_is_also_reader | max_transactions_behind | comment     |
++------------------+-------------------------+------------------+-------------------+--------+-------------+-----------------------+-------------------------+-------------+
+| 100              | 101                     | 102              | 103               | 1      | 1           | 1                     | 20                      | db1-mgr3316 |
+| 200              | 201                     | 202              | 203               | 1      | 1           | 1                     | 20                      | db2-mgr3316 |
++------------------+-------------------------+------------------+-------------------+--------+-------------+-----------------------+-------------------------+-------------+
+2 rows in set (0.00 sec)
+
+[admin@127.0.0.1(main)] proxysql> load mysql servers to runtime;
+ERROR 2013 (HY000): Lost connection to MySQL server during query
+[admin@127.0.0.1(main)] proxysql> 
+[admin@127.0.0.1(main)] proxysql> select * from runtime_mysql_group_replication_hostgroups;
+ERROR 2006 (HY000): MySQL server has gone away
+No connection. Trying to reconnect...
+Connection id:    1
+Current database: main
+
++------------------+-------------------------+------------------+-------------------+--------+-------------+-----------------------+-------------------------+-------------+
+| writer_hostgroup | backup_writer_hostgroup | reader_hostgroup | offline_hostgroup | active | max_writers | writer_is_also_reader | max_transactions_behind | comment     |
++------------------+-------------------------+------------------+-------------------+--------+-------------+-----------------------+-------------------------+-------------+
+| 100              | 101                     | 102              | 103               | 1      | 1           | 1                     | 20                      | db1-mgr3316 |
+| 200              | 201                     | 202              | 203               | 1      | 1           | 1                     | 20                      | db2-mgr3316 |
++------------------+-------------------------+------------------+-------------------+--------+-------------+-----------------------+-------------------------+-------------+
+2 rows in set (0.00 sec)
