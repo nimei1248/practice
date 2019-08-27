@@ -1,3 +1,42 @@
+
+SELECT 
+    (
+   SELECT 
+              t2.login_name
+            FROM
+                t_third t2 
+    where t1.customer_id=t2.customer_id
+            order  BY id desc limit 1 
+ ) login_name, t1.customer_id, 
+ (
+   SELECT 
+              t2.head_img_url
+            FROM
+                t_third t2 
+    where t1.customer_id=t2.customer_id
+            order  BY id desc limit 1 
+ ) head_img_url, t1.amount
+ 
+FROM
+    (SELECT 
+        *
+    FROM
+        (SELECT 
+        SUM(t.bonus_amount) amount, t.customer_id customer_id
+    FROM
+        t_customer t
+    WHERE
+        t.product_id = 'bike'
+            AND t.report_date >= '2019-08-01 00:00:00'
+            AND t.report_date <= '2019-08-21 19:06:02'
+    GROUP BY t.CUSTOMER_ID) tt
+    ORDER BY tt.amount DESC
+    LIMIT 0 , 100) t1  
+ ;
+
+
+
+
 找出每个人的最大值:
 SELECT 
     t2.login_name, t1.customer_id, t2.head_img_url, t1.amount
