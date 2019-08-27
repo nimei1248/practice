@@ -1,3 +1,4 @@
+找出每个人的最大值:
 SELECT 
     t2.login_name, t1.customer_id, t2.head_img_url, t1.amount
 FROM
@@ -9,7 +10,7 @@ FROM
     FROM
         t_customer t
     WHERE
-        t.product_id = 'Z01'
+        t.product_id = 'bike'
             AND t.report_date >= '2019-08-01 00:00:00'
             AND t.report_date <= '2019-08-21 19:06:02'
     GROUP BY t.CUSTOMER_ID) tt
@@ -30,7 +31,14 @@ WHERE
 ORDER BY amount DESC;
 
 
-SQL> desc SELECT      t2.login_name, t1.customer_id, t2.head_img_url, t1.amount FROM     (SELECT          *     FROM         (SELECT          SUM(t.bonus_amount) amount, t.customer_id customer_id     FROM         t_customer t     WHERE         t.product_id = 'bike'             AND t.report_date >= '2019-08-01 00:00:00'             AND t.report_date <= '2019-08-21 19:06:02'     GROUP BY t.CUSTOMER_ID) tt     ORDER BY tt.amount DESC     LIMIT 0 , 100) t1,     (SELECT          *     FROM         t_third     WHERE         id IN (SELECT                  MAX(id)             FROM                 t_third             GROUP BY customer_id)) t2 WHERE     t1.customer_id = t2.customer_id ORDER BY amount DESC;
+SQL> desc SELECT      t2.login_name, t1.customer_id, t2.head_img_url, t1.amount FROM     
+(SELECT  *  FROM  (SELECT   SUM(t.bonus_amount) amount, t.customer_id customer_id 
+FROM  t_customer t  WHERE  t.product_id = 'bike'  AND t.report_date >= '2019-08-01 00:00:00' 
+AND t.report_date <= '2019-08-21 19:06:02'     GROUP BY t.CUSTOMER_ID) tt     
+ORDER BY tt.amount DESC     LIMIT 0 , 100) t1,     
+(SELECT  *   FROM  t_third WHERE id IN (SELECT MAX(id) FROM t_third GROUP BY customer_id)) t2
+WHERE t1.customer_id = t2.customer_id 
+ORDER BY amount DESC;
 +----+-------------+-------------------+------------+-------+---------------+-------+---------+----------------+---------+----------+-----------------------------------------------------------+
 | id | select_type | table             | partitions | type  | possible_keys | key   | key_len | ref            | rows    | filtered | Extra                                                     |
 +----+-------------+-------------------+------------+-------+---------------+-------+---------+----------------+---------+----------+-----------------------------------------------------------+
@@ -47,32 +55,25 @@ SQL> show warnings\G
 *************************** 1. row ***************************
   Level: Note
    Code: 1003
-Message: /* select#1 */ select `db1`.`t_third`.`login_name` AS `login_name`,`t1`.`customer_id` AS `customer_id`,`db1`.`t_third`.`head_img_url` AS `head_img_url`,`t1`.`amount` AS `amount` from (/* select#2 */ select `tt`.`amount` AS `amount`,`tt`.`customer_id` AS `customer_id` from (/* select#3 */ select sum(`db1`.`t`.`bonus_amount`) AS `amount`,`db1`.`t`.`customer_id` AS `customer_id` from `db1`.`t_customer` `t` where ((`db1`.`t`.`product_id` = 'Z01') and (`db1`.`t`.`report_date` >= '2019-08-01 00:00:00') and (`db1`.`t`.`report_date` <= '2019-08-21 19:06:02')) group by `db1`.`t`.`customer_id`) `tt` order by `tt`.`amount` desc limit 0,100) `t1` join `db1`.`t_third` where ((`db1`.`t_third`.`customer_id` = `t1`.`customer_id`) and <in_optimizer>(`db1`.`t_third`.`id`,`db1`.`t_third`.`id` in ( <materialize> (/* select#5 */ select max(`db1`.`t_third`.`id`) from `db1`.`t_third` group by `db1`.`t_third`.`customer_id` having 1 ), <primary_index_lookup>(`db1`.`t_third`.`id` in <temporary table> on <auto_key> where ((`db1`.`t_third`.`id` = `materialized-subquery`.`MAX(id)`)))))) order by `t1`.`amount` desc
+Message: /* select#1 */ select `db1`.`t_third`.`login_name` AS `login_name`,`t1`.`customer_id` AS `customer_id`,
+`db1`.`t_third`.`head_img_url` AS `head_img_url`,`t1`.`amount` AS `amount` 
+from (/* select#2 */ select `tt`.`amount` AS `amount`,`tt`.`customer_id` AS `customer_id` 
+from (/* select#3 */ select sum(`db1`.`t`.`bonus_amount`) AS `amount`,`db1`.`t`.`customer_id` AS `customer_id` 
+from `db1`.`t_customer` `t` where ((`db1`.`t`.`product_id` = 'bike') and 
+(`db1`.`t`.`report_date` >= '2019-08-01 00:00:00') and (`db1`.`t`.`report_date` <= '2019-08-21 19:06:02')) 
+group by `db1`.`t`.`customer_id`) `tt` order by `tt`.`amount` desc limit 0,100) `t1` 
+join `db1`.`t_third` where ((`db1`.`t_third`.`customer_id` = `t1`.`customer_id`) 
+and <in_optimizer>(`db1`.`t_third`.`id`,`db1`.`t_third`.`id` 
+in ( <materialize> (/* select#5 */ select max(`db1`.`t_third`.`id`) 
+from `db1`.`t_third` group by `db1`.`t_third`.`customer_id` having 1 ), 
+<primary_index_lookup>(`db1`.`t_third`.`id` in <temporary table> on <auto_key> 
+where ((`db1`.`t_third`.`id` = `materialized-subquery`.`MAX(id)`)))))) order by `t1`.`amount` desc
 1 row in set (0.00 sec)
 
 
 
-
-找出每个人的最大值
-
-SELECT 
-    t2.login_name, t1.customer_id, t2.head_img_url, t1.amount
-FROM
-    (SELECT 
-        *
-    FROM
-        (SELECT 
-        SUM(t.bonus_amount) amount, t.customer_id customer_id
-    FROM
-        t_customer t
-    WHERE
-        t.product_id = 'Z01'
-            AND t.report_date >= '2019-08-01 00:00:00'
-            AND t.report_date <= '2019-08-21 19:06:02'
-    GROUP BY t.CUSTOMER_ID order by null) tt
-    -- ORDER BY tt.amount DESC
-    LIMIT 0 , 100) t1,
-    (SELECT 
+问题慢在这个子查询，因为需要统计表中每一个的最大值，需要全表
+(SELECT 
         *
     FROM
         t_third
@@ -81,22 +82,8 @@ FROM
                 MAX(id)
             FROM
                 t_third
-            GROUP BY customer_id order by null)) t2
-WHERE
-    t1.customer_id = t2.customer_id
-ORDER BY amount DESC;
+            GROUP BY customer_id)) t2
 
-
-SELECT 
-        *
-    FROM
-        t_third t1
-    WHERE
-        t1.id IN (SELECT 
-                MAX(id)
-            FROM
-                t_third
-            GROUP BY customer_id order by null
 			
 SQL> show create table t_third\G
 *************************** 1. row ***************************
@@ -126,6 +113,3 @@ Create Table: CREATE TABLE t_third (
   KEY i_aaa (customer_id,product_id)
 ) ENGINE=InnoDB AUTO_INCREMENT=1520712 DEFAULT CHARSET=utf8
 1 row in set (0.00 sec)
-
-
-
