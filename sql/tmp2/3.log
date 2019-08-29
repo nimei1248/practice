@@ -150,5 +150,5 @@ Create Table: CREATE TABLE t_third (
   PRIMARY KEY (id),
   KEY i_bbb (open_id,product_id,open_code,customer_id),
   KEY i_aaa (customer_id,product_id)
-) ENGINE=InnoDB AUTO_INCREMENT=1520712 DEFAULT CHARSET=utf8
+) ENGINE=InnoDB;
 1 row in set (0.00 sec)
