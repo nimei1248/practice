@@ -75,3 +75,30 @@ SQL> desc
 3 rows in set, 1 warning (0.00 sec)
 
 
+
+[56 sys@127.0.0.1 192.168.94.168:3307 2019-08-30_08:39:42_5_+08 (db1)]
+SQL> desc select * from t2 left join (
+    -> select 
+    ->      openid,
+    ->      convert(c1 using latin1) c1,
+    ->      convert(c2 using latin1) c2,
+    ->      convert(c3 using latin1) c3
+    -> from
+    ->      t1
+    -> group by 
+    ->      convert(c1 using latin1),
+    ->      convert(c2 using latin1),
+    ->      convert(c3 using latin1)
+    -> ) bind 
+    -> on bind.c2 = convert(t2.c2 using latin1)
+    -> and bind.c1 = convert(t2.c1 using latin1)
+    -> and bind.c3 = convert(t2.c3 using latin1);
++----+-------------+------------+------------+------+---------------+------+---------+------+------+----------+----------------------------------------------------+
+| id | select_type | table      | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra                                              |
++----+-------------+------------+------------+------+---------------+------+---------+------+------+----------+----------------------------------------------------+
+|  1 | PRIMARY     | t2         | NULL       | ALL  | NULL          | NULL | NULL    | NULL |    8 |   100.00 | NULL                                               |
+|  1 | PRIMARY     | <derived2> | NULL       | ALL  | NULL          | NULL | NULL    | NULL |    5 |   100.00 | Using where; Using join buffer (Block Nested Loop) |
+|  2 | DERIVED     | t1         | NULL       | ALL  | NULL          | NULL | NULL    | NULL |    5 |   100.00 | Using temporary; Using filesort                    |
++----+-------------+------------+------------+------+---------------+------+---------+------+------+----------+----------------------------------------------------+
+3 rows in set, 1 warning (0.00 sec)
+
