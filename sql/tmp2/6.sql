@@ -76,6 +76,33 @@ SQL> desc
 
 
 
+-------------------------------------------------------------------------
+[59 sys@127.0.0.1 192.168.94.168:3307 2019-08-30_09:03:57_5_+08 (db1)]
+SQL> show create table t1 \G
+*************************** 1. row ***************************
+       Table: t1
+Create Table: CREATE TABLE `t1` (
+  `openid` varchar(255) NOT NULL,
+  `c1` varchar(255) NOT NULL,
+  `c2` varchar(255) NOT NULL,
+  `c3` bigint(20) NOT NULL,
+  PRIMARY KEY (`openid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+1 row in set (0.00 sec)
+
+[60 sys@127.0.0.1 192.168.94.168:3307 2019-08-30_09:04:01_5_+08 (db1)]
+SQL> show create table t2 \G
+*************************** 1. row ***************************
+       Table: t2
+Create Table: CREATE TABLE `t2` (
+  `customerid` int(11) NOT NULL AUTO_INCREMENT,
+  `c1` varchar(30) DEFAULT NULL,
+  `c2` char(18) DEFAULT NULL,
+  `c3` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`customerid`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8
+1 row in set (0.00 sec)
+
 [56 sys@127.0.0.1 192.168.94.168:3307 2019-08-30_08:39:42_5_+08 (db1)]
 SQL> desc select * from t2 left join (
     -> select 
