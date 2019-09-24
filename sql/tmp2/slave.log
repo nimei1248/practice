@@ -7,6 +7,16 @@ $ perror 1594
 MySQL error code 1594 (ER_SLAVE_RELAY_LOG_READ_FAILURE): Relay log read failure: %s
 
 
+2019-09-23 14:11:15 3033 [Warning] Slave SQL: If a crash happens this configuration does not guarantee that the relay log info will be consistent, Error_code: 0
+2019-09-23 14:11:15 3033 [Note] Slave SQL thread initialized, starting replication in log 'mysql-bin.000888' at position 58748393, relay log 'relaylog/mysql-relay-bin.002465' position: 58748563
+2019-09-23 14:11:15 3033 [ERROR] Error in Log_event::read_log_event(): 'read error', data_len: 840, event_type: 29
+2019-09-23 14:11:15 3033 [ERROR] Error reading relay log event: slave SQL thread aborted because of I/O error
+2019-09-23 14:11:15 3033 [ERROR] Slave SQL: Relay log read failure: Could not parse relay log event entry. The possible reasons are: the master's binary log is corrupted (you can check this by running 'mysqlbinlog' on the binary log), the slave's relay log is corrupted (you can check this by running 'mysqlbinlog' on the relay log), a network problem, or a bug in the master's or slave's MySQL code. If you want to check the master's binary log or slave's relay log, you will be able to know their names by issuing 'SHOW SLAVE STATUS' on this slave. Error_code: 1594
+2019-09-23 14:11:15 3033 [ERROR] Error running query, slave SQL thread aborted. Fix the problem, and restart the slave SQL thread with "SLAVE START". We stopped at log 'mysql-bin.000888' position 58748393
+2019-09-23 14:11:15 3033 [Note] Slave I/O thread: connected to master 'repuser@dns_l1_repl.titbasicservice.com:4312',replication started in log 'mysql-bin.000902' at position 18759953
+2019-09-23 14:20:27 3033 [ERROR] Error reading packet from server: Lost connection to MySQL server during query ( server_errno=2013)
+
+
 # mysqlbinlog -vvv --base64-output=decode-rows mysql-relay-bin.002465 > 2465.sql
 ERROR: Error in Log_event::read_log_event(): 'read error', data_len: 840, event_type: 29
 ERROR: Could not read entry at offset 58748687: Error in log format or read error.
