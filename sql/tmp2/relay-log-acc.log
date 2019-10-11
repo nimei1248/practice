@@ -1,0 +1,64 @@
+2019-10-11T12:31:14.179366+08:00 61303421 [Note] While initializing dump thread for slave with UUID <eade0d03-ad91-11e7-8559-c81f66be1379>, found a zombie dump thread with the same UUID. Master is killing the zombie dump thread(61303403).
+2019-10-11T12:31:14.179589+08:00 61303421 [Note] Start binlog_dump to master_thread_id(61303421) slave_server(19304313), pos(, 4)
+2019-10-11T12:31:26.517309+08:00 61303425 [Note] While initializing dump thread for slave with UUID <eade0d03-ad91-11e7-8559-c81f66be1379>, found a zombie dump thread with the same UUID. Master is killing the zombie dump thread(61303421).
+2019-10-11T12:31:26.517489+08:00 61303425 [Note] Start binlog_dump to master_thread_id(61303425) slave_server(19304313), pos(, 4)
+2019-10-11T12:31:44.203747+08:00 61303449 [Note] While initializing dump thread for slave with UUID <eade0d03-ad91-11e7-8559-c81f66be1379>, found a zombie dump thread with the same UUID. Master is killing the zombie dump thread(61303425).
+2019-10-11T12:31:44.203896+08:00 61303449 [Note] Start binlog_dump to master_thread_id(61303449) slave_server(19304313), pos(, 4)
+
+
+master:
+$ head ../mydata/auto.cnf 
+[auto]
+server-uuid=472a9410-a19f-11e7-bc67-246e965b1214
+
+
+slave:
+$ head mydata/auto.cnf
+[auto]
+server-uuid=eade0d03-ad91-11e7-8559-c81f66be1379
+
+
+slave 重启之后,之前堆积的2600个relay log被删除，重新产生:
+-rw-r----- 1 mysql dba      507 Oct 11 12:21 mysql-relay-bin.036589
+-rw-r----- 1 mysql dba     5869 Oct 11 12:21 mysql-relay-bin.036590
+-rw-r----- 1 mysql dba      507 Oct 11 12:21 mysql-relay-bin.036591
+-rw-r----- 1 mysql dba     1188 Oct 11 12:22 mysql-relay-bin.036592
+-rw-r----- 1 mysql dba     5148 Oct 11 12:22 mysql-relay-bin.036593
+-rw-r----- 1 mysql dba     1188 Oct 11 12:22 mysql-relay-bin.036594
+-rw-r----- 1 mysql dba      507 Oct 11 12:22 mysql-relay-bin.036595
+-rw-r----- 1 mysql dba     9790 Oct 11 12:23 mysql-relay-bin.036596
+-rw-r----- 1 mysql dba    20821 Oct 11 12:23 mysql-relay-bin.036597
+-rw-r----- 1 mysql dba      507 Oct 11 12:24 mysql-relay-bin.036598
+-rw-r----- 1 mysql dba    17691 Oct 11 12:24 mysql-relay-bin.036599
+-rw-r----- 1 mysql dba      507 Oct 11 12:24 mysql-relay-bin.036600
+-rw-r----- 1 mysql dba     1188 Oct 11 12:24 mysql-relay-bin.036601
+-rw-r----- 1 mysql dba      507 Oct 11 12:24 mysql-relay-bin.036602
+-rw-r----- 1 mysql dba     1188 Oct 11 12:25 mysql-relay-bin.036603
+-rw-r----- 1 mysql dba      507 Oct 11 12:25 mysql-relay-bin.036604
+-rw-r----- 1 mysql dba     1188 Oct 11 12:25 mysql-relay-bin.036605
+-rw-r----- 1 mysql dba      507 Oct 11 12:25 mysql-relay-bin.036606
+-rw-r----- 1 mysql dba      507 Oct 11 12:26 mysql-relay-bin.036607
+-rw-r----- 1 mysql dba     1188 Oct 11 12:26 mysql-relay-bin.036608
+-rw-r----- 1 mysql dba     3206 Oct 11 12:26 mysql-relay-bin.036609
+-rw-r----- 1 mysql dba     5589 Oct 11 12:26 mysql-relay-bin.036610
+-rw-r----- 1 mysql dba     1188 Oct 11 12:27 mysql-relay-bin.036611
+-rw-r----- 1 mysql dba      507 Oct 11 12:27 mysql-relay-bin.036612
+-rw-r----- 1 mysql dba     1188 Oct 11 12:27 mysql-relay-bin.036613
+-rw-r----- 1 mysql dba      507 Oct 11 12:27 mysql-relay-bin.036614
+-rw-r----- 1 mysql dba    12827 Oct 11 12:28 mysql-relay-bin.036615
+-rw-r----- 1 mysql dba     4908 Oct 11 12:28 mysql-relay-bin.036616
+-rw-r----- 1 mysql dba     1188 Oct 11 12:28 mysql-relay-bin.036617
+-rw-r----- 1 mysql dba     5823 Oct 11 12:29 mysql-relay-bin.036618
+-rw-r----- 1 mysql dba      507 Oct 11 12:29 mysql-relay-bin.036619
+-rw-r----- 1 mysql dba     1188 Oct 11 12:29 mysql-relay-bin.036620
+-rw-r----- 1 mysql dba     3203 Oct 11 12:29 mysql-relay-bin.036621
+-rw-r----- 1 mysql dba    37916 Oct 11 12:30 mysql-relay-bin.036622
+-rw-r----- 1 mysql dba      507 Oct 11 12:30 mysql-relay-bin.036623
+-rw-r----- 1 mysql dba     1188 Oct 11 12:31 mysql-relay-bin.036624
+-rw-r----- 1 mysql dba     4909 Oct 11 12:31 mysql-relay-bin.036625
+-rw-r----- 1 mysql dba     1188 Oct 11 12:31 mysql-relay-bin.036626
+-rw-r----- 1 mysql dba      507 Oct 11 12:31 mysql-relay-bin.036627
+-rw-r----- 1 mysql dba      507 Oct 11 12:32 mysql-relay-bin.036628
+-rw-r----- 1 mysql dba     1188 Oct 11 12:32 mysql-relay-bin.036629
+-rw-r----- 1 mysql dba      454 Oct 11 12:32 mysql-relay-bin.036630
+-rw-r----- 1 mysql dba     6223 Oct 11 12:32 mysql-relay-bin.index
