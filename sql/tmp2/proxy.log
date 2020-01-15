@@ -1,2 +1,0 @@
-2019-10-22 17:59:49 MySQL_Thread.cpp:4306:process_all_sessions(): [WARNING] Closing killed client connection 192.168.50.69:41578
-2019-10-22 18:00:41 MySQL_Thread.cpp:4306:process_all_sessions(): [WARNING] Closing killed client connection 192.168.50.69:41586
